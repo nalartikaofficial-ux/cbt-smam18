@@ -157,7 +157,7 @@ function OfficialExamChamberContent() {
     const [pilihanKampus1, setPilihanKampus1] = useState("");
     const [pilihanKampus2, setPilihanKampus2] = useState("");
 
-    // DATABASE PTN DINAMIS DARI GOOGLE SHEETS
+    // DATABASE PTN DINAMIS DARI GOOGLE SHEETS DENGAN LOCALSTORAGE CACHE
     const [ptnBenchmarks, setPtnBenchmarks] = useState<PTNProdiBenchmark[]>([]);
     const [isLoadingPTN, setIsLoadingPTN] = useState(false);
 
@@ -221,7 +221,7 @@ function OfficialExamChamberContent() {
         } catch { }
     };
 
-    // 1. MEMUAT SESI, SOAL, DURASI SUBTES, DAN DATA PTN
+    // 1. MEMUAT SESI, SOAL, DURASI SUBTES, DAN DATA PTN DENGAN CACHE CEPAT
     useEffect(() => {
         if (typeof window === "undefined") return;
 
@@ -248,6 +248,7 @@ function OfficialExamChamberContent() {
         const activePkg = queryPkg || sessionData.packageId || "PAKET_1";
         setSessionTitle(`RUANG UJIAN RESMI • ${activePkg.replace("_", " ")}`);
 
+        // Sinkronisasi Sesi & Jadwal Server
         fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_active_session&_t=${Date.now()}`, { cache: "no-store" })
             .then((r) => r.json())
             .then((res) => {
@@ -258,21 +259,42 @@ function OfficialExamChamberContent() {
             })
             .catch(() => { });
 
+        // Cek Cache Subtes agar render instan
+        const cachedSubtests = localStorage.getItem(`cbt_subtests_${activePkg}`);
+        if (cachedSubtests) {
+            try {
+                const parsed = JSON.parse(cachedSubtests);
+                if (Array.isArray(parsed) && parsed.length > 0) setSubtestsList(parsed);
+            } catch { }
+        }
+
         fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_subtests&package=${activePkg}&_t=${Date.now()}`, { cache: "no-store" })
             .then((r) => r.json())
             .then((res) => {
                 if (res.status === "success" && Array.isArray(res.data) && res.data.length > 0) {
                     setSubtestsList(res.data);
+                    localStorage.setItem(`cbt_subtests_${activePkg}`, JSON.stringify(res.data));
                 }
             })
             .catch(() => { });
 
-        setIsLoadingPTN(true);
+        // Cek Cache PTN Benchmarks agar instan tanpa loading
+        const cachedPTN = localStorage.getItem("cbt_ptn_benchmarks_cache");
+        if (cachedPTN) {
+            try {
+                const parsed = JSON.parse(cachedPTN);
+                if (Array.isArray(parsed) && parsed.length > 0) setPtnBenchmarks(parsed);
+            } catch { }
+        } else {
+            setIsLoadingPTN(true);
+        }
+
         fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_ptn_benchmarks&_t=${Date.now()}`, { cache: "no-store" })
             .then((r) => r.json())
             .then((res) => {
                 if (res.status === "success" && Array.isArray(res.data) && res.data.length > 0) {
                     setPtnBenchmarks(res.data);
+                    localStorage.setItem("cbt_ptn_benchmarks_cache", JSON.stringify(res.data));
                 }
             })
             .catch(() => { })
@@ -280,6 +302,7 @@ function OfficialExamChamberContent() {
                 setIsLoadingPTN(false);
             });
 
+        // Pulihkan progres pengerjaan siswa
         const savedProgressKey = `cbt_progress_${sessionData.nisn}`;
         const savedProgress = localStorage.getItem(savedProgressKey);
         if (savedProgress) {
@@ -490,7 +513,6 @@ function OfficialExamChamberContent() {
 
         const scaledScore = Math.round(200 + (correct / (allQuestions.length || 1)) * 650);
 
-        // Kategori TPS vs Literasi
         const tpsCodes = ["PU", "PPU", "PBM", "PK"];
         const litCodes = ["LIT_INDO", "LIT_ENG", "PM"];
 
@@ -566,7 +588,7 @@ function OfficialExamChamberContent() {
                     })
                 });
 
-                await new Promise((resolve) => setTimeout(resolve, 1200));
+                await new Promise((resolve) => setTimeout(resolve, 1000));
             } catch (err) {
                 console.error("Gagal sinkron:", err);
             }
@@ -576,7 +598,7 @@ function OfficialExamChamberContent() {
         setIsExamCompleted(true);
     };
 
-    // TRACKING TIMER & BLOCKING TIME SUBTES
+    // TRACKING TIMER & BLOCKING TIME SUBTES EFISIEN
     useEffect(() => {
         if (!isInExam || isSyncingServer || isExamCompleted || isExamLockedPermanently || isSessionLockedByProctor) return;
 
@@ -672,7 +694,7 @@ function OfficialExamChamberContent() {
             localStorage.removeItem("cbt_student_session");
             sessionStorage.clear();
             router.push("/");
-        }, 800);
+        }, 600);
     };
 
     const handleResumeExam = () => {
@@ -1080,8 +1102,8 @@ function OfficialExamChamberContent() {
                             onClick={enterExamChamber}
                             disabled={isLoading || Boolean(loadError) || isSessionLockedByProctor}
                             className={`w-full py-3.5 px-6 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer ${isLoading || loadError || isSessionLockedByProctor
-                                ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
-                                : "bg-[#1e3a8a] hover:bg-blue-900 text-white shadow-blue-900/25 active:scale-[0.99]"
+                                    ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
+                                    : "bg-[#1e3a8a] hover:bg-blue-900 text-white shadow-blue-900/25 active:scale-[0.99]"
                                 }`}
                         >
                             {isLoading ? (
@@ -1132,7 +1154,7 @@ function OfficialExamChamberContent() {
 
         const currentDateStr = new Date().toLocaleDateString("id-ID", {
             day: "numeric",
-            month: "numeric",
+            month: "long",
             year: "numeric"
         });
 
@@ -1187,10 +1209,10 @@ function OfficialExamChamberContent() {
                                                 </span>
                                                 <span
                                                     className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold ${isCorrect
-                                                        ? "bg-emerald-100 text-emerald-800"
-                                                        : isUnanswered
-                                                            ? "bg-slate-200 text-slate-700"
-                                                            : "bg-rose-100 text-rose-800"
+                                                            ? "bg-emerald-100 text-emerald-800"
+                                                            : isUnanswered
+                                                                ? "bg-slate-200 text-slate-700"
+                                                                : "bg-rose-100 text-rose-800"
                                                         }`}
                                                 >
                                                     {isCorrect ? "Benar (+)" : isUnanswered ? "Kosong (0)" : "Salah (X)"}
@@ -1215,18 +1237,18 @@ function OfficialExamChamberContent() {
                                                         <div
                                                             key={opt.id}
                                                             className={`p-2 rounded-xl border flex items-center gap-2 text-[11px] ${isKey
-                                                                ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
-                                                                : isSelected
-                                                                    ? "bg-rose-50 border-rose-300 font-medium text-rose-900"
-                                                                    : "bg-white border-slate-200 text-slate-700"
+                                                                    ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
+                                                                    : isSelected
+                                                                        ? "bg-rose-50 border-rose-300 font-medium text-rose-900"
+                                                                        : "bg-white border-slate-200 text-slate-700"
                                                                 }`}
                                                         >
                                                             <span
                                                                 className={`w-5 h-5 rounded-md flex items-center justify-center font-mono text-[10px] font-bold shrink-0 ${isKey
-                                                                    ? "bg-emerald-600 text-white"
-                                                                    : isSelected
-                                                                        ? "bg-rose-600 text-white"
-                                                                        : "bg-slate-100 text-slate-600"
+                                                                        ? "bg-emerald-600 text-white"
+                                                                        : isSelected
+                                                                            ? "bg-rose-600 text-white"
+                                                                            : "bg-slate-100 text-slate-600"
                                                                     }`}
                                                             >
                                                                 {opt.id}
@@ -1679,7 +1701,6 @@ function OfficialExamChamberContent() {
                         </div>
 
                         <div className="space-y-3 relative pt-3">
-                            {/* TARGET LINE 650 */}
                             <div className="absolute top-0 bottom-0 left-[65%] w-px border-l-2 border-dashed border-slate-400 z-10 pointer-events-none">
                                 <span className="absolute -top-3 -left-6 bg-slate-900 text-white font-mono text-[9px] font-black px-1.5 py-0.2 rounded">
                                     TARGET 650
@@ -1952,8 +1973,8 @@ function OfficialExamChamberContent() {
                                     key={opt.id}
                                     onClick={() => handleSelectOption(opt.id)}
                                     className={`w-full text-left p-3.5 rounded-2xl border flex items-center gap-3 transition-all cursor-pointer ${fontClasses.option} ${isSelected
-                                        ? "bg-blue-50 border-blue-700 text-blue-950 font-bold ring-2 ring-blue-700/20"
-                                        : "bg-white hover:bg-slate-50 border-slate-200 text-slate-800"
+                                            ? "bg-blue-50 border-blue-700 text-blue-950 font-bold ring-2 ring-blue-700/20"
+                                            : "bg-white hover:bg-slate-50 border-slate-200 text-slate-800"
                                         }`}
                                 >
                                     <span
@@ -1986,8 +2007,8 @@ function OfficialExamChamberContent() {
                         <button
                             onClick={handleToggleDoubtful}
                             className={`px-4 py-2.5 border rounded-xl text-xs font-bold transition-all cursor-pointer ${doubtfuls[currentQ?.id]
-                                ? "bg-amber-400 text-amber-950 border-amber-400"
-                                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                                    ? "bg-amber-400 text-amber-950 border-amber-400"
+                                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
                                 }`}
                         >
                             {doubtfuls[currentQ?.id] ? "Ragu-Ragu (Ditandai)" : "Ragu-Ragu"}
