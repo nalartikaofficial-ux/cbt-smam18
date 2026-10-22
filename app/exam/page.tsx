@@ -1701,6 +1701,7 @@ function OfficialExamChamberContent() {
                         </div>
 
                         <div className="space-y-3 relative pt-3">
+                            {/* TARGET LINE 650 */}
                             <div className="absolute top-0 bottom-0 left-[65%] w-px border-l-2 border-dashed border-slate-400 z-10 pointer-events-none">
                                 <span className="absolute -top-3 -left-6 bg-slate-900 text-white font-mono text-[9px] font-black px-1.5 py-0.2 rounded">
                                     TARGET 650
@@ -1785,16 +1786,37 @@ function OfficialExamChamberContent() {
                         </button>
                     </div>
 
-                    {/* 13. TANDA TANGAN RESMI KEPALA & PEMBINA KIR */}
+                    {/* 13. TANDA TANGAN RESMI KEPALA & PEMBINA KIR (BISA DIEDIT MANUAL SEBELUM CETAK) */}
                     <div className="pt-8 pb-4 grid grid-cols-2 gap-8 text-center text-xs font-serif text-slate-800">
                         <div className="space-y-16">
                             <div>
                                 <p className="text-[11px]">Mengetahui,</p>
-                                <p className="font-bold text-[11.5px]">Koordinator BK / Pembina KIR</p>
+                                <div
+                                    contentEditable
+                                    suppressContentEditableWarning
+                                    className="font-bold text-[11.5px] outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-600 px-1 transition-all inline-block"
+                                    title="Klik untuk mengubah jabatan penandatangan"
+                                >
+                                    Koordinator BK / Pembina KIR
+                                </div>
                             </div>
                             <div>
-                                <p className="font-bold underline text-[12px]">Fadhillah Umar, S.Pd.</p>
-                                <p className="text-[10px] font-mono text-slate-500">NIP: 121 2026 001</p>
+                                <div
+                                    contentEditable
+                                    suppressContentEditableWarning
+                                    className="font-bold underline text-[12px] outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-600 px-1 transition-all inline-block"
+                                    title="Klik untuk mengubah nama guru/pembina"
+                                >
+                                    Fadhillah Umar, S.Pd.
+                                </div>
+                                <div
+                                    contentEditable
+                                    suppressContentEditableWarning
+                                    className="text-[10px] font-mono text-slate-500 outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-600 px-1 transition-all block"
+                                    title="Klik untuk mengubah NIP/NBM"
+                                >
+                                    NIP: 121 2026 001
+                                </div>
                             </div>
                         </div>
 
@@ -1805,7 +1827,14 @@ function OfficialExamChamberContent() {
                             </div>
                             <div>
                                 <p className="font-bold underline text-[12px]">
-                                    ( {studentSession?.candidateName || "..............................."} )
+                                    ( <span
+                                        contentEditable
+                                        suppressContentEditableWarning
+                                        className="outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-600 px-1 transition-all inline-block"
+                                        title="Klik untuk mengubah nama siswa"
+                                    >
+                                        {studentSession?.candidateName || "..............................."}
+                                    </span> )
                                 </p>
                                 <p className="text-[10px] font-mono text-slate-500">
                                     NISN: {studentSession?.nisn || "-"}
@@ -1973,8 +2002,8 @@ function OfficialExamChamberContent() {
                                     key={opt.id}
                                     onClick={() => handleSelectOption(opt.id)}
                                     className={`w-full text-left p-3.5 rounded-2xl border flex items-center gap-3 transition-all cursor-pointer ${fontClasses.option} ${isSelected
-                                            ? "bg-blue-50 border-blue-700 text-blue-950 font-bold ring-2 ring-blue-700/20"
-                                            : "bg-white hover:bg-slate-50 border-slate-200 text-slate-800"
+                                        ? "bg-blue-50 border-blue-700 text-blue-950 font-bold ring-2 ring-blue-700/20"
+                                        : "bg-white hover:bg-slate-50 border-slate-200 text-slate-800"
                                         }`}
                                 >
                                     <span
@@ -2007,8 +2036,8 @@ function OfficialExamChamberContent() {
                         <button
                             onClick={handleToggleDoubtful}
                             className={`px-4 py-2.5 border rounded-xl text-xs font-bold transition-all cursor-pointer ${doubtfuls[currentQ?.id]
-                                    ? "bg-amber-400 text-amber-950 border-amber-400"
-                                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                                ? "bg-amber-400 text-amber-950 border-amber-400"
+                                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
                                 }`}
                         >
                             {doubtfuls[currentQ?.id] ? "Ragu-Ragu (Ditandai)" : "Ragu-Ragu"}
