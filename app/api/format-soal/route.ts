@@ -18,59 +18,75 @@ export async function POST(req: Request) {
         }
 
         const promptInstruksi = `
-Anda adalah sistem penata tipografi soal sains (Fisika, Matematika, Kimia) untuk aplikasi web berbasis KaTeX.
-Tugas: Ambil naskah mentah berikut, ubah seluruh rumus, variabel berindeks, satuan berpangkat, dan notasi ilmiah menjadi LaTeX yang diapit tanda dollar tunggal ($...$).
+Anda adalah asisten penata tipografi soal eksakta (Fisika, Matematika, Kimia) untuk web ujian CBT KaTeX.
+Tugas Anda: Format naskah mentah berikut agar seluruh notasi ilmiah, satuan berpangkat, variabel, dan rumus diapit tanda dollar tunggal ($...$).
 
-ATURAN KETAT:
-1. Pangkat & notasi ilmiah: 10⁻⁶ W/m² diubah menjadi $10^{-6}\\text{ W/m}^2$, 10⁻¹² W/m² diubah menjadi $10^{-12}\\text{ W/m}^2$.
-2. Variabel & indeks: I₀ diubah menjadi $I_0$, v₀ diubah menjadi $v_0$, θ = 60° diubah menjadi $\\theta = 60^\\circ$.
-3. Teks biasa dan kalimat narasi jangan diberi tanda dollar ($). Hanya rumus dan satuannya saja.
-4. Opsi A-E dan kunci jawaban wajib dipertahankan urutan dan barisnya.
-5. PENTING: DILARANG menggunakan pembungkus markdown seperti \`\`\` atau \`\`\`markdown. Berikan HANYA teks murni yang sudah rapi.
+ATURAN WAJIB:
+1. Pangkat & notasi ilmiah:
+   - 10⁻⁶ W/m² atau 10^-6 W/m² diubah menjadi $10^{-6}\\text{ W/m}^2$
+   - 10⁻¹² W/m² diubah menjadi $10^{-12}\\text{ W/m}^2$
+2. Satuan & Simbol:
+   - m/s² diubah menjadi $\\text{m/s}^2$
+   - I₀ atau I_0 diubah menjadi $I_0$
+   - v₀ diubah menjadi $v_0$
+   - θ = 60° diubah menjadi $\\theta = 60^\\circ$
+3. OPSI & KUNCI:
+   - Jika opsi memuat satuan/rumus, apit dengan $: misal A. $40\\text{ dB}$ atau A. 40 dB jika angka biasa.
+   - Pertahankan urutan naskah, baris opsi A, B, C, D, E, dan Kunci.
+4. Jangan gunakan pembungkus markdown block (\`\`\`). Berikan HANYA teks bersih siap pakai.
 
 Naskah mentah:
 ${text}
 `;
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        // Daftar model resmi Google yang didukung
+        const candidateModels = [
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+            "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent",
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent"
+        ];
 
-        const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: promptInstruksi }] }],
-                generationConfig: {
-                    temperature: 0.1
+        let resultText = "";
+        let lastErrorMsg = "";
+
+        for (const baseUrl of candidateModels) {
+            try {
+                const res = await fetch(`${baseUrl}?key=${apiKey}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptInstruksi }] }],
+                        generationConfig: { temperature: 0.1 }
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok && data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    resultText = data.candidates[0].content.parts[0].text;
+                    break; // Berhasil, keluar dari loop
+                } else if (data.error) {
+                    lastErrorMsg = data.error.message;
                 }
-            })
-        });
+            } catch (e: any) {
+                lastErrorMsg = e.message;
+            }
+        }
 
-        const data = await response.json();
-
-        // Jika Google API mengembalikan pesan error (kuota, model, atau auth)
-        if (!response.ok || data.error) {
-            console.error("Gemini API Error:", data.error);
+        if (!resultText) {
             return NextResponse.json(
-                { error: data.error?.message || `HTTP ${response.status}: Gagal memanggil Gemini API` },
-                { status: response.status || 500 }
+                { error: lastErrorMsg || "Model AI sedang tidak dapat dijangkau." },
+                { status: 500 }
             );
         }
 
-        let rawOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-        // Bersihkan jika Gemini menyisipkan markdown block (```...```)
-        rawOutput = rawOutput
+        // Bersihkan jika AI masih menyisipkan tag codeblock ```
+        resultText = resultText
             .replace(/^```[a-zA-Z]*\n?/gm, "")
             .replace(/```$/gm, "")
             .trim();
 
-        if (!rawOutput) {
-            return NextResponse.json({ error: "AI tidak menghasilkan keluaran teks." }, { status: 500 });
-        }
-
-        return NextResponse.json({ result: rawOutput });
+        return NextResponse.json({ result: resultText });
     } catch (err: any) {
-        console.error("Server Error:", err);
         return NextResponse.json({ error: err?.message || "Kesalahan internal server." }, { status: 500 });
     }
 }
