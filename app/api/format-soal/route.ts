@@ -17,26 +17,25 @@ export async function POST(req: Request) {
         }
 
         const systemPrompt = `
-Anda adalah asisten pakar kurikulum dan tipografi soal eksakta (Fisika, Matematika, Kimia).
-Tugas Anda adalah merapikan naskah soal mentah hasil copy-paste Word agar siap diproses sistem CBT KaTeX.
+Anda adalah pakar tipografi soal eksakta (Fisika, Matematika, Kimia) untuk sistem CBT KaTeX.
+Tugas Anda adalah merapikan naskah soal mentah hasil copy-paste Word.
 
-Aturan Wajib:
-1. Setiap rumus, angka eksponen, variabel, dan satuan fisika WAJIB dibungkus tanda dolar tunggal ($...$).
-   Contoh salah: $10^-6$ W/m^2 atau $10^{-6}$ W/m^{2}
-   Contoh benar: $10^{-6}\\text{ W/m}^2$
-2. Variabel berindeks wajib format subscript: $I_0$, $v_0$, $a_t$.
-3. Huruf Yunani wajib format LaTeX: $\\theta$, $\\alpha$, $\\lambda$, $\\mu$, $\\pi$, $\\omega$.
-4. Pecahan matematika wajib format LaTeX: $\\frac{a}{b}$.
-5. Pastikan struktur naskah tetap memiliki penomoran rapi:
-   [Nomor]. [Pertanyaan lengkap dengan rumus $...$]
-   A. [Teks/rumus opsi A]
-   B. [Teks/rumus opsi B]
-   C. [Teks/rumus opsi C]
-   D. [Teks/rumus opsi D]
-   E. [Teks/rumus opsi E]
+ATURAN WAJIB FORMAT:
+1. SEMUA ekspresi matematika, rumus, angka ber-satuan, variabel, dan eksponen di bagian WACANA, PERTANYAAN, DAN SELURUH OPSI A-E WAJIB DIAPIT TANDA DOLLAR TUNGGAL ($...$).
+   - CONTOH SALAH PADA OPSI: A. 2.5 \\text{m/s}^{2}
+   - CONTOH BENAR PADA OPSI: A. $2.5\\text{ m/s}^2$
+   - CONTOH LAIN: $10^{-6}\\text{ W/m}^2$, $10^{-12}\\text{ W/m}^2$, $I_0$, $\\theta = 60^\\circ$, $m = 2\\text{ kg}$, $F = 10\\text{ N}$.
+2. Jangan pernah menyisakan sintaks LaTeX seperti \\text{}, \\frac{}, \\sqrt{}, atau simbol ^ di luar tanda dollar ($).
+3. Struktur naskah WAJIB presisi per baris:
+   [Nomor]. Wacana: [Isi wacana jika ada, atau lewati jika tidak ada]
+   [Teks pertanyaan dengan rumus berapit $]
+   A. [Isi opsi A berapit $]
+   B. [Isi opsi B berapit $]
+   C. [Isi opsi C berapit $]
+   D. [Isi opsi D berapit $]
+   E. [Isi opsi E berapit $]
    Kunci: [A/B/C/D/E]
-   (Jika ada wacana/stimulus, awali dengan "Wacana: ...", jika ada link gambar, awali dengan "Gambar: ...")
-6. HANYA keluarkan hasil teks soal yang sudah dirapikan, TANPA kata pengantar, TANPA markdown code block (\`\`\`).
+4. Jangan tambahkan kata pembuka/penutup dan jangan gunakan markdown code block (\`\`\`). Cukup keluarkan teks rapi hasil format.
 `;
 
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
@@ -49,7 +48,7 @@ Aturan Wajib:
                     {
                         parts: [
                             { text: systemPrompt },
-                            { text: `Naskah mentah:\n${text}` }
+                            { text: `Naskah mentah yang harus diformat:\n${text}` }
                         ]
                     }
                 ],
