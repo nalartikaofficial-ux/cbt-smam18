@@ -38,23 +38,32 @@ export const MathRenderer = ({ content }: { content: any }) => {
     const textContent = String(content);
     if (!textContent.trim()) return null;
 
-    const parts = textContent.split(/(\$[^$]+\$)/g);
+    const parts = textContent.split(/(\$\$[\s\S]*?\$\$|\$[^\$]+?\$)/g);
 
     return (
         <span>
             {parts.map((part, idx) => {
-                if (part.startsWith("$") && part.endsWith("$")) {
+                if (part.startsWith("$$") && part.endsWith("$$")) {
+                    const formula = part.slice(2, -2);
+                    if (typeof window !== "undefined" && (window as any).katex) {
+                        try {
+                            const html = (window as any).katex.renderToString(formula, { displayMode: true, throwOnError: false });
+                            return <span key={idx} className="block my-1 overflow-x-auto" dangerouslySetInnerHTML={{ __html: html }} />;
+                        } catch { }
+                    }
+                    return <span key={idx} className="font-mono text-blue-900 font-bold">{formula}</span>;
+                } else if (part.startsWith("$") && part.endsWith("$")) {
                     const formula = part.slice(1, -1);
                     if (typeof window !== "undefined" && (window as any).katex) {
                         try {
-                            const html = (window as any).katex.renderToString(formula, { throwOnError: false });
-                            return <span key={idx} dangerouslySetInnerHTML={{ __html: html }} />;
+                            const html = (window as any).katex.renderToString(formula, { displayMode: false, throwOnError: false });
+                            return <span key={idx} className="inline-block px-0.5" dangerouslySetInnerHTML={{ __html: html }} />;
                         } catch { }
                     }
                     return (
                         <span
                             key={idx}
-                            className="inline-block px-1.5 py-0.5 mx-0.5 rounded bg-blue-50 border border-blue-200 font-mono text-blue-900 font-semibold text-[11px]"
+                            className="inline-block px-1 py-0.2 mx-0.5 rounded bg-blue-50 border border-blue-200 font-mono text-blue-900 font-semibold text-[11px]"
                         >
                             {formula}
                         </span>
@@ -159,7 +168,7 @@ export default function AdminBankSoalPage() {
                 router.replace("/admin");
             }
         }
-    }, []);
+    }, [router]);
 
     const [selectedPaket, setSelectedPaket] = useState<"PAKET_1" | "PAKET_2" | "PAKET_3">("PAKET_1");
     const [inputMode, setInputMode] = useState<"list" | "text_parse" | "csv" | "manual">("list");
@@ -168,7 +177,7 @@ export default function AdminBankSoalPage() {
     const [isLoadingServerQuestions, setIsLoadingServerQuestions] = useState(false);
     const [filterSubtestView, setFilterSubtestView] = useState("ALL");
 
-    // STATE ALOKASI WAKTU PER SUBTES (MENDUKUNG DESIMAL/KOMA)
+    // STATE ALOKASI WAKTU PER SUBTES
     const [subtestsConfig, setSubtestsConfig] = useState<SubtestDurationItem[]>([
         { code: "PU", name: "Penalaran Umum (PU)", defaultDurationMinutes: 30 },
         { code: "PPU", name: "Pengetahuan & Pemahaman", defaultDurationMinutes: 15 },
@@ -213,31 +222,34 @@ export default function AdminBankSoalPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-    // FUNGSI SMART AUTO-FORMAT WORD KE LATEX
-    const handleAutoFormatWordToLatex = () => {
-        if (!rawText.trim()) return;
-        let formatted = rawText;
+    // ========================================================
+    // ALGORITMA PINTAR: CONVERTER TEKS EKSAKTA WORD KE LATEX
+    // ========================================================
+    const autoCleanMathString = (str: string): string => {
+        if (!str) return "";
+        let res = str;
 
-        // 1. Konversi pangkat superscript Word (², ³, ⁴, dst) ke format LaTeX ^2, ^3, dll
-        const superscriptMap: Record<string, string> = {
+        // 1. Pangkat Unicode ke LaTeX
+        const supMap: Record<string, string> = {
             '⁰': '^0', '¹': '^1', '²': '^2', '³': '^3', '⁴': '^4',
-            '⁵': '^5', '⁶': '^6', '⁷': '^7', '⁸': '^8', '⁹': '^9', 'ⁿ': '^n', '⁺': '^+', '⁻': '^-'
+            '⁵': '^5', '⁶': '^6', '⁷': '^7', '⁸': '^8', '⁹': '^9',
+            'ⁿ': '^n', '⁺': '^+', '⁻': '^-'
         };
-        Object.keys(superscriptMap).forEach(sup => {
-            formatted = formatted.split(sup).join(superscriptMap[sup]);
+        Object.keys(supMap).forEach((k) => {
+            res = res.split(k).join(supMap[k]);
         });
 
-        // 2. Konversi subscript umum (₀, ₁, ₂, dll) jika ada
-        const subscriptMap: Record<string, string> = {
+        // 2. Subscript Unicode ke LaTeX
+        const subMap: Record<string, string> = {
             '₀': '_0', '₁': '_1', '₂': '_2', '₃': '_3', '₄': '_4',
             '₅': '_5', '₆': '_6', '₇': '_7', '₈': '_8', '₉': '_9', 'ₙ': '_n'
         };
-        Object.keys(subscriptMap).forEach(sub => {
-            formatted = formatted.split(sub).join(subscriptMap[sub]);
+        Object.keys(subMap).forEach((k) => {
+            res = res.split(k).join(subMap[k]);
         });
 
-        // 3. Konversi simbol matematika & fisika umum
-        formatted = formatted
+        // 3. Simbol Matematika Umum
+        res = res
             .replace(/×/g, " \\times ")
             .replace(/÷/g, " \\div ")
             .replace(/±/g, " \\pm ")
@@ -248,26 +260,64 @@ export default function AdminBankSoalPage() {
             .replace(/≈/g, " \\approx ")
             .replace(/°/g, "^\\circ ");
 
-        // 4. Konversi huruf Yunani (Greek Letters) di luar tanda $...$
+        // 4. Huruf Yunani (Greek Letters)
         const greekMap: Record<string, string> = {
             'α': '\\alpha', 'β': '\\beta', 'γ': '\\gamma', 'δ': '\\delta',
             'ε': '\\varepsilon', 'θ': '\\theta', 'λ': '\\lambda', 'μ': '\\mu',
             'π': '\\pi', 'ρ': '\\rho', 'σ': '\\sigma', 'τ': '\\tau',
             'ω': '\\omega', 'Δ': '\\Delta', 'Σ': '\\Sigma', 'Ω': '\\Omega'
         };
-        Object.keys(greekMap).forEach(char => {
-            const regex = new RegExp(`(?<!\\$)(?:\\\\)?(${char})(?!\\$)`, 'g');
-            formatted = formatted.replace(regex, `$${greekMap[char]}$`);
+        Object.keys(greekMap).forEach((char) => {
+            res = res.split(char).join(greekMap[char]);
         });
 
-        // 5. Konversi akar kuadrat simbol √x atau √(x)
-        formatted = formatted.replace(/√([0-9a-zA-Z]+)/g, "$\\sqrt{$1}$");
-        formatted = formatted.replace(/√\(([^)]+)\)/g, "$\\sqrt{$1}$");
+        // 5. Akar (√x atau √(x))
+        res = res.replace(/√\(([^)]+)\)/g, "\\sqrt{$1}");
+        res = res.replace(/√([0-9a-zA-Z]+)/g, "\\sqrt{$1}");
 
-        setRawText(formatted);
+        // 6. Rapikan spasi
+        return res.replace(/\s+/g, " ").trim();
+    };
+
+    const handleAutoFormatWordToLatex = () => {
+        if (!rawText.trim()) return;
+
+        const lines = rawText.split("\n");
+        const convertedLines = lines.map((line) => {
+            let processed = line;
+
+            // Jika baris adalah metadata/gambar/kunci, jangan ubah
+            if (/^(Wacana:|Gambar:|Posisi:|Kunci:)/i.test(processed.trim())) {
+                return processed;
+            }
+
+            // Normalisasi simbol di seluruh baris
+            processed = autoCleanMathString(processed);
+
+            // Deteksi ekspresi berpangkat atau simbol LaTeX di luar $...$
+            // Bungkus otomatis jika menemukan format seperti x^2, \alpha, \times, \sqrt, dll
+            const mathTokenRegex = /(\b[a-zA-Z0-9_]+\^[a-zA-Z0-9_+\-]+|\\[a-zA-Z]+(?:\{[^}]*\})*|[a-zA-Z]\s*=\s*[-+]?[0-9a-zA-Z]+|\b\d+\s*\/\s*\d+\b)/g;
+
+            // Ganti token jika belum berada di dalam $...$
+            const parts = processed.split(/(\$[^\$]+?\$)/g);
+            const wrappedParts = parts.map((part) => {
+                if (part.startsWith("$") && part.endsWith("$")) {
+                    return part; // Sudah di dalam latex, biarkan
+                }
+                return part.replace(mathTokenRegex, (match) => {
+                    // Hindari membungkus kata biasa
+                    if (/^(dan|atau|jika|maka|saat|pada|yang|adalah)$/i.test(match.trim())) return match;
+                    return `$${match.trim()}$`;
+                });
+            });
+
+            return wrappedParts.join("");
+        });
+
+        setRawText(convertedLines.join("\n"));
         setStatusMsg({
             type: "success",
-            text: "Berhasil mengonversi simbol Word (pangkat, akar, simbol sains) ke format LaTeX ($...$) secara otomatis!"
+            text: "Berhasil! Simbol pangkat, akar, perkalian, dan huruf Yunani telah dibersihkan & dikonversi ke format KaTeX."
         });
     };
 
@@ -371,70 +421,85 @@ export default function AdminBankSoalPage() {
     };
 
     const extractOptionAndImg = (rawOptionText: string) => {
-        let text = String(rawOptionText || "");
+        let text = String(rawOptionText || "").trim();
         let img = "";
         const match = text.match(/\[img:\s*([^\]]+)\]/i);
         if (match) {
             img = convertToDirectImageUrl(match[1]);
             text = text.replace(match[0], "").trim();
-        } else if (/^https?:\/\//i.test(text.trim()) || text.trim().startsWith("data:image/")) {
-            img = convertToDirectImageUrl(text.trim());
+        } else if (/^https?:\/\//i.test(text) || text.startsWith("data:image/")) {
+            img = convertToDirectImageUrl(text);
             text = "";
         }
         return { text, img };
     };
 
+    // ========================================================
+    // PARSER SMART PASTE: MAMPU MEMBEDAH SOAL & OPSI LINEAR
+    // ========================================================
     const handleParseRawText = () => {
         if (!rawText.trim()) return;
 
         try {
-            const blocks = rawText.split(/\n(?=\d+[\.\)])/).filter((b) => b.trim() !== "");
+            // Normalisasi pemisah baris & pecah blok berdasarkan pola awal angka (mis: 1. atau 1))
+            const cleanSource = rawText.replace(/\r\n/g, "\n");
+            const blocks = cleanSource.split(/\n(?=\s*\d+[\.\)])/).filter((b) => b.trim() !== "");
             const parsed: ParsedQuestion[] = [];
 
             blocks.forEach((block, idx) => {
-                const lines = block
-                    .split("\n")
-                    .map((l) => l.trim())
-                    .filter(Boolean);
+                const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
 
-                let questionText = "";
+                let questionLines: string[] = [];
                 let a = "", b = "", c = "", d = "", e = "";
                 let aImg = "", bImg = "", cImg = "", dImg = "", eImg = "";
                 let kunciJawaban = "A", stimulusText = "", imgUrl = "";
                 let imgPos: "above" | "below" = "below";
 
-                lines.forEach((line, lineIdx) => {
-                    if (lineIdx === 0) {
-                        questionText = line.replace(/^\d+[\.\)]\s*/, "");
+                lines.forEach((line) => {
+                    if (/^Wacana:\s*/i.test(line)) {
+                        stimulusText = line.replace(/^Wacana:\s*/i, "").trim();
                     } else if (/^Gambar:\s*/i.test(line)) {
                         imgUrl = convertToDirectImageUrl(line.replace(/^Gambar:\s*/i, "").trim());
                     } else if (/^Posisi:\s*(atas|above)/i.test(line)) {
                         imgPos = "above";
                     } else if (/^Posisi:\s*(bawah|below)/i.test(line)) {
                         imgPos = "below";
-                    } else if (/^Wacana:\s*/i.test(line)) {
-                        stimulusText = line.replace(/^Wacana:\s*/i, "").trim();
-                    } else if (/^A[\.\)]/i.test(line)) {
-                        const opt = extractOptionAndImg(line.replace(/^[A-E][\.\)]\s*/i, ""));
-                        a = opt.text; aImg = opt.img;
-                    } else if (/^B[\.\)]/i.test(line)) {
-                        const opt = extractOptionAndImg(line.replace(/^[A-E][\.\)]\s*/i, ""));
-                        b = opt.text; bImg = opt.img;
-                    } else if (/^C[\.\)]/i.test(line)) {
-                        const opt = extractOptionAndImg(line.replace(/^[A-E][\.\)]\s*/i, ""));
-                        c = opt.text; cImg = opt.img;
-                    } else if (/^D[\.\)]/i.test(line)) {
-                        const opt = extractOptionAndImg(line.replace(/^[A-E][\.\)]\s*/i, ""));
-                        d = opt.text; dImg = opt.img;
-                    } else if (/^E[\.\)]/i.test(line)) {
-                        const opt = extractOptionAndImg(line.replace(/^[A-E][\.\)]\s*/i, ""));
-                        e = opt.text; eImg = opt.img;
                     } else if (/^Kunci:\s*/i.test(line)) {
-                        kunciJawaban = line.replace(/^Kunci:\s*/i, "").trim().toUpperCase();
+                        kunciJawaban = line.replace(/^Kunci:\s*/i, "").trim().toUpperCase().charAt(0);
+                    } else if (/^[A-E][\.\)]/i.test(line)) {
+                        // Cek jika opsi ditulis dalam satu baris (mis: A. 10 B. 20 C. 30 ...)
+                        const optMatch = line.match(/([A-E])[\.\)]\s*(.*?)(?=(?:[A-E][\.\)]|$))/gi);
+                        if (optMatch && optMatch.length > 1) {
+                            optMatch.forEach((m) => {
+                                const tag = m.charAt(0).toUpperCase();
+                                const val = m.replace(/^[A-E][\.\)]\s*/i, "").trim();
+                                const optParsed = extractOptionAndImg(val);
+                                if (tag === "A") { a = optParsed.text; aImg = optParsed.img; }
+                                if (tag === "B") { b = optParsed.text; bImg = optParsed.img; }
+                                if (tag === "C") { c = optParsed.text; cImg = optParsed.img; }
+                                if (tag === "D") { d = optParsed.text; dImg = optParsed.img; }
+                                if (tag === "E") { e = optParsed.text; eImg = optParsed.img; }
+                            });
+                        } else {
+                            const tag = line.charAt(0).toUpperCase();
+                            const val = line.replace(/^[A-E][\.\)]\s*/i, "").trim();
+                            const optParsed = extractOptionAndImg(val);
+                            if (tag === "A") { a = optParsed.text; aImg = optParsed.img; }
+                            if (tag === "B") { b = optParsed.text; bImg = optParsed.img; }
+                            if (tag === "C") { c = optParsed.text; cImg = optParsed.img; }
+                            if (tag === "D") { d = optParsed.text; dImg = optParsed.img; }
+                            if (tag === "E") { e = optParsed.text; eImg = optParsed.img; }
+                        }
                     } else {
-                        if (!a) questionText += " " + line;
+                        // Teks pertanyaan utama (hapus nomor soal depan jika baris pertama)
+                        const cleanedLine = line.replace(/^\d+[\.\)]\s*/, "").trim();
+                        if (cleanedLine && !a) {
+                            questionLines.push(cleanedLine);
+                        }
                     }
                 });
+
+                const finalPertanyaan = questionLines.join(" ");
 
                 parsed.push({
                     subtes_code: selectedSubtest,
@@ -442,7 +507,7 @@ export default function AdminBankSoalPage() {
                     stimulus: stimulusText,
                     image_url: imgUrl,
                     image_position: imgPos,
-                    pertanyaan: questionText,
+                    pertanyaan: finalPertanyaan,
                     opsi_a: a, opsi_b: b, opsi_c: c, opsi_d: d, opsi_e: e,
                     opsi_a_img: aImg, opsi_b_img: bImg, opsi_c_img: cImg, opsi_d_img: dImg, opsi_e_img: eImg,
                     kunci: kunciJawaban || "A",
@@ -455,12 +520,12 @@ export default function AdminBankSoalPage() {
             setBatchQuestions(parsed);
             setStatusMsg({
                 type: "success",
-                text: `Berhasil mengekstrak ${parsed.length} butir soal siap disimpan ke ${selectedPaket}!`
+                text: `Sempurna! Berhasil membedah ${parsed.length} butir soal eksakta siap simpan.`
             });
         } catch {
             setStatusMsg({
                 type: "error",
-                text: "Format teks tidak dikenali. Pastikan ada penomoran teratur (1., A., B., Kunci: A)."
+                text: "Format teks belum rapi. Pastikan naskah diawali angka 1. lalu opsi A. B. C. D. E. dan Kunci: X."
             });
         }
     };
@@ -660,8 +725,8 @@ export default function AdminBankSoalPage() {
                                 type="button"
                                 onClick={() => setSelectedPaket(pkt)}
                                 className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${selectedPaket === pkt
-                                        ? "bg-[#1e3a8a] text-white shadow-xs"
-                                        : "text-slate-600 hover:text-slate-900"
+                                    ? "bg-[#1e3a8a] text-white shadow-xs"
+                                    : "text-slate-600 hover:text-slate-900"
                                     }`}
                             >
                                 {pkt.replace("_", " ")}
@@ -863,8 +928,8 @@ export default function AdminBankSoalPage() {
                 {statusMsg && (
                     <div
                         className={`p-4 rounded-2xl border text-xs flex items-center gap-2.5 animate-in fade-in duration-200 ${statusMsg.type === "success"
-                                ? "bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold"
-                                : "bg-rose-50 border-rose-300 text-rose-900 font-semibold"
+                            ? "bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold"
+                            : "bg-rose-50 border-rose-300 text-rose-900 font-semibold"
                             }`}
                     >
                         {statusMsg.type === "success" ? (
@@ -977,8 +1042,8 @@ export default function AdminBankSoalPage() {
                                                 <div
                                                     key={opt.label}
                                                     className={`p-2 rounded-xl border text-xs flex items-center gap-2 ${String(q.kunci).trim().toUpperCase() === opt.label
-                                                            ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
-                                                            : "bg-white border-slate-200 text-slate-700"
+                                                        ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
+                                                        : "bg-white border-slate-200 text-slate-700"
                                                         }`}
                                                 >
                                                     <span className="font-mono font-bold">{opt.label}.</span>
@@ -1002,15 +1067,15 @@ export default function AdminBankSoalPage() {
                                     Smart Text Parser &bull; Ekstraksi Naskah Soal &amp; KaTeX
                                 </h2>
                                 <p className="text-xs text-slate-500">
-                                    Tempelkan naskah soal mentah. Gunakan tanda <code className="bg-slate-100 px-1 py-0.5 rounded font-mono font-bold text-blue-700">$...$</code> untuk rumus matematika/fisika.
+                                    Tempelkan naskah soal langsung dari Word. Klik tombol Auto-Format untuk membersihkan simbol sebelum dibedah.
                                 </p>
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
                                     type="button"
                                     onClick={handleAutoFormatWordToLatex}
-                                    className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-all shrink-0"
-                                    title="Otomatis ubah pangkat (², ³), akar (√), simbol sains & Yunani dari Word ke LaTeX ($...$)"
+                                    className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-all shrink-0"
+                                    title="Otomatis bersihkan pangkat, akar, perkalian, & huruf Yunani dari Word"
                                 >
                                     <Sparkles className="w-3.5 h-3.5" />
                                     <span>✨ Auto-Format Simbol Word ke LaTeX</span>
@@ -1024,19 +1089,18 @@ export default function AdminBankSoalPage() {
                         <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1.5">
                             <div className="font-bold flex items-center gap-1.5 text-amber-800">
                                 <HelpCircle className="w-4 h-4" />
-                                <span>Pola Format Teks yang Otomatis Dipisahkan:</span>
+                                <span>Contoh Format Bebas yang Otomatis Dikenali:</span>
                             </div>
                             <pre className="font-mono text-[11px] bg-white/90 p-3 rounded-xl border border-amber-200 text-slate-700 leading-relaxed overflow-x-auto">
-                                {`1. Wacana: Sebuah partikel bergerak dengan kecepatan $v(t) = 3t^2 + 4t$.
+                                {`1. Wacana: Sebuah balok bermassa m = 2 kg ditarik dengan gaya F = 10 N membentuk sudut θ = 60°.
 Gambar: https://drive.google.com/file/d/...
-Posisi: Atas
-Berapakah percepatan partikel saat $t = 2\\text{ s}$?
-A. $12\\text{ m/s}^2$
-B. $16\\text{ m/s}^2$
-C. $20\\text{ m/s}^2$
-D. $24\\text{ m/s}^2$
-E. $28\\text{ m/s}^2$
-Kunci: B`}
+Berapakah percepatan benda jika bidang licin?
+A. 2.5 m/s²
+B. 5 m/s²
+C. 7.5 m/s²
+D. 10 m/s²
+E. 12.5 m/s²
+Kunci: A`}
                             </pre>
                         </div>
 
@@ -1061,7 +1125,7 @@ Kunci: B`}
                             rows={8}
                             value={rawText}
                             onChange={(e) => setRawText(e.target.value)}
-                            placeholder="Tempelkan naskah soal Anda di sini (Nomor 1, 2, 3 dst)..."
+                            placeholder="Tempelkan naskah soal Word Anda di sini (Nomor 1, 2, 3 dst)..."
                             className="w-full px-4 py-3 rounded-2xl border border-slate-200 text-xs font-mono leading-relaxed focus:border-blue-600 outline-none"
                         />
 
@@ -1155,8 +1219,8 @@ Kunci: B`}
                                                     <div
                                                         key={opt.label}
                                                         className={`p-2 rounded-xl border text-xs flex items-center gap-2 ${q.kunci === opt.label
-                                                                ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
-                                                                : "bg-white border-slate-200 text-slate-700"
+                                                            ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
+                                                            : "bg-white border-slate-200 text-slate-700"
                                                             }`}
                                                     >
                                                         <span className="font-mono font-bold">{opt.label}.</span>
@@ -1521,8 +1585,8 @@ Kunci: B`}
                                         <div
                                             key={opt.label}
                                             className={`p-2 rounded-xl border text-xs flex items-center justify-between gap-2 ${String(kunci).trim().toUpperCase() === opt.label
-                                                    ? "bg-emerald-50 border-emerald-400 font-semibold text-emerald-950"
-                                                    : "bg-white border-slate-200 text-slate-700"
+                                                ? "bg-emerald-50 border-emerald-400 font-semibold text-emerald-950"
+                                                : "bg-white border-slate-200 text-slate-700"
                                                 }`}
                                         >
                                             <div className="flex items-center gap-2">
