@@ -407,70 +407,10 @@ export default function AdminBankSoalPage() {
 
         try {
             const cleanSource = rawText.replace(/\r\n/g, "\n");
-            // Deteksi pemisahan butir: bisa diawali angka (1.) atau blok paragraf baru
             let blocks = cleanSource.split(/\n(?=\s*\d+[\.\)])/).filter((b) => b.trim() !== "");
             if (blocks.length === 0 || (blocks.length === 1 && !/^\s*\d+[\.\)]/.test(blocks[0]))) {
                 blocks = [cleanSource.trim()];
             }
-
-            // PEMBERSIH FORMULA FISIKA & MATEMATIKA OTOMATIS
-            const cleanMathNotations = (str: string): string => {
-                if (!str) return "";
-                let res = str;
-
-                // 1. Tangani eksponen notasi ilmiah: 10⁻⁶, 10⁻¹², 10⁶, dll
-                const supMap: Record<string, string> = {
-                    '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
-                    '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
-                    '⁻': '-', '⁺': '+', '–': '-', '—': '-'
-                };
-
-                // Pola 10 pangkat negatif/positif superskrip
-                res = res.replace(/10([⁻–\-⁺]?)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_, sign, exp) => {
-                    const cleanSign = (sign === "⁻" || sign === "–" || sign === "—" || sign === "-") ? "-" : "";
-                    const cleanExp = exp.split("").map((c: string) => supMap[c] || c).join("");
-                    return `$10^{${cleanSign}${cleanExp}}$`;
-                });
-
-                // 2. Satuan fisika umum (W/m², m/s², kg/m³, dll)
-                res = res.replace(/W\/?m[²2]/gi, "\\text{W/m}^2");
-                res = res.replace(/m\/?s[²2]/gi, "\\text{m/s}^2");
-                res = res.replace(/m\/?s(?![a-zA-Z])/gi, "\\text{m/s}");
-
-                // 3. Subskrip fisika (I₀, v₀, a_t, dll)
-                res = res.replace(/([IivFa-zA-Z])([₀₁₂₃₄₅₆₇₈₉])/g, (_, letter, sub) => {
-                    const subMap: Record<string, string> = {
-                        '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4',
-                        '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9'
-                    };
-                    return `$${letter}_${subMap[sub] || sub}$`;
-                });
-                res = res.replace(/\b([IivFa-zA-Z])_([0-9a-zA-Z]+)\b/g, "$$1_{$2}$");
-
-                // 4. Hubungkan bilangan eksponen dan satuan jika berdampingan: $10^{-6}$ \text{W/m}^2 -> $10^{-6}\text{ W/m}^2$
-                res = res.replace(/\$10\^\{([^\}]+)\}\$\s*\\text\{([^\}]+)\}/g, "$10^{$1}\\text{ $2}$");
-
-                // 5. Bungkus sisa sintaks LaTeX yang belum terbungkus $
-                res = res.replace(/(?<!\$)\\text\{[^\}]+\}(?!\$)/g, (m) => `$${m}$`);
-
-                // 6. Rapikan tanda dollar ganda yang berdekatan ($A$ $B$)
-                res = res.replace(/\$\s*\$/g, " ");
-
-                return res;
-            };
-
-            const ensureLatexWrapped = (str: string) => {
-                let val = str.trim();
-                if (!val) return "";
-                val = cleanMathNotations(val);
-                if (val.startsWith("$") && val.endsWith("$")) return val;
-
-                if (/(\\[a-zA-Z]+|\^|_|\b\d+\/\d+\b)/.test(val)) {
-                    const clean = val.replace(/\$/g, "").trim();
-                    return `$${clean}$`;
-                }
-                return val;
-            };
 
             const parsed: ParsedQuestion[] = [];
 
@@ -485,7 +425,7 @@ export default function AdminBankSoalPage() {
 
                 lines.forEach((line) => {
                     if (/^Wacana:\s*/i.test(line)) {
-                        stimulusText = cleanMathNotations(line.replace(/^Wacana:\s*/i, "").trim());
+                        stimulusText = line.replace(/^Wacana:\s*/i, "").trim();
                     } else if (/^Gambar:\s*/i.test(line)) {
                         imgUrl = convertToDirectImageUrl(line.replace(/^Gambar:\s*/i, "").trim());
                     } else if (/^Posisi:\s*(atas|above)/i.test(line)) {
@@ -501,28 +441,26 @@ export default function AdminBankSoalPage() {
                                 const tag = m.charAt(0).toUpperCase();
                                 const val = m.replace(/^[A-E][\.\)]\s*/i, "").trim();
                                 const optParsed = extractOptionAndImg(val);
-                                const wrappedText = ensureLatexWrapped(optParsed.text);
-                                if (tag === "A") { a = wrappedText; aImg = optParsed.img; }
-                                if (tag === "B") { b = wrappedText; bImg = optParsed.img; }
-                                if (tag === "C") { c = wrappedText; cImg = optParsed.img; }
-                                if (tag === "D") { d = wrappedText; dImg = optParsed.img; }
-                                if (tag === "E") { e = wrappedText; eImg = optParsed.img; }
+                                if (tag === "A") { a = optParsed.text; aImg = optParsed.img; }
+                                if (tag === "B") { b = optParsed.text; bImg = optParsed.img; }
+                                if (tag === "C") { c = optParsed.text; cImg = optParsed.img; }
+                                if (tag === "D") { d = optParsed.text; dImg = optParsed.img; }
+                                if (tag === "E") { e = optParsed.text; eImg = optParsed.img; }
                             });
                         } else {
                             const tag = line.charAt(0).toUpperCase();
                             const val = line.replace(/^[A-E][\.\)]\s*/i, "").trim();
                             const optParsed = extractOptionAndImg(val);
-                            const wrappedText = ensureLatexWrapped(optParsed.text);
-                            if (tag === "A") { a = wrappedText; aImg = optParsed.img; }
-                            if (tag === "B") { b = wrappedText; bImg = optParsed.img; }
-                            if (tag === "C") { c = wrappedText; cImg = optParsed.img; }
-                            if (tag === "D") { d = wrappedText; dImg = optParsed.img; }
-                            if (tag === "E") { e = wrappedText; eImg = optParsed.img; }
+                            if (tag === "A") { a = optParsed.text; aImg = optParsed.img; }
+                            if (tag === "B") { b = optParsed.text; bImg = optParsed.img; }
+                            if (tag === "C") { c = optParsed.text; cImg = optParsed.img; }
+                            if (tag === "D") { d = optParsed.text; dImg = optParsed.img; }
+                            if (tag === "E") { e = optParsed.text; eImg = optParsed.img; }
                         }
                     } else {
                         const cleanedLine = line.replace(/^\d+[\.\)]\s*/, "").trim();
                         if (cleanedLine && !a) {
-                            questionLines.push(cleanMathNotations(cleanedLine));
+                            questionLines.push(cleanedLine);
                         }
                     }
                 });
@@ -546,7 +484,7 @@ export default function AdminBankSoalPage() {
             setBatchQuestions(parsed);
             setStatusMsg({
                 type: "success",
-                text: `Sempurna! Berhasil membedah ${parsed.length} butir soal, seluruh rumus pertanyaan dan opsi telah diformat KaTeX ($...$).`
+                text: `Sempurna! Berhasil membedah ${parsed.length} butir soal.`
             });
         } catch {
             setStatusMsg({
