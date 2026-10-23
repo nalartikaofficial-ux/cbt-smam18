@@ -480,10 +480,23 @@ export default function AdminBankSoalPage() {
         if (!rawText.trim()) return;
 
         try {
-            // Normalisasi pemisah baris & pecah blok berdasarkan pola awal angka (mis: 1. atau 1))
             const cleanSource = rawText.replace(/\r\n/g, "\n");
             const blocks = cleanSource.split(/\n(?=\s*\d+[\.\)])/).filter((b) => b.trim() !== "");
             const parsed: ParsedQuestion[] = [];
+
+            // Helper otomatis membungkus sintaks latex/eksponen jika belum diapit $
+            const ensureLatexWrapped = (str: string) => {
+                let val = str.trim();
+                if (!val) return "";
+                if (val.startsWith("$") && val.endsWith("$")) return val;
+
+                // Jika mengandung \text, ^, _, \frac, atau simbol latex lainnya
+                if (/(\\[a-zA-Z]+|\^|_|\b\d+\/\d+\b)/.test(val)) {
+                    const clean = val.replace(/\$/g, "").trim();
+                    return `$${clean}$`;
+                }
+                return val;
+            };
 
             blocks.forEach((block, idx) => {
                 const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
@@ -506,31 +519,31 @@ export default function AdminBankSoalPage() {
                     } else if (/^Kunci:\s*/i.test(line)) {
                         kunciJawaban = line.replace(/^Kunci:\s*/i, "").trim().toUpperCase().charAt(0);
                     } else if (/^[A-E][\.\)]/i.test(line)) {
-                        // Cek jika opsi ditulis dalam satu baris (mis: A. 10 B. 20 C. 30 ...)
                         const optMatch = line.match(/([A-E])[\.\)]\s*(.*?)(?=(?:[A-E][\.\)]|$))/gi);
                         if (optMatch && optMatch.length > 1) {
                             optMatch.forEach((m) => {
                                 const tag = m.charAt(0).toUpperCase();
                                 const val = m.replace(/^[A-E][\.\)]\s*/i, "").trim();
                                 const optParsed = extractOptionAndImg(val);
-                                if (tag === "A") { a = optParsed.text; aImg = optParsed.img; }
-                                if (tag === "B") { b = optParsed.text; bImg = optParsed.img; }
-                                if (tag === "C") { c = optParsed.text; cImg = optParsed.img; }
-                                if (tag === "D") { d = optParsed.text; dImg = optParsed.img; }
-                                if (tag === "E") { e = optParsed.text; eImg = optParsed.img; }
+                                const wrappedText = ensureLatexWrapped(optParsed.text);
+                                if (tag === "A") { a = wrappedText; aImg = optParsed.img; }
+                                if (tag === "B") { b = wrappedText; bImg = optParsed.img; }
+                                if (tag === "C") { c = wrappedText; cImg = optParsed.img; }
+                                if (tag === "D") { d = wrappedText; dImg = optParsed.img; }
+                                if (tag === "E") { e = wrappedText; eImg = optParsed.img; }
                             });
                         } else {
                             const tag = line.charAt(0).toUpperCase();
                             const val = line.replace(/^[A-E][\.\)]\s*/i, "").trim();
                             const optParsed = extractOptionAndImg(val);
-                            if (tag === "A") { a = optParsed.text; aImg = optParsed.img; }
-                            if (tag === "B") { b = optParsed.text; bImg = optParsed.img; }
-                            if (tag === "C") { c = optParsed.text; cImg = optParsed.img; }
-                            if (tag === "D") { d = optParsed.text; dImg = optParsed.img; }
-                            if (tag === "E") { e = optParsed.text; eImg = optParsed.img; }
+                            const wrappedText = ensureLatexWrapped(optParsed.text);
+                            if (tag === "A") { a = wrappedText; aImg = optParsed.img; }
+                            if (tag === "B") { b = wrappedText; bImg = optParsed.img; }
+                            if (tag === "C") { c = wrappedText; cImg = optParsed.img; }
+                            if (tag === "D") { d = wrappedText; dImg = optParsed.img; }
+                            if (tag === "E") { e = wrappedText; eImg = optParsed.img; }
                         }
                     } else {
-                        // Teks pertanyaan utama (hapus nomor soal depan jika baris pertama)
                         const cleanedLine = line.replace(/^\d+[\.\)]\s*/, "").trim();
                         if (cleanedLine && !a) {
                             questionLines.push(cleanedLine);
@@ -538,15 +551,13 @@ export default function AdminBankSoalPage() {
                     }
                 });
 
-                const finalPertanyaan = questionLines.join(" ");
-
                 parsed.push({
                     subtes_code: selectedSubtest,
                     no_soal: serverQuestions.length + idx + 1,
                     stimulus: stimulusText,
                     image_url: imgUrl,
                     image_position: imgPos,
-                    pertanyaan: finalPertanyaan,
+                    pertanyaan: questionLines.join(" "),
                     opsi_a: a, opsi_b: b, opsi_c: c, opsi_d: d, opsi_e: e,
                     opsi_a_img: aImg, opsi_b_img: bImg, opsi_c_img: cImg, opsi_d_img: dImg, opsi_e_img: eImg,
                     kunci: kunciJawaban || "A",
@@ -559,12 +570,12 @@ export default function AdminBankSoalPage() {
             setBatchQuestions(parsed);
             setStatusMsg({
                 type: "success",
-                text: `Sempurna! Berhasil membedah ${parsed.length} butir soal eksakta siap simpan.`
+                text: `Sempurna! Berhasil membedah ${parsed.length} butir soal, seluruh opsi telah dibungkus KaTeX ($...$).`
             });
         } catch {
             setStatusMsg({
                 type: "error",
-                text: "Format teks belum rapi. Pastikan naskah diawali angka 1. lalu opsi A. B. C. D. E. dan Kunci: X."
+                text: "Format teks belum rapi. Pastikan ada penomoran 1. dan opsi A. B. C. D. E."
             });
         }
     };
