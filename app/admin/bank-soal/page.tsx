@@ -228,12 +228,15 @@ export default function AdminBankSoalPage() {
     // FORMAT SOAL DENGAN GEMINI AI + PENGAMAN REGEX
     // ========================================================
     const handleAutoFormatWordToLatex = async () => {
-        if (!rawText.trim()) return;
+        if (!rawText.trim()) {
+            alert("Harap tempelkan naskah soal terlebih dahulu di kotak teks.");
+            return;
+        }
 
         setIsAiFormatting(true);
         setStatusMsg({
             type: "success",
-            text: "Sedang diproses oleh AI: Merapikan rumus eksakta, notasi ilmiah, dan opsi jawaban..."
+            text: "Sedang diproses oleh AI: Mengonversi notasi ilmiah dan satuan ke LaTeX ($...$)..."
         });
 
         try {
@@ -244,43 +247,28 @@ export default function AdminBankSoalPage() {
             });
 
             const data = await res.json();
+
+            if (!res.ok || data.error) {
+                throw new Error(data.error || "Gagal mendapatkan respons dari AI.");
+            }
+
             if (data.result) {
-                let textResult = data.result;
-
-                // LAYER PENGAMAN: Pastikan opsi A-E yang memiliki notasi matematika dibungkus $...$
-                const lines = textResult.split("\n");
-                const sanitizedLines = lines.map((line: string) => {
-                    const matchOpt = line.match(/^([A-E][\.\)])\s*(.*)$/i);
-                    if (matchOpt) {
-                        const label = matchOpt[1];
-                        let content = matchOpt[2].trim();
-
-                        if (content.startsWith("$") && content.endsWith("$")) {
-                            return `${label} ${content}`;
-                        }
-
-                        if (/(\\[a-zA-Z]+|\^|_|[0-9]+\s*\/\s*[0-9]+)/.test(content)) {
-                            const cleanContent = content.replace(/\$/g, "").trim();
-                            return `${label} $${cleanContent}$`;
-                        }
-                    }
-                    return line;
-                });
-
-                textResult = sanitizedLines.join("\n");
-                setRawText(textResult);
+                // Perbarui langsung isi kotak textarea dengan hasil dari AI
+                setRawText(data.result);
                 setStatusMsg({
                     type: "success",
-                    text: "✨ AI Berhasil Merapikan! Seluruh rumus pertanyaan dan opsi A–E telah dipastikan berformat KaTeX ($...$)."
+                    text: "✨ Berhasil! Notasi fisika dan KaTeX telah dirapikan. Silakan klik 'Bedah Soal' untuk melihat pratinjau."
                 });
             } else {
-                throw new Error(data.error || "Gagal format");
+                throw new Error("Format teks yang dikembalikan kosong.");
             }
         } catch (err: any) {
+            console.error("Gagal Auto-Format:", err);
             setStatusMsg({
                 type: "error",
-                text: `Gagal memproses AI: ${err.message}. Pastikan GEMINI_API_KEY sudah disetel di Vercel.`
+                text: `Gagal memproses AI: ${err.message}`
             });
+            alert(`Pemberitahuan: ${err.message}`);
         } finally {
             setIsAiFormatting(false);
         }
