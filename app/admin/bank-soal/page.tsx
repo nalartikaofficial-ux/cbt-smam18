@@ -303,7 +303,7 @@ export default function AdminBankSoalPage() {
         setIsAiFormatting(true);
         setStatusMsg({
             type: "success",
-            text: "Sedang diproses oleh AI: Memperbaiki rumus eksakta, notasi ilmiah, dan satuan KaTeX..."
+            text: "Sedang diproses oleh AI: Merapikan rumus eksakta, notasi ilmiah, dan opsi jawaban..."
         });
 
         try {
@@ -315,10 +315,37 @@ export default function AdminBankSoalPage() {
 
             const data = await res.json();
             if (data.result) {
-                setRawText(data.result);
+                let textResult = data.result;
+
+                // LAYER PENGAMAN: Pastikan setiap baris opsi A-E yang memuat formula langsung dibungkus tanda $
+                const lines = textResult.split("\n");
+                const sanitizedLines = lines.map((line: string) => {
+                    const matchOpt = line.match(/^([A-E][\.\)])\s*(.*)$/i);
+                    if (matchOpt) {
+                        const label = matchOpt[1];
+                        let content = matchOpt[2].trim();
+
+                        // Jika sudah ada tanda $, biarkan
+                        if (content.startsWith("$") && content.endsWith("$")) {
+                            return `${label} ${content}`;
+                        }
+
+                        // Jika mengandung karakter formula (\text, ^, _, \, /, dll), bungkus seluruh isi opsi dengan $
+                        if (/(\\[a-zA-Z]+|\^|_|[0-9]+\s*\/\s*[0-9]+)/.test(content)) {
+                            // Bersihkan sisa tanda $ parsial di dalam jika ada
+                            const cleanContent = content.replace(/\$/g, "").trim();
+                            return `${label} $${cleanContent}$`;
+                        }
+                    }
+                    return line;
+                });
+
+                textResult = sanitizedLines.join("\n");
+
+                setRawText(textResult);
                 setStatusMsg({
                     type: "success",
-                    text: "✨ AI Berhasil Merapikan! Seluruh rumus, eksponen 10⁻¹², dan satuan W/m² sudah terformat KaTeX sempurna."
+                    text: "✨ AI Berhasil Merapikan! Seluruh rumus pertanyaan dan opsi A–E telah dipastikan berformat KaTeX ($...$)."
                 });
             } else {
                 throw new Error(data.error || "Gagal format");
@@ -326,7 +353,7 @@ export default function AdminBankSoalPage() {
         } catch (err: any) {
             setStatusMsg({
                 type: "error",
-                text: `Gagal memproses AI: ${err.message}. Pastikan GEMINI_API_KEY sudah dipasang di Vercel/Environment.`
+                text: `Gagal memproses AI: ${err.message}. Pastikan GEMINI_API_KEY sudah disetel di Vercel.`
             });
         } finally {
             setIsAiFormatting(false);
