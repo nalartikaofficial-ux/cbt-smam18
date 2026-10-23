@@ -28,8 +28,6 @@ import {
     Save
 } from "lucide-react";
 
-const [isAiFormatting, setIsAiFormatting] = useState(false);
-
 // URL BACKEND GOOGLE APPS SCRIPT MASTER RESMI
 const GOOGLE_SCRIPT_API_URL =
     "https://script.google.com/macros/s/AKfycbxXeMuz-VXgbdUOESiOOLL5NlLrSMVfrdvOCwhgBbjLWwOy3ASkTjnWJSAIONFDrdY7hg/exec";
@@ -133,6 +131,8 @@ interface SubtestDurationItem {
 export default function AdminBankSoalPage() {
     const router = useRouter();
 
+    // STATE REACT DITEMPATKAN DI DALAM KOMPONEN
+    const [isAiFormatting, setIsAiFormatting] = useState(false);
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [loggedTeacher, setLoggedTeacher] = useState<{ nama: string; mapel?: string }>({
         nama: "Fadhillah Umar, S.Pd.",
@@ -225,78 +225,8 @@ export default function AdminBankSoalPage() {
     const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
     // ========================================================
-    // ALGORITMA PRESISI: WORD MATH TO CLEAN KATEX
+    // FORMAT SOAL DENGAN GEMINI AI + PENGAMAN REGEX
     // ========================================================
-    const autoCleanMathString = (str: string): string => {
-        if (!str) return "";
-        let res = str;
-
-        // 1. Bersihkan sisa tanda dolar yang salah atau bertumpuk dari percobaan sebelumnya
-        res = res.replace(/\${2,}/g, "$").replace(/\$\s*\$/g, "");
-
-        // 2. Normalisasi karakter minus & pangkat Unicode langsung ke teks biasa
-        const unicodeSupMap: Record<string, string> = {
-            '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
-            '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
-            '⁺': '+', '⁻': '-', '–': '-', '—': '-'
-        };
-        // Tangani pola bilangan 10 diikuti superscript minus dan angka (misal: 10⁻⁶ atau 10⁻¹²)
-        res = res.replace(/10([⁻–\-]?)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_, sign, exps) => {
-            const cleanSign = sign ? "-" : "";
-            const cleanExp = exps.split("").map((c: string) => unicodeSupMap[c] || c).join("");
-            return `$10^{${cleanSign}${cleanExp}}$`;
-        });
-
-        // Tangani superscript tunggal lainnya (misal: m² atau s⁻²)
-        res = res.replace(/([a-zA-Z])([⁻–\-]?)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_, base, sign, exps) => {
-            const cleanSign = sign ? "-" : "";
-            const cleanExp = exps.split("").map((c: string) => unicodeSupMap[c] || c).join("");
-            return `${base}^{${cleanSign}${cleanExp}}`;
-        });
-
-        // 3. Perbaiki pola eksponen yang terlanjur rusak seperti 10^-^6 atau 10^-$^6$
-        res = res.replace(/10\^[-–—]?\$?\^?([0-9]+)/g, "$10^{-$1}$");
-        res = res.replace(/\$10\^\-\$?\^?([0-9]+)\$?/g, "$10^{-$1}$");
-
-        // 4. Perbaiki satuan fisika umum (W/m^2, m/s^2, kg/m^3, dll)
-        res = res.replace(/W\/?\$?m\^?2\$?/gi, "$\\text{W/m}^2$");
-        res = res.replace(/m\/?s\^?2/gi, "\\text{m/s}^2");
-        res = res.replace(/m\/?s(?![a-zA-Z])/gi, "\\text{m/s}");
-
-        // 5. Variabel fisika dengan indeks bawah (subscript seperti I_0, v_0, a_t, F_total)
-        res = res.replace(/\b([IivFa-zA-Z])_([0-9a-zA-Z]+)\b/g, "$$1_{$2}$");
-
-        // 6. Simbol Yunani & Operator Fisika
-        const symbols: [RegExp, string][] = [
-            [/×/g, "\\times "],
-            [/÷/g, "\\div "],
-            [/±/g, "\\pm "],
-            [/≤/g, "\\leq "],
-            [/≥/g, "\\geq "],
-            [/≠/g, "\\neq "],
-            [/θ/g, "\\theta "],
-            [/λ/g, "\\lambda "],
-            [/μ/g, "\\mu "],
-            [/π/g, "\\pi "],
-            [/ρ/g, "\\rho "],
-            [/ω/g, "\\omega "],
-            [/Δ/g, "\\Delta "]
-        ];
-        symbols.forEach(([regex, latex]) => {
-            res = res.replace(regex, `$${latex.trim()}$`);
-        });
-
-        // 7. Sanitasi tanda dolar ganda yang berdekatan ($...$ $...$)
-        res = res.replace(/\$\s*\$/g, " ");
-        res = res.replace(/\$([^\$]+)\$/g, (_, inner) => {
-            // Bersihkan inner dari tanda $ yang terselip
-            const cleanInner = inner.replace(/\$/g, "").trim();
-            return `$${cleanInner}$`;
-        });
-
-        return res.trim();
-    };
-
     const handleAutoFormatWordToLatex = async () => {
         if (!rawText.trim()) return;
 
@@ -317,7 +247,7 @@ export default function AdminBankSoalPage() {
             if (data.result) {
                 let textResult = data.result;
 
-                // LAYER PENGAMAN: Pastikan setiap baris opsi A-E yang memuat formula langsung dibungkus tanda $
+                // LAYER PENGAMAN: Pastikan opsi A-E yang memiliki notasi matematika dibungkus $...$
                 const lines = textResult.split("\n");
                 const sanitizedLines = lines.map((line: string) => {
                     const matchOpt = line.match(/^([A-E][\.\)])\s*(.*)$/i);
@@ -325,14 +255,11 @@ export default function AdminBankSoalPage() {
                         const label = matchOpt[1];
                         let content = matchOpt[2].trim();
 
-                        // Jika sudah ada tanda $, biarkan
                         if (content.startsWith("$") && content.endsWith("$")) {
                             return `${label} ${content}`;
                         }
 
-                        // Jika mengandung karakter formula (\text, ^, _, \, /, dll), bungkus seluruh isi opsi dengan $
                         if (/(\\[a-zA-Z]+|\^|_|[0-9]+\s*\/\s*[0-9]+)/.test(content)) {
-                            // Bersihkan sisa tanda $ parsial di dalam jika ada
                             const cleanContent = content.replace(/\$/g, "").trim();
                             return `${label} $${cleanContent}$`;
                         }
@@ -341,7 +268,6 @@ export default function AdminBankSoalPage() {
                 });
 
                 textResult = sanitizedLines.join("\n");
-
                 setRawText(textResult);
                 setStatusMsg({
                     type: "success",
@@ -474,7 +400,7 @@ export default function AdminBankSoalPage() {
     };
 
     // ========================================================
-    // PARSER SMART PASTE: MAMPU MEMBEDAH SOAL & OPSI LINEAR
+    // PARSER SMART PASTE: MEMBEDAH SOAL & OPSI (AUTO-WRAP LATEX)
     // ========================================================
     const handleParseRawText = () => {
         if (!rawText.trim()) return;
@@ -490,7 +416,6 @@ export default function AdminBankSoalPage() {
                 if (!val) return "";
                 if (val.startsWith("$") && val.endsWith("$")) return val;
 
-                // Jika mengandung \text, ^, _, \frac, atau simbol latex lainnya
                 if (/(\\[a-zA-Z]+|\^|_|\b\d+\/\d+\b)/.test(val)) {
                     const clean = val.replace(/\$/g, "").trim();
                     return `$${clean}$`;
@@ -717,7 +642,7 @@ export default function AdminBankSoalPage() {
                         </div>
                         <div>
                             <div className="text-xs sm:text-sm font-black text-slate-900 tracking-tight uppercase">
-                                BANK SOAL &amp; EDITOR FORMULA SAINS &bull; SMA MUHAMMADIYAH 18
+                                BANK SOAL &bull; SMA MUHAMMADIYAH 18
                             </div>
                             <div className="text-[11px] text-slate-500 font-medium">
                                 Penyusun Soal: <strong className="text-blue-700">{loggedTeacher.nama}</strong> ({loggedTeacher.mapel || "Guru Mapel"})
@@ -785,7 +710,7 @@ export default function AdminBankSoalPage() {
                     </div>
                 </div>
 
-                {/* TOOL KHUSUS: EKSTRAKTOR GAMBAR GOOGLE DRIVE */}
+                {/* TOOL: EKSTRAKTOR GAMBAR GOOGLE DRIVE */}
                 <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-3xl p-5 sm:p-6 text-white shadow-md space-y-3">
                     <div className="flex items-center gap-2.5">
                         <div className="p-2 rounded-xl bg-white/10 text-amber-300 shrink-0">
@@ -799,7 +724,7 @@ export default function AdminBankSoalPage() {
                                 </span>
                             </h3>
                             <p className="text-[11px] text-slate-300">
-                                Tempelkan link share Google Drive di bawah. Sistem otomatis mengubahnya ke direct URL Google yang dijamin tampil di peramban siswa.
+                                Tempelkan link share Google Drive di bawah. Sistem otomatis mengubahnya ke direct URL Google yang tampil di layar siswa.
                             </p>
                         </div>
                     </div>
@@ -880,7 +805,7 @@ export default function AdminBankSoalPage() {
                                 <span>Alokasi Waktu Pengerjaan per Subtes ({selectedPaket.replace("_", " ")})</span>
                             </h3>
                             <p className="text-xs text-slate-500">
-                                Tentukan durasi menit pengerjaan untuk masing-masing 7 subtes. Mendukung angka desimal seperti <strong>0.5</strong> menit (30 detik) atau <strong>22.5</strong> menit.
+                                Tentukan durasi menit pengerjaan untuk masing-masing 7 subtes. Mendukung desimal seperti <strong>0.5</strong> menit atau <strong>22.5</strong> menit.
                             </p>
                         </div>
                         <button
