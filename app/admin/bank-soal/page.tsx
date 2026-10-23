@@ -213,6 +213,64 @@ export default function AdminBankSoalPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+    // FUNGSI SMART AUTO-FORMAT WORD KE LATEX
+    const handleAutoFormatWordToLatex = () => {
+        if (!rawText.trim()) return;
+        let formatted = rawText;
+
+        // 1. Konversi pangkat superscript Word (², ³, ⁴, dst) ke format LaTeX ^2, ^3, dll
+        const superscriptMap: Record<string, string> = {
+            '⁰': '^0', '¹': '^1', '²': '^2', '³': '^3', '⁴': '^4',
+            '⁵': '^5', '⁶': '^6', '⁷': '^7', '⁸': '^8', '⁹': '^9', 'ⁿ': '^n', '⁺': '^+', '⁻': '^-'
+        };
+        Object.keys(superscriptMap).forEach(sup => {
+            formatted = formatted.split(sup).join(superscriptMap[sup]);
+        });
+
+        // 2. Konversi subscript umum (₀, ₁, ₂, dll) jika ada
+        const subscriptMap: Record<string, string> = {
+            '₀': '_0', '₁': '_1', '₂': '_2', '₃': '_3', '₄': '_4',
+            '₅': '_5', '₆': '_6', '₇': '_7', '₈': '_8', '₉': '_9', 'ₙ': '_n'
+        };
+        Object.keys(subscriptMap).forEach(sub => {
+            formatted = formatted.split(sub).join(subscriptMap[sub]);
+        });
+
+        // 3. Konversi simbol matematika & fisika umum
+        formatted = formatted
+            .replace(/×/g, " \\times ")
+            .replace(/÷/g, " \\div ")
+            .replace(/±/g, " \\pm ")
+            .replace(/≤/g, " \\leq ")
+            .replace(/≥/g, " \\geq ")
+            .replace(/≠/g, " \\neq ")
+            .replace(/∞/g, " \\infty ")
+            .replace(/≈/g, " \\approx ")
+            .replace(/°/g, "^\\circ ");
+
+        // 4. Konversi huruf Yunani (Greek Letters) di luar tanda $...$
+        const greekMap: Record<string, string> = {
+            'α': '\\alpha', 'β': '\\beta', 'γ': '\\gamma', 'δ': '\\delta',
+            'ε': '\\varepsilon', 'θ': '\\theta', 'λ': '\\lambda', 'μ': '\\mu',
+            'π': '\\pi', 'ρ': '\\rho', 'σ': '\\sigma', 'τ': '\\tau',
+            'ω': '\\omega', 'Δ': '\\Delta', 'Σ': '\\Sigma', 'Ω': '\\Omega'
+        };
+        Object.keys(greekMap).forEach(char => {
+            const regex = new RegExp(`(?<!\\$)(?:\\\\)?(${char})(?!\\$)`, 'g');
+            formatted = formatted.replace(regex, `$${greekMap[char]}$`);
+        });
+
+        // 5. Konversi akar kuadrat simbol √x atau √(x)
+        formatted = formatted.replace(/√([0-9a-zA-Z]+)/g, "$\\sqrt{$1}$");
+        formatted = formatted.replace(/√\(([^)]+)\)/g, "$\\sqrt{$1}$");
+
+        setRawText(formatted);
+        setStatusMsg({
+            type: "success",
+            text: "Berhasil mengonversi simbol Word (pangkat, akar, simbol sains) ke format LaTeX ($...$) secara otomatis!"
+        });
+    };
+
     const fetchSubtestDurations = async (pkg = selectedPaket) => {
         try {
             const res = await fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_subtests&package=${pkg}&paket=${pkg}&_t=${Date.now()}`, {
@@ -602,8 +660,8 @@ export default function AdminBankSoalPage() {
                                 type="button"
                                 onClick={() => setSelectedPaket(pkt)}
                                 className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${selectedPaket === pkt
-                                    ? "bg-[#1e3a8a] text-white shadow-xs"
-                                    : "text-slate-600 hover:text-slate-900"
+                                        ? "bg-[#1e3a8a] text-white shadow-xs"
+                                        : "text-slate-600 hover:text-slate-900"
                                     }`}
                             >
                                 {pkt.replace("_", " ")}
@@ -698,7 +756,7 @@ export default function AdminBankSoalPage() {
                     )}
                 </div>
 
-                {/* PANEL PENGATUR DURASI WAKTU PER SUBTES (KONTROL PENUH GURU - MENDUKUNG ANGKA DESIMAL / PECAHAN) */}
+                {/* PANEL PENGATUR DURASI WAKTU PER SUBTES */}
                 <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 space-y-4 shadow-sm">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                         <div>
@@ -805,8 +863,8 @@ export default function AdminBankSoalPage() {
                 {statusMsg && (
                     <div
                         className={`p-4 rounded-2xl border text-xs flex items-center gap-2.5 animate-in fade-in duration-200 ${statusMsg.type === "success"
-                            ? "bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold"
-                            : "bg-rose-50 border-rose-300 text-rose-900 font-semibold"
+                                ? "bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold"
+                                : "bg-rose-50 border-rose-300 text-rose-900 font-semibold"
                             }`}
                     >
                         {statusMsg.type === "success" ? (
@@ -919,8 +977,8 @@ export default function AdminBankSoalPage() {
                                                 <div
                                                     key={opt.label}
                                                     className={`p-2 rounded-xl border text-xs flex items-center gap-2 ${String(q.kunci).trim().toUpperCase() === opt.label
-                                                        ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
-                                                        : "bg-white border-slate-200 text-slate-700"
+                                                            ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
+                                                            : "bg-white border-slate-200 text-slate-700"
                                                         }`}
                                                 >
                                                     <span className="font-mono font-bold">{opt.label}.</span>
@@ -938,7 +996,7 @@ export default function AdminBankSoalPage() {
                 {/* TAB 1: SMART TEXT PARSER */}
                 {inputMode === "text_parse" && (
                     <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-5 shadow-sm">
-                        <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+                        <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
                                 <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
                                     Smart Text Parser &bull; Ekstraksi Naskah Soal &amp; KaTeX
@@ -947,9 +1005,20 @@ export default function AdminBankSoalPage() {
                                     Tempelkan naskah soal mentah. Gunakan tanda <code className="bg-slate-100 px-1 py-0.5 rounded font-mono font-bold text-blue-700">$...$</code> untuk rumus matematika/fisika.
                                 </p>
                             </div>
-                            <span className="px-2.5 py-1 rounded-xl bg-blue-50 text-blue-800 border border-blue-200 text-xs font-mono font-bold">
-                                LaTeX Enabled
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={handleAutoFormatWordToLatex}
+                                    className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-all shrink-0"
+                                    title="Otomatis ubah pangkat (², ³), akar (√), simbol sains & Yunani dari Word ke LaTeX ($...$)"
+                                >
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    <span>✨ Auto-Format Simbol Word ke LaTeX</span>
+                                </button>
+                                <span className="px-2.5 py-1 rounded-xl bg-blue-50 text-blue-800 border border-blue-200 text-xs font-mono font-bold shrink-0">
+                                    LaTeX Enabled
+                                </span>
+                            </div>
                         </div>
 
                         <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1.5">
@@ -1086,8 +1155,8 @@ Kunci: B`}
                                                     <div
                                                         key={opt.label}
                                                         className={`p-2 rounded-xl border text-xs flex items-center gap-2 ${q.kunci === opt.label
-                                                            ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
-                                                            : "bg-white border-slate-200 text-slate-700"
+                                                                ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
+                                                                : "bg-white border-slate-200 text-slate-700"
                                                             }`}
                                                     >
                                                         <span className="font-mono font-bold">{opt.label}.</span>
@@ -1452,8 +1521,8 @@ Kunci: B`}
                                         <div
                                             key={opt.label}
                                             className={`p-2 rounded-xl border text-xs flex items-center justify-between gap-2 ${String(kunci).trim().toUpperCase() === opt.label
-                                                ? "bg-emerald-50 border-emerald-400 font-semibold text-emerald-950"
-                                                : "bg-white border-slate-200 text-slate-700"
+                                                    ? "bg-emerald-50 border-emerald-400 font-semibold text-emerald-950"
+                                                    : "bg-white border-slate-200 text-slate-700"
                                                 }`}
                                         >
                                             <div className="flex items-center gap-2">
