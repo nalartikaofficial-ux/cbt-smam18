@@ -28,6 +28,8 @@ import {
     Save
 } from "lucide-react";
 
+const [isAiFormatting, setIsAiFormatting] = useState(false);
+
 // URL BACKEND GOOGLE APPS SCRIPT MASTER RESMI
 const GOOGLE_SCRIPT_API_URL =
     "https://script.google.com/macros/s/AKfycbxXeMuz-VXgbdUOESiOOLL5NlLrSMVfrdvOCwhgBbjLWwOy3ASkTjnWJSAIONFDrdY7hg/exec";
@@ -295,25 +297,40 @@ export default function AdminBankSoalPage() {
         return res.trim();
     };
 
-    const handleAutoFormatWordToLatex = () => {
+    const handleAutoFormatWordToLatex = async () => {
         if (!rawText.trim()) return;
 
-        const lines = rawText.split("\n");
-        const cleanedLines = lines.map((line) => {
-            const trimmed = line.trim();
-            // Lewati baris khusus opsi atau kunci yang murni angka
-            if (/^(Kunci:|Posisi:|Gambar:)/i.test(trimmed)) {
-                return trimmed;
-            }
-            return autoCleanMathString(line);
-        });
-
-        const result = cleanedLines.join("\n");
-        setRawText(result);
+        setIsAiFormatting(true);
         setStatusMsg({
             type: "success",
-            text: "Berhasil! Formula eksponen (10⁻⁶, 10⁻¹²), subscript (I₀), dan satuan W/m² telah dirapikan ke format KaTeX presisi."
+            text: "Sedang diproses oleh AI: Memperbaiki rumus eksakta, notasi ilmiah, dan satuan KaTeX..."
         });
+
+        try {
+            const res = await fetch("/api/format-soal", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: rawText })
+            });
+
+            const data = await res.json();
+            if (data.result) {
+                setRawText(data.result);
+                setStatusMsg({
+                    type: "success",
+                    text: "✨ AI Berhasil Merapikan! Seluruh rumus, eksponen 10⁻¹², dan satuan W/m² sudah terformat KaTeX sempurna."
+                });
+            } else {
+                throw new Error(data.error || "Gagal format");
+            }
+        } catch (err: any) {
+            setStatusMsg({
+                type: "error",
+                text: `Gagal memproses AI: ${err.message}. Pastikan GEMINI_API_KEY sudah dipasang di Vercel/Environment.`
+            });
+        } finally {
+            setIsAiFormatting(false);
+        }
     };
 
     const fetchSubtestDurations = async (pkg = selectedPaket) => {
@@ -1068,12 +1085,21 @@ export default function AdminBankSoalPage() {
                             <div className="flex items-center gap-2">
                                 <button
                                     type="button"
+                                    disabled={isAiFormatting}
                                     onClick={handleAutoFormatWordToLatex}
-                                    className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-all shrink-0"
-                                    title="Otomatis bersihkan pangkat, akar, perkalian, & huruf Yunani dari Word"
+                                    className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-all shrink-0 disabled:opacity-50"
                                 >
-                                    <Sparkles className="w-3.5 h-3.5" />
-                                    <span>✨ Auto-Format Simbol Word ke LaTeX</span>
+                                    {isAiFormatting ? (
+                                        <>
+                                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                            <span>AI Sedang Merapikan Rumus...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles className="w-3.5 h-3.5" />
+                                            <span>✨ AI Auto-Format Word ke LaTeX</span>
+                                        </>
+                                    )}
                                 </button>
                                 <span className="px-2.5 py-1 rounded-xl bg-blue-50 text-blue-800 border border-blue-200 text-xs font-mono font-bold shrink-0">
                                     LaTeX Enabled
