@@ -223,101 +223,96 @@ export default function AdminBankSoalPage() {
     const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
     // ========================================================
-    // ALGORITMA PINTAR: CONVERTER TEKS EKSAKTA WORD KE LATEX
+    // ALGORITMA PRESISI: WORD MATH TO CLEAN KATEX
     // ========================================================
     const autoCleanMathString = (str: string): string => {
         if (!str) return "";
         let res = str;
 
-        // 1. Pangkat Unicode ke LaTeX
-        const supMap: Record<string, string> = {
-            '⁰': '^0', '¹': '^1', '²': '^2', '³': '^3', '⁴': '^4',
-            '⁵': '^5', '⁶': '^6', '⁷': '^7', '⁸': '^8', '⁹': '^9',
-            'ⁿ': '^n', '⁺': '^+', '⁻': '^-'
+        // 1. Bersihkan sisa tanda dolar yang salah atau bertumpuk dari percobaan sebelumnya
+        res = res.replace(/\${2,}/g, "$").replace(/\$\s*\$/g, "");
+
+        // 2. Normalisasi karakter minus & pangkat Unicode langsung ke teks biasa
+        const unicodeSupMap: Record<string, string> = {
+            '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
+            '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
+            '⁺': '+', '⁻': '-', '–': '-', '—': '-'
         };
-        Object.keys(supMap).forEach((k) => {
-            res = res.split(k).join(supMap[k]);
+        // Tangani pola bilangan 10 diikuti superscript minus dan angka (misal: 10⁻⁶ atau 10⁻¹²)
+        res = res.replace(/10([⁻–\-]?)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_, sign, exps) => {
+            const cleanSign = sign ? "-" : "";
+            const cleanExp = exps.split("").map((c: string) => unicodeSupMap[c] || c).join("");
+            return `$10^{${cleanSign}${cleanExp}}$`;
         });
 
-        // 2. Subscript Unicode ke LaTeX
-        const subMap: Record<string, string> = {
-            '₀': '_0', '₁': '_1', '₂': '_2', '₃': '_3', '₄': '_4',
-            '₅': '_5', '₆': '_6', '₇': '_7', '₈': '_8', '₉': '_9', 'ₙ': '_n'
-        };
-        Object.keys(subMap).forEach((k) => {
-            res = res.split(k).join(subMap[k]);
+        // Tangani superscript tunggal lainnya (misal: m² atau s⁻²)
+        res = res.replace(/([a-zA-Z])([⁻–\-]?)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_, base, sign, exps) => {
+            const cleanSign = sign ? "-" : "";
+            const cleanExp = exps.split("").map((c: string) => unicodeSupMap[c] || c).join("");
+            return `${base}^{${cleanSign}${cleanExp}}`;
         });
 
-        // 3. Simbol Matematika Umum
-        res = res
-            .replace(/×/g, " \\times ")
-            .replace(/÷/g, " \\div ")
-            .replace(/±/g, " \\pm ")
-            .replace(/≤/g, " \\leq ")
-            .replace(/≥/g, " \\geq ")
-            .replace(/≠/g, " \\neq ")
-            .replace(/∞/g, " \\infty ")
-            .replace(/≈/g, " \\approx ")
-            .replace(/°/g, "^\\circ ");
+        // 3. Perbaiki pola eksponen yang terlanjur rusak seperti 10^-^6 atau 10^-$^6$
+        res = res.replace(/10\^[-–—]?\$?\^?([0-9]+)/g, "$10^{-$1}$");
+        res = res.replace(/\$10\^\-\$?\^?([0-9]+)\$?/g, "$10^{-$1}$");
 
-        // 4. Huruf Yunani (Greek Letters)
-        const greekMap: Record<string, string> = {
-            'α': '\\alpha', 'β': '\\beta', 'γ': '\\gamma', 'δ': '\\delta',
-            'ε': '\\varepsilon', 'θ': '\\theta', 'λ': '\\lambda', 'μ': '\\mu',
-            'π': '\\pi', 'ρ': '\\rho', 'σ': '\\sigma', 'τ': '\\tau',
-            'ω': '\\omega', 'Δ': '\\Delta', 'Σ': '\\Sigma', 'Ω': '\\Omega'
-        };
-        Object.keys(greekMap).forEach((char) => {
-            res = res.split(char).join(greekMap[char]);
+        // 4. Perbaiki satuan fisika umum (W/m^2, m/s^2, kg/m^3, dll)
+        res = res.replace(/W\/?\$?m\^?2\$?/gi, "$\\text{W/m}^2$");
+        res = res.replace(/m\/?s\^?2/gi, "\\text{m/s}^2");
+        res = res.replace(/m\/?s(?![a-zA-Z])/gi, "\\text{m/s}");
+
+        // 5. Variabel fisika dengan indeks bawah (subscript seperti I_0, v_0, a_t, F_total)
+        res = res.replace(/\b([IivFa-zA-Z])_([0-9a-zA-Z]+)\b/g, "$$1_{$2}$");
+
+        // 6. Simbol Yunani & Operator Fisika
+        const symbols: [RegExp, string][] = [
+            [/×/g, "\\times "],
+            [/÷/g, "\\div "],
+            [/±/g, "\\pm "],
+            [/≤/g, "\\leq "],
+            [/≥/g, "\\geq "],
+            [/≠/g, "\\neq "],
+            [/θ/g, "\\theta "],
+            [/λ/g, "\\lambda "],
+            [/μ/g, "\\mu "],
+            [/π/g, "\\pi "],
+            [/ρ/g, "\\rho "],
+            [/ω/g, "\\omega "],
+            [/Δ/g, "\\Delta "]
+        ];
+        symbols.forEach(([regex, latex]) => {
+            res = res.replace(regex, `$${latex.trim()}$`);
         });
 
-        // 5. Akar (√x atau √(x))
-        res = res.replace(/√\(([^)]+)\)/g, "\\sqrt{$1}");
-        res = res.replace(/√([0-9a-zA-Z]+)/g, "\\sqrt{$1}");
+        // 7. Sanitasi tanda dolar ganda yang berdekatan ($...$ $...$)
+        res = res.replace(/\$\s*\$/g, " ");
+        res = res.replace(/\$([^\$]+)\$/g, (_, inner) => {
+            // Bersihkan inner dari tanda $ yang terselip
+            const cleanInner = inner.replace(/\$/g, "").trim();
+            return `$${cleanInner}$`;
+        });
 
-        // 6. Rapikan spasi
-        return res.replace(/\s+/g, " ").trim();
+        return res.trim();
     };
 
     const handleAutoFormatWordToLatex = () => {
         if (!rawText.trim()) return;
 
         const lines = rawText.split("\n");
-        const convertedLines = lines.map((line) => {
-            let processed = line;
-
-            // Jika baris adalah metadata/gambar/kunci, jangan ubah
-            if (/^(Wacana:|Gambar:|Posisi:|Kunci:)/i.test(processed.trim())) {
-                return processed;
+        const cleanedLines = lines.map((line) => {
+            const trimmed = line.trim();
+            // Lewati baris khusus opsi atau kunci yang murni angka
+            if (/^(Kunci:|Posisi:|Gambar:)/i.test(trimmed)) {
+                return trimmed;
             }
-
-            // Normalisasi simbol di seluruh baris
-            processed = autoCleanMathString(processed);
-
-            // Deteksi ekspresi berpangkat atau simbol LaTeX di luar $...$
-            // Bungkus otomatis jika menemukan format seperti x^2, \alpha, \times, \sqrt, dll
-            const mathTokenRegex = /(\b[a-zA-Z0-9_]+\^[a-zA-Z0-9_+\-]+|\\[a-zA-Z]+(?:\{[^}]*\})*|[a-zA-Z]\s*=\s*[-+]?[0-9a-zA-Z]+|\b\d+\s*\/\s*\d+\b)/g;
-
-            // Ganti token jika belum berada di dalam $...$
-            const parts = processed.split(/(\$[^\$]+?\$)/g);
-            const wrappedParts = parts.map((part) => {
-                if (part.startsWith("$") && part.endsWith("$")) {
-                    return part; // Sudah di dalam latex, biarkan
-                }
-                return part.replace(mathTokenRegex, (match) => {
-                    // Hindari membungkus kata biasa
-                    if (/^(dan|atau|jika|maka|saat|pada|yang|adalah)$/i.test(match.trim())) return match;
-                    return `$${match.trim()}$`;
-                });
-            });
-
-            return wrappedParts.join("");
+            return autoCleanMathString(line);
         });
 
-        setRawText(convertedLines.join("\n"));
+        const result = cleanedLines.join("\n");
+        setRawText(result);
         setStatusMsg({
             type: "success",
-            text: "Berhasil! Simbol pangkat, akar, perkalian, dan huruf Yunani telah dibersihkan & dikonversi ke format KaTeX."
+            text: "Berhasil! Formula eksponen (10⁻⁶, 10⁻¹²), subscript (I₀), dan satuan W/m² telah dirapikan ke format KaTeX presisi."
         });
     };
 
