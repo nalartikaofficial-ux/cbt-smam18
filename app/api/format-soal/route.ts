@@ -19,49 +19,29 @@ export async function POST(req: Request) {
 
         const promptInstruksi = `
 Anda adalah asisten penata tipografi soal eksakta (Fisika, Matematika, Kimia) untuk web ujian CBT KaTeX.
-Tugas: Format naskah mentah berikut agar seluruh notasi ilmiah, satuan berpangkat, variabel, dan rumus diapit tanda dollar tunggal ($...$).
+Tugas Anda: Format naskah mentah berikut agar seluruh notasi ilmiah, satuan berpangkat, variabel, dan rumus diapit tanda dollar tunggal ($...$).
 
 ATURAN WAJIB:
 1. Pangkat & notasi ilmiah:
-   - 10⁻⁶ W/m² diubah menjadi $10^{-6}\\text{ W/m}^2$
+   - 10⁻⁶ W/m² atau 10^-6 W/m² diubah menjadi $10^{-6}\\text{ W/m}^2$
    - 10⁻¹² W/m² diubah menjadi $10^{-12}\\text{ W/m}^2$
 2. Satuan & Simbol:
    - m/s² diubah menjadi $\\text{m/s}^2$
    - I₀ atau I_0 diubah menjadi $I_0$
    - v₀ diubah menjadi $v_0$
    - θ = 60° diubah menjadi $\\theta = 60^\\circ$
-3. Pertahankan struktur nomor soal, opsi A-E, dan Kunci jawaban.
-4. JANGAN gunakan triple backtick (\`\`\`). Berikan HANYA teks bersih hasil format.
+3. Pertahankan urutan nomor soal, baris opsi A, B, C, D, E, dan Kunci.
+4. Teks narasi biasa jangan diberi tanda dollar ($).
+5. DILARANG menggunakan pembungkus markdown block (\`\`\`). Berikan HANYA teks bersih siap pakai.
 
 Naskah mentah:
 ${text}
 `;
 
-        // 1. Ambil daftar model yang didukung langsung oleh API Key Anda
-        let selectedModelName = "models/gemini-1.5-flash";
-        try {
-            const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-            const listData = await listRes.json();
-            if (listData?.models && Array.isArray(listData.models)) {
-                // Cari model yang mendukung generateContent
-                const validModel = listData.models.find((m: any) =>
-                    m.supportedGenerationMethods?.includes("generateContent") &&
-                    (m.name.includes("flash") || m.name.includes("pro"))
-                );
-                if (validModel?.name) {
-                    selectedModelName = validModel.name;
-                }
-            }
-        } catch {
-            // Fallback default jika list models gagal dijangkau
-            selectedModelName = "models/gemini-1.5-flash";
-        }
+        // Gunakan model resmi yang diminta oleh Google API: gemini-3.8-flash
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
 
-        // 2. Request generateContent ke model yang valid
-        const cleanModelName = selectedModelName.replace(/^models\//, "");
-        const generateUrl = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModelName}:generateContent?key=${apiKey}`;
-
-        const response = await fetch(generateUrl, {
+        const response = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -76,7 +56,7 @@ ${text}
 
         if (!response.ok || data.error) {
             return NextResponse.json(
-                { error: data.error?.message || `HTTP ${response.status}: Gagal memanggil API (${cleanModelName})` },
+                { error: data.error?.message || `HTTP ${response.status}: Gagal memanggil Gemini API` },
                 { status: response.status || 500 }
             );
         }
