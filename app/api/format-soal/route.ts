@@ -19,73 +19,80 @@ export async function POST(req: Request) {
 
         const promptInstruksi = `
 Anda adalah asisten penata tipografi soal eksakta (Fisika, Matematika, Kimia) untuk web ujian CBT KaTeX.
-Tugas Anda: Format naskah mentah berikut agar seluruh notasi ilmiah, satuan berpangkat, variabel, dan rumus diapit tanda dollar tunggal ($...$).
+Tugas: Format naskah mentah berikut agar seluruh notasi ilmiah, satuan berpangkat, variabel, dan rumus diapit tanda dollar tunggal ($...$).
 
 ATURAN WAJIB:
 1. Pangkat & notasi ilmiah:
-   - 10⁻⁶ W/m² atau 10^-6 W/m² diubah menjadi $10^{-6}\\text{ W/m}^2$
+   - 10⁻⁶ W/m² diubah menjadi $10^{-6}\\text{ W/m}^2$
    - 10⁻¹² W/m² diubah menjadi $10^{-12}\\text{ W/m}^2$
 2. Satuan & Simbol:
    - m/s² diubah menjadi $\\text{m/s}^2$
    - I₀ atau I_0 diubah menjadi $I_0$
    - v₀ diubah menjadi $v_0$
    - θ = 60° diubah menjadi $\\theta = 60^\\circ$
-3. OPSI & KUNCI:
-   - Jika opsi memuat satuan/rumus, apit dengan $: misal A. $40\\text{ dB}$ atau A. 40 dB jika angka biasa.
-   - Pertahankan urutan naskah, baris opsi A, B, C, D, E, dan Kunci.
-4. Jangan gunakan pembungkus markdown block (\`\`\`). Berikan HANYA teks bersih siap pakai.
+3. Pertahankan struktur nomor soal, opsi A-E, dan Kunci jawaban.
+4. JANGAN gunakan triple backtick (\`\`\`). Berikan HANYA teks bersih hasil format.
 
 Naskah mentah:
 ${text}
 `;
 
-        // Daftar model resmi Google yang didukung
-        const candidateModels = [
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
-            "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent",
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent"
-        ];
-
-        let resultText = "";
-        let lastErrorMsg = "";
-
-        for (const baseUrl of candidateModels) {
-            try {
-                const res = await fetch(`${baseUrl}?key=${apiKey}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: promptInstruksi }] }],
-                        generationConfig: { temperature: 0.1 }
-                    })
-                });
-
-                const data = await res.json();
-                if (res.ok && data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    resultText = data.candidates[0].content.parts[0].text;
-                    break; // Berhasil, keluar dari loop
-                } else if (data.error) {
-                    lastErrorMsg = data.error.message;
+        // 1. Ambil daftar model yang didukung langsung oleh API Key Anda
+        let selectedModelName = "models/gemini-1.5-flash";
+        try {
+            const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+            const listData = await listRes.json();
+            if (listData?.models && Array.isArray(listData.models)) {
+                // Cari model yang mendukung generateContent
+                const validModel = listData.models.find((m: any) =>
+                    m.supportedGenerationMethods?.includes("generateContent") &&
+                    (m.name.includes("flash") || m.name.includes("pro"))
+                );
+                if (validModel?.name) {
+                    selectedModelName = validModel.name;
                 }
-            } catch (e: any) {
-                lastErrorMsg = e.message;
             }
+        } catch {
+            // Fallback default jika list models gagal dijangkau
+            selectedModelName = "models/gemini-1.5-flash";
         }
 
-        if (!resultText) {
+        // 2. Request generateContent ke model yang valid
+        const cleanModelName = selectedModelName.replace(/^models\//, "");
+        const generateUrl = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModelName}:generateContent?key=${apiKey}`;
+
+        const response = await fetch(generateUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: promptInstruksi }] }],
+                generationConfig: {
+                    temperature: 0.1
+                }
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
             return NextResponse.json(
-                { error: lastErrorMsg || "Model AI sedang tidak dapat dijangkau." },
-                { status: 500 }
+                { error: data.error?.message || `HTTP ${response.status}: Gagal memanggil API (${cleanModelName})` },
+                { status: response.status || 500 }
             );
         }
 
-        // Bersihkan jika AI masih menyisipkan tag codeblock ```
-        resultText = resultText
+        let rawOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+        rawOutput = rawOutput
             .replace(/^```[a-zA-Z]*\n?/gm, "")
             .replace(/```$/gm, "")
             .trim();
 
-        return NextResponse.json({ result: resultText });
+        if (!rawOutput) {
+            return NextResponse.json({ error: "Hasil keluaran AI kosong." }, { status: 500 });
+        }
+
+        return NextResponse.json({ result: rawOutput });
     } catch (err: any) {
         return NextResponse.json({ error: err?.message || "Kesalahan internal server." }, { status: 500 });
     }
