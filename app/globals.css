@@ -24,3 +24,87 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ========================================================
+   GAYA CETAK KHUSUS RAPOR CBT - SMA MUHAMMADIYAH 18
+   ======================================================== */
+@media print {
+
+  /* 1. Atur Ukuran Lembar Cetak A4 & Margin Standar Surat */
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm 12mm 12mm;
+    /* Atas, Kanan, Bawah, Kiri */
+  }
+
+  /* 2. Bersihkan Background Abu-abu Luar Menjadi Putih Murni */
+  html,
+  body {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 11px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 3. Pembungkus Rapor Menyesuaikan Lebar Kertas */
+  main,
+  .min-h-screen,
+  div[class*="bg-slate-"],
+  div[class*="bg-gray-"] {
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* 4. Sembunyikan Tombol, Navigasi, dan Banner CTA Web */
+  button,
+  nav,
+  header,
+  .no-print,
+  a[href*="simulator"],
+  div:has(> a[href*="simulator"]),
+  div:has(> button:contains("Buka")) {
+    display: none !important;
+  }
+
+  /* 5. Cegah Pemotongan Elemen Kritis di Tengah Halaman */
+  table,
+  tr,
+  .rounded-2xl,
+  .rounded-3xl,
+  .border,
+  div[class*="p-4"],
+  div[class*="p-5"],
+  div[class*="p-6"] {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* 6. Kompakkan Ruang Vertikal Agar Muat Proporsional */
+  td,
+  th {
+    padding: 4px 6px !important;
+  }
+
+  .space-y-4> :not([hidden])~ :not([hidden]),
+  .space-y-5> :not([hidden])~ :not([hidden]),
+  .space-y-6> :not([hidden])~ :not([hidden]) {
+    margin-top: 8px !important;
+  }
+
+  /* 7. Blok Tanda Tangan Wajib Utuh di Bagian Bawah */
+  div:has(> div:contains("Achmad Saifudin")),
+  div:has(> div:contains("Kepala Sekolah")) {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin-top: 15px !important;
+  }
+}
