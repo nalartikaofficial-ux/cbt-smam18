@@ -227,48 +227,94 @@ export default function AdminBankSoalPage() {
     // ========================================================
     // FORMAT SOAL DENGAN GEMINI AI + PENGAMAN REGEX
     // ========================================================
-    const handleAutoFormatWordToLatex = async () => {
+    const handleAutoFormatWordToLatex = () => {
         if (!rawText.trim()) {
             alert("Harap tempelkan naskah soal terlebih dahulu di kotak teks.");
             return;
         }
 
         setIsAiFormatting(true);
-        setStatusMsg({
-            type: "success",
-            text: "Sedang diproses oleh AI: Mengonversi notasi ilmiah dan satuan ke LaTeX ($...$)..."
-        });
 
         try {
-            const res = await fetch("/api/format-soal", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text: rawText })
+            let res = rawText;
+
+            // 1. Normalisasi karakter minus & spasi Word yang sering merusak rumus
+            res = res.replace(/[\u2010\u2013\u2014\u2212]/g, "-");
+
+            // 2. Kamus superscript unicode Word (⁰ ¹ ² ³ ⁴ ⁵ ⁶ ⁷ ⁸ ⁹ ⁻ ⁺)
+            const supMap: Record<string, string> = {
+                '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
+                '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
+                '⁻': '-', '⁺': '+'
+            };
+
+            // 3. Konversi notasi ilmiah eksponen: 10⁻⁶, 10⁻¹², 10^5, dll.
+            res = res.replace(/10\s*([⁻\-]?)\s*([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_, sign, exps) => {
+                const s = sign ? "-" : "";
+                const e = exps.split("").map((c: string) => supMap[c] || c).join("");
+                return `$10^{${s}${e}}$`;
+            });
+            res = res.replace(/10\s*\^\s*(-?\d+)/g, "$10^{$1}$");
+
+            // 4. Konversi satuan fisika berpangkat (W/m², m/s², kg/m³, dll.)
+            res = res.replace(/\bW\s*\/\s*m[²2]/gi, "\\text{W/m}^2");
+            res = res.replace(/\bm\s*\/\s*s[²2]/gi, "\\text{m/s}^2");
+            res = res.replace(/\bm\s*\/\s*s\b/gi, "\\text{m/s}");
+            res = res.replace(/\bkg\s*\/\s*m[³3]/gi, "\\text{kg/m}^3");
+
+            // 5. Gabungkan angka/eksponen yang berdampingan langsung dengan satuan
+            res = res.replace(/(\$10\^\{[^\}]+\}\$)\s*(\\text\{[^\}]+\})/g, (_, exp, unit) => {
+                const cleanExp = exp.replace(/\$/g, "");
+                return `${cleanExp} ${unit}`;
+            });
+            res = res.replace(/(\b\d+(\.\d+)?)\s*(\\text\{[^\}]+\})/g, "$1 $3");
+
+            // 6. Subskrip fisika umum (I₀, v₀, a_t, F_total)
+            res = res.replace(/\bI\s*[₀0]\b/g, "$I_0$");
+            res = res.replace(/\bv\s*[₀0]\b/g, "$v_0$");
+            res = res.replace(/\b([a-zA-Z])_([0-9a-zA-Z]+)\b/g, "$$1_{$2}$");
+
+            // 7. Simbol fisika Yunani & sudut
+            res = res.replace(/θ/g, "$\\theta$");
+            res = res.replace(/(\d+)\s*°/g, "$$1^\\circ$");
+            res = res.replace(/λ/g, "$\\lambda$");
+            res = res.replace(/μ/g, "$\\mu$");
+            res = res.replace(/Δ/g, "$\\Delta$");
+
+            // 8. Pastikan opsi A-E yang memuat formula dibungkus rapi tanda dollar $
+            const lines = res.split("\n");
+            const sanitizedLines = lines.map((line: string) => {
+                const matchOpt = line.match(/^([A-E][\.\)])\s*(.*)$/i);
+                if (matchOpt) {
+                    const label = matchOpt[1];
+                    let content = matchOpt[2].trim();
+
+                    if (content.startsWith("$") && content.endsWith("$")) {
+                        return `${label} ${content}`;
+                    }
+
+                    if (/(\\text|\^|_|[⁰¹²³⁴⁵⁶⁷⁸⁹])/.test(content)) {
+                        const cleanContent = content.replace(/\$/g, "").trim();
+                        return `${label} $${cleanContent}$`;
+                    }
+                }
+                return line;
             });
 
-            const data = await res.json();
+            // 9. Rapikan tanda dollar yang bertumpuk atau kosong ($ $ atau $$)
+            let finalClean = sanitizedLines.join("\n");
+            finalClean = finalClean.replace(/\$\s*\$/g, " ");
 
-            if (!res.ok || data.error) {
-                throw new Error(data.error || "Gagal mendapatkan respons dari AI.");
-            }
-
-            if (data.result) {
-                // Perbarui langsung isi kotak textarea dengan hasil dari AI
-                setRawText(data.result);
-                setStatusMsg({
-                    type: "success",
-                    text: "✨ Berhasil! Notasi fisika dan KaTeX telah dirapikan. Silakan klik 'Bedah Soal' untuk melihat pratinjau."
-                });
-            } else {
-                throw new Error("Format teks yang dikembalikan kosong.");
-            }
+            setRawText(finalClean);
+            setStatusMsg({
+                type: "success",
+                text: "✨ Berhasil! Notasi fisika, pangkat, dan opsi telah dirapikan secara instan."
+            });
         } catch (err: any) {
-            console.error("Gagal Auto-Format:", err);
             setStatusMsg({
                 type: "error",
-                text: `Gagal memproses AI: ${err.message}`
+                text: `Gagal memproses: ${err.message}`
             });
-            alert(`Pemberitahuan: ${err.message}`);
         } finally {
             setIsAiFormatting(false);
         }
