@@ -663,48 +663,117 @@ export default function AdminBankSoalPage() {
 
         const reader = new FileReader();
         reader.onload = (event) => {
-            const text = event.target?.result as string;
-            const lines = text.split(/\r?\n/).filter((l) => l.trim() !== "");
-            if (lines.length < 2) return;
+            try {
+                const dataBuffer = event.target?.result;
+                if (!dataBuffer) return;
 
-            const parsed: ParsedQuestion[] = [];
-            for (let i = 1; i < lines.length; i++) {
-                const row = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(",");
-                const clean = row.map((cell) => cell.replace(/^"|"$/g, "").trim());
+                // Baca file secara universal (.xlsx maupun .csv)
+                const workbook = XLSX.read(dataBuffer, { type: "binary" });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
 
-                if (clean.length >= 11) {
+                // Konversi isi sheet menjadi baris array (raw: false agar teks dibaca utuh)
+                const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+
+                if (!rows || rows.length < 2) {
+                    alert("File kosong atau tidak memiliki baris data soal.");
+                    return;
+                }
+
+                // Ambil baris header (baris ke-0) untuk deteksi kolom otomatis
+                const headerRow = (rows[0] || []).map((h) => String(h || "").trim().toLowerCase());
+
+                const findIdx = (keywords: string[], fallbackIdx: number) => {
+                    const idx = headerRow.findIndex((h) => keywords.some((k) => h.includes(k)));
+                    return idx !== -1 ? idx : fallbackIdx;
+                };
+
+                // Deteksi dinamis nama kolom bahasa Indonesia & bahasa Inggris
+                const idxNo = findIdx(["no", "nomor"], 0);
+                const idxSub = findIdx(["subtes", "sub"], 1);
+                const idxStimulus = findIdx(["wacana", "stimulus"], 2);
+                const idxImg = findIdx(["link gambar", "image_url", "gambar"], 3);
+                const idxPos = findIdx(["posisi", "image_position"], 4);
+                const idxTanya = findIdx(["pertanyaan", "soal"], 5);
+                const idxA = findIdx(["opsi a", "pilihan a"], 6);
+                const idxB = findIdx(["opsi b", "pilihan b"], 7);
+                const idxC = findIdx(["opsi c", "pilihan c"], 8);
+                const idxD = findIdx(["opsi d", "pilihan d"], 9);
+                const idxE = findIdx(["opsi e", "pilihan e"], 10);
+                const idxKunci = findIdx(["kunci", "jawaban"], 11);
+                const idxLevel = findIdx(["kesukaran", "tingkat"], 12);
+                const idxBahasa = findIdx(["pembahasan", "penjelasan"], 13);
+
+                const parsed: ParsedQuestion[] = [];
+
+                for (let i = 1; i < rows.length; i++) {
+                    const r = rows[i];
+                    if (!r || r.length === 0) continue;
+
+                    const pertanyaanText = String(r[idxTanya] || "").trim();
+                    // Lewatkan baris kosong tanpa pertanyaan
+                    if (!pertanyaanText) continue;
+
+                    const optAParsed = extractOptionAndImg(String(r[idxA] || ""));
+                    const optBParsed = extractOptionAndImg(String(r[idxB] || ""));
+                    const optCParsed = extractOptionAndImg(String(r[idxC] || ""));
+                    const optDParsed = extractOptionAndImg(String(r[idxD] || ""));
+                    const optEParsed = extractOptionAndImg(String(r[idxE] || ""));
+
+                    const noSoalVal = Number(r[idxNo]) || (parsed.length + 1);
+                    const subtesVal = String(r[idxSub] || selectedSubtest || "PU").trim().toUpperCase();
+                    const rawKunci = String(r[idxKunci] || "A").trim().toUpperCase();
+                    const kunciVal = ["A", "B", "C", "D", "E"].includes(rawKunci) ? rawKunci : "A";
+                    const posVal = String(r[idxPos] || "").toLowerCase().includes("bawah") ? "below" : "above";
+
                     parsed.push({
-                        subtes_code: clean[0] || "PU",
-                        no_soal: Number(clean[1]) || i,
-                        stimulus: clean[2] || "",
-                        image_url: convertToDirectImageUrl(clean[3] || ""),
-                        image_position: clean[4] === "above" ? "above" : "below",
-                        pertanyaan: clean[5] || "",
-                        opsi_a: clean[6] || "",
-                        opsi_b: clean[7] || "",
-                        opsi_c: clean[8] || "",
-                        opsi_d: clean[9] || "",
-                        opsi_e: clean[10] || "",
-                        opsi_a_img: convertToDirectImageUrl(clean[11] || ""),
-                        opsi_b_img: convertToDirectImageUrl(clean[12] || ""),
-                        opsi_c_img: convertToDirectImageUrl(clean[13] || ""),
-                        opsi_d_img: convertToDirectImageUrl(clean[14] || ""),
-                        opsi_e_img: convertToDirectImageUrl(clean[15] || ""),
-                        kunci: (clean[16] || "A").toUpperCase(),
-                        tingkat_kesukaran: clean[17] || "Sedang",
-                        pembahasan: clean[18] || "",
+                        no_soal: noSoalVal,
+                        subtes_code: subtesVal,
+                        stimulus: String(r[idxStimulus] || "").trim(),
+                        image_url: convertToDirectImageUrl(String(r[idxImg] || "").trim()),
+                        image_position: posVal,
+                        pertanyaan: pertanyaanText,
+                        opsi_a: optAParsed.text,
+                        opsi_b: optBParsed.text,
+                        opsi_c: optCParsed.text,
+                        opsi_d: optDParsed.text,
+                        opsi_e: optEParsed.text,
+                        opsi_a_img: optAParsed.img,
+                        opsi_b_img: optBParsed.img,
+                        opsi_c_img: optCParsed.img,
+                        opsi_d_img: optDParsed.img,
+                        opsi_e_img: optEParsed.img,
+                        kunci: kunciVal,
+                        tingkat_kesukaran: String(r[idxLevel] || "Sedang").trim(),
+                        pembahasan: String(r[idxBahasa] || "").trim(),
                         author_guru: `${loggedTeacher.nama} (${loggedTeacher.mapel || "Guru Mapel"})`
                     });
                 }
-            }
 
-            setBatchQuestions(parsed);
-            setStatusMsg({
-                type: "success",
-                text: `Berhasil mengimpor ${parsed.length} butir soal dari CSV!`
-            });
+                if (parsed.length > 0) {
+                    setBatchQuestions(parsed);
+                    setStatusMsg({
+                        type: "success",
+                        text: `Berhasil mengimpor ${parsed.length} butir soal! Silakan periksa pratinjau di bawah lalu simpan.`
+                    });
+                } else {
+                    setStatusMsg({
+                        type: "error",
+                        text: "Gagal membaca soal: pastikan kolom Pertanyaan dan Opsi terisi dengan benar."
+                    });
+                }
+            } catch (err: any) {
+                setStatusMsg({
+                    type: "error",
+                    text: `Terjadi kendala saat membaca file: ${err.message}`
+                });
+            } finally {
+                // Reset input file agar dapat memilih file yang sama berulang kali
+                if (e.target) e.target.value = "";
+            }
         };
-        reader.readAsText(file);
+
+        reader.readAsBinaryString(file);
     };
 
     const handleBulkSubmit = async () => {
@@ -1422,7 +1491,13 @@ Kunci: A`}
                             onClick={() => fileInputRef.current?.click()}
                             className="border-2 border-dashed border-slate-300 hover:border-blue-600 hover:bg-blue-50/40 rounded-3xl p-8 text-center cursor-pointer transition-all space-y-3"
                         >
-                            <input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".csv, .xlsx, .xls"
+                                onChange={handleFileUpload}
+                                className="hidden"
+                            />
                             <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center mx-auto">
                                 <UploadCloud className="w-6 h-6" />
                             </div>
