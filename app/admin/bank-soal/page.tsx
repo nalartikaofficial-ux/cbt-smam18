@@ -419,6 +419,47 @@ export default function AdminBankSoalPage() {
         }
     };
 
+    const handleEditQuestion = (item: any) => {
+        // 1. Rekonstruksi teks soal
+        let text = "";
+        if (item.stimulus) {
+            text += `Wacana: ${item.stimulus}\n`;
+        }
+        if (item.image_url) {
+            text += `Gambar: ${item.image_url}\n`;
+            if (item.image_position) {
+                text += `Posisi: ${item.image_position === "above" ? "atas" : "bawah"}\n`;
+            }
+        }
+
+        text += `${item.pertanyaan || ""}\n`;
+        text += `A. ${item.opsi_a || ""}\n`;
+        text += `B. ${item.opsi_b || ""}\n`;
+        text += `C. ${item.opsi_c || ""}\n`;
+        text += `D. ${item.opsi_d || ""}\n`;
+        text += `E. ${item.opsi_e || ""}\n`;
+        text += `Kunci: ${item.kunci || "A"}`;
+
+        // Masukkan kembali ke textarea Smart Paste
+        setRawText(text);
+
+        // Pilih subtes jika ada
+        if (item.subtes_code && typeof setSelectedSubtest === "function") {
+            setSelectedSubtest(item.subtes_code);
+        }
+
+        // Tampilkan pesan status
+        if (typeof setStatusMsg === "function") {
+            setStatusMsg({
+                type: "success",
+                text: `Soal No. ${item.no_soal || item.no || ""} dimuat kembali. Silakan sesuaikan lalu klik Bedah Soal & Simpan.`
+            });
+        }
+
+        // Gulir ke area input teks
+        window.scrollTo({ top: 350, behavior: "smooth" });
+    };
+
     const extractOptionAndImg = (rawOptionText: string) => {
         let text = String(rawOptionText || "").trim();
         let img = "";
@@ -997,14 +1038,41 @@ export default function AdminBankSoalPage() {
                                                 </span>
                                             </div>
 
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDeleteServerQuestion(Number(q.no_soal), q.subtes_code)}
-                                                className="p-1 rounded-lg border border-slate-200 hover:bg-rose-50 text-slate-400 hover:text-rose-700 cursor-pointer transition-colors"
-                                                title="Hapus Soal"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
+                                            <div className="flex items-center gap-2">
+                                                {/* TOMBOL EDIT */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleEditQuestion(q)}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-800 border border-amber-300 rounded-lg transition-all shadow-sm active:scale-95"
+                                                    title="Edit soal ini"
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        className="w-3.5 h-3.5"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    >
+                                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                                    </svg>
+                                                    <span>Edit</span>
+                                                </button>
+
+                                                {/* TOMBOL HAPUS */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDeleteServerQuestion(q.no_soal, q.subtes_code || "")}
+                                                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 rounded-lg transition-all"
+                                                    title="Hapus butir soal"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+
                                         </div>
 
                                         {q.stimulus && (
