@@ -576,20 +576,99 @@ export default function AdminBankSoalPage() {
         }
     };
 
-    const handleDownloadTemplate = () => {
-        const csvHeader =
-            "subtes_code,no_soal,stimulus,image_url,image_position,pertanyaan,opsi_a,opsi_b,opsi_c,opsi_d,opsi_e,opsi_a_img,opsi_b_img,opsi_c_img,opsi_d_img,opsi_e_img,kunci,tingkat_kesukaran,pembahasan\n";
-        const sampleRows =
-            'PM,1,"Sebuah tangki silinder terisi air dengan fungsi volume $V(t) = \\pi r^2 h$.","https://drive.google.com/file/d/...","above","Jika jari-jari $r = 7\\text{ m}$ dan tinggi $h = 10\\text{ m}$, volume tangki adalah...","$1.400\\text{ m}^3$","$1.540\\text{ m}^3$","$1.600\\text{ m}^3$","$1.740\\text{ m}^3$","$1.800\\text{ m}^3$","","","","","","B","Sedang","Gunakan formula tabung"\n';
+    const handleDownloadCsvTemplate = () => {
+        // 1. Header kolom resmi yang cocok dengan sistem CBT & database
+        const headers = [
+            "no_soal",
+            "subtes_code",
+            "stimulus",
+            "image_url",
+            "image_position",
+            "pertanyaan",
+            "opsi_a",
+            "opsi_b",
+            "opsi_c",
+            "opsi_d",
+            "opsi_e",
+            "kunci",
+            "kesukaran",
+            "pembahasan"
+        ];
 
-        const blob = new Blob([csvHeader + sampleRows], { type: "text/csv;charset=utf-8;" });
+        // 2. Baris data contoh (lengkap: rumus KaTeX, wacana, opsi, dan format gambar)
+        const sampleRows = [
+            [
+                "1",
+                "PK",
+                "Sebuah partikel bergerak di sepanjang garis lurus.",
+                "https://lh3.googleusercontent.com/d/contoh_id_gambar_soal",
+                "above",
+                "Sebuah partikel bergerak dengan persamaan kecepatan $v(t) = 3t^2 + 4t$. Berapakah percepatan partikel saat $t = 2\\text{ s}$?",
+                "$12\\text{ m/s}^2$",
+                "$16\\text{ m/s}^2$",
+                "$20\\text{ m/s}^2$",
+                "$24\\text{ m/s}^2$",
+                "$28\\text{ m/s}^2$",
+                "B",
+                "Sedang",
+                "Percepatan merupakan turunan pertama: $a(t) = 6t + 4$. Saat $t = 2\\text{ s}$, diperoleh $a(2) = 16\\text{ m/s}^2$."
+            ],
+            [
+                "2",
+                "PM",
+                "Taraf intensitas bunyi sebuah mesin rata-rata dinyatakan dalam desibel (dB) dengan rumus $TI = 10 \\log (I / I_0)$.",
+                "",
+                "above",
+                "Jika intensitas sumber bunyi $I = 10^{-6}\\text{ W/m}^2$ dan ambang pendengaran $I_0 = 10^{-12}\\text{ W/m}^2$, hitung taraf intensitasnya!",
+                "$40\\text{ dB}$",
+                "$50\\text{ dB}$",
+                "$60\\text{ dB}$",
+                "$70\\text{ dB}$",
+                "$80\\text{ dB}$",
+                "C",
+                "Sedang",
+                "$TI = 10 \\log(10^6) = 60\\text{ dB}$."
+            ],
+            [
+                "3",
+                "PU",
+                "Semua atlet binaan sekolah wajib mengikuti program latihan kebugaran secara teratur.",
+                "",
+                "above",
+                "Berdasarkan premis di atas, simpulan yang paling tepat dan logis adalah ...",
+                "Tidak ada atlet binaan sekolah yang tidak mengikuti latihan kebugaran.",
+                "Sebagian siswa yang bukan atlet juga rajin mengikuti latihan kebugaran.",
+                "Semua siswa di sekolah tersebut merupakan atlet binaan berprestasi.",
+                "Latihan kebugaran hanya diperuntukkan bagi atlet cabang atletik.",
+                "Atlet yang tidak berlatih tetap diizinkan mengikuti turnamen resmi.",
+                "A",
+                "Sedang",
+                "Pernyataan 'Semua A mengikuti B' ekuivalen secara logika dengan 'Tidak ada A yang tidak mengikuti B'."
+            ]
+        ];
+
+        // 3. Helper pembersih sel: amankan tanda kutip dua dan koma agar kolom tidak pecah
+        const formatCell = (val: string) => {
+            if (!val) return '""';
+            return `"${val.replace(/"/g, '""')}"`;
+        };
+
+        // 4. Susun string CSV dengan Byte Order Mark (BOM: \uFEFF) untuk kompatibilitas penuh Excel & Google Sheets
+        const csvContent =
+            "\uFEFF" +
+            headers.map(h => `"${h}"`).join(",") + "\n" +
+            sampleRows.map(row => row.map(formatCell).join(",")).join("\n");
+
+        // 5. Unduh otomatis melalui Blob
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.setAttribute("download", `TEMPLATE_BANK_SOAL_${selectedPaket}.csv`);
+        link.setAttribute("download", "template_bank_soal_cbt.csv");
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     };
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1333,7 +1412,7 @@ Kunci: A`}
 
                             <button
                                 type="button"
-                                onClick={handleDownloadTemplate}
+                                onClick={handleDownloadCsvTemplate}
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs transition-colors cursor-pointer"
                             >
                                 <Download className="w-3.5 h-3.5 text-emerald-600" />
