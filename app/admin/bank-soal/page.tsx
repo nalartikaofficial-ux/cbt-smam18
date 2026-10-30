@@ -1,5 +1,6 @@
 "use client";
 
+import * as XLSX from "xlsx";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -576,99 +577,84 @@ export default function AdminBankSoalPage() {
         }
     };
 
-    const handleDownloadCsvTemplate = () => {
-        // 1. Header kolom resmi yang cocok dengan sistem CBT & database
-        const headers = [
-            "no_soal",
-            "subtes_code",
-            "stimulus",
-            "image_url",
-            "image_position",
-            "pertanyaan",
-            "opsi_a",
-            "opsi_b",
-            "opsi_c",
-            "opsi_d",
-            "opsi_e",
-            "kunci",
-            "kesukaran",
-            "pembahasan"
+    const handleDownloadExcelTemplate = () => {
+        // 1. Data template dengan kolom dan baris lengkap
+        const data = [
+            {
+                "No": 1,
+                "Subtes": "PK",
+                "Wacana / Stimulus": "Sebuah partikel bergerak di sepanjang garis lurus.",
+                "Link Gambar (Opsional)": "https://lh3.googleusercontent.com/d/contoh_link_gambar",
+                "Posisi Gambar": "above",
+                "Pertanyaan": "Sebuah partikel bergerak dengan kecepatan $v(t) = 3t^2 + 4t$. Berapakah percepatan partikel saat $t = 2\\text{ s}$?",
+                "Opsi A": "$12\\text{ m/s}^2$",
+                "Opsi B": "$16\\text{ m/s}^2$",
+                "Opsi C": "$20\\text{ m/s}^2$",
+                "Opsi D": "$24\\text{ m/s}^2$",
+                "Opsi E": "$28\\text{ m/s}^2$",
+                "Kunci Jawaban": "B",
+                "Tingkat Kesukaran": "Sedang",
+                "Pembahasan": "Turunan pertama $a(t) = 6t + 4$. Saat $t = 2\\text{ s}$, $a(2) = 16\\text{ m/s}^2$."
+            },
+            {
+                "No": 2,
+                "Subtes": "PM",
+                "Wacana / Stimulus": "Taraf intensitas bunyi mesin rata-rata dinyatakan dalam desibel (dB) dengan rumus $TI = 10 \\log(I/I_0)$.",
+                "Link Gambar (Opsional)": "",
+                "Posisi Gambar": "above",
+                "Pertanyaan": "Jika $I = 10^{-6}\\text{ W/m}^2$ dan $I_0 = 10^{-12}\\text{ W/m}^2$, hitung besar taraf intensitas bunyinya!",
+                "Opsi A": "$40\\text{ dB}$",
+                "Opsi B": "$50\\text{ dB}$",
+                "Opsi C": "$60\\text{ dB}$",
+                "Opsi D": "$70\\text{ dB}$",
+                "Opsi E": "$80\\text{ dB}$",
+                "Kunci Jawaban": "C",
+                "Tingkat Kesukaran": "Sedang",
+                "Pembahasan": "$TI = 10 \\log(10^6) = 60\\text{ dB}$."
+            },
+            {
+                "No": 3,
+                "Subtes": "PU",
+                "Wacana / Stimulus": "Semua atlet binaan sekolah wajib mengikuti program kebugaran secara teratur.",
+                "Link Gambar (Opsional)": "",
+                "Posisi Gambar": "above",
+                "Pertanyaan": "Berdasarkan premis di atas, simpulan yang paling tepat adalah ...",
+                "Opsi A": "Tidak ada atlet binaan sekolah yang tidak mengikuti latihan kebugaran.",
+                "Opsi B": "Sebagian atlet binaan sekolah tidak mengikuti latihan kebugaran.",
+                "Opsi C": "Semua siswa sekolah merupakan atlet binaan.",
+                "Opsi D": "Latihan kebugaran hanya untuk atlet cabang atletik.",
+                "Opsi E": "Atlet yang tidak berlatih tetap berprestasi.",
+                "Kunci Jawaban": "A",
+                "Tingkat Kesukaran": "Sedang",
+                "Pembahasan": "Pernyataan 'Semua A adalah B' setara dengan 'Tidak ada A yang bukan B'."
+            }
         ];
 
-        // 2. Baris data contoh (lengkap: rumus KaTeX, wacana, opsi, dan format gambar)
-        const sampleRows = [
-            [
-                "1",
-                "PK",
-                "Sebuah partikel bergerak di sepanjang garis lurus.",
-                "https://lh3.googleusercontent.com/d/contoh_id_gambar_soal",
-                "above",
-                "Sebuah partikel bergerak dengan persamaan kecepatan $v(t) = 3t^2 + 4t$. Berapakah percepatan partikel saat $t = 2\\text{ s}$?",
-                "$12\\text{ m/s}^2$",
-                "$16\\text{ m/s}^2$",
-                "$20\\text{ m/s}^2$",
-                "$24\\text{ m/s}^2$",
-                "$28\\text{ m/s}^2$",
-                "B",
-                "Sedang",
-                "Percepatan merupakan turunan pertama: $a(t) = 6t + 4$. Saat $t = 2\\text{ s}$, diperoleh $a(2) = 16\\text{ m/s}^2$."
-            ],
-            [
-                "2",
-                "PM",
-                "Taraf intensitas bunyi sebuah mesin rata-rata dinyatakan dalam desibel (dB) dengan rumus $TI = 10 \\log (I / I_0)$.",
-                "",
-                "above",
-                "Jika intensitas sumber bunyi $I = 10^{-6}\\text{ W/m}^2$ dan ambang pendengaran $I_0 = 10^{-12}\\text{ W/m}^2$, hitung taraf intensitasnya!",
-                "$40\\text{ dB}$",
-                "$50\\text{ dB}$",
-                "$60\\text{ dB}$",
-                "$70\\text{ dB}$",
-                "$80\\text{ dB}$",
-                "C",
-                "Sedang",
-                "$TI = 10 \\log(10^6) = 60\\text{ dB}$."
-            ],
-            [
-                "3",
-                "PU",
-                "Semua atlet binaan sekolah wajib mengikuti program latihan kebugaran secara teratur.",
-                "",
-                "above",
-                "Berdasarkan premis di atas, simpulan yang paling tepat dan logis adalah ...",
-                "Tidak ada atlet binaan sekolah yang tidak mengikuti latihan kebugaran.",
-                "Sebagian siswa yang bukan atlet juga rajin mengikuti latihan kebugaran.",
-                "Semua siswa di sekolah tersebut merupakan atlet binaan berprestasi.",
-                "Latihan kebugaran hanya diperuntukkan bagi atlet cabang atletik.",
-                "Atlet yang tidak berlatih tetap diizinkan mengikuti turnamen resmi.",
-                "A",
-                "Sedang",
-                "Pernyataan 'Semua A mengikuti B' ekuivalen secara logika dengan 'Tidak ada A yang tidak mengikuti B'."
-            ]
+        // 2. Buat Lembar Kerja (Worksheet)
+        const worksheet = XLSX.utils.json_to_sheet(data);
+
+        // 3. Atur Lebar Kolom agar tidak dempet dan otomatis rapi saat dibuka
+        worksheet["!cols"] = [
+            { wch: 6 },   // No
+            { wch: 10 },  // Subtes
+            { wch: 35 },  // Wacana
+            { wch: 30 },  // Link Gambar
+            { wch: 14 },  // Posisi Gambar
+            { wch: 45 },  // Pertanyaan
+            { wch: 18 },  // Opsi A
+            { wch: 18 },  // Opsi B
+            { wch: 18 },  // Opsi C
+            { wch: 18 },  // Opsi D
+            { wch: 18 },  // Opsi E
+            { wch: 14 },  // Kunci
+            { wch: 16 },  // Tingkat Kesukaran
+            { wch: 40 }   // Pembahasan
         ];
 
-        // 3. Helper pembersih sel: amankan tanda kutip dua dan koma agar kolom tidak pecah
-        const formatCell = (val: string) => {
-            if (!val) return '""';
-            return `"${val.replace(/"/g, '""')}"`;
-        };
-
-        // 4. Susun string CSV dengan Byte Order Mark (BOM: \uFEFF) untuk kompatibilitas penuh Excel & Google Sheets
-        const csvContent =
-            "\uFEFF" +
-            headers.map(h => `"${h}"`).join(",") + "\n" +
-            sampleRows.map(row => row.map(formatCell).join(",")).join("\n");
-
-        // 5. Unduh otomatis melalui Blob
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", "template_bank_soal_cbt.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        // 4. Masukkan ke Workbook dan Unduh sebagai .xlsx
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Bank Soal CBT");
+        XLSX.writeFile(workbook, "Template_Bank_Soal_CBT_SMA_M18.xlsx");
     };
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1412,11 +1398,23 @@ Kunci: A`}
 
                             <button
                                 type="button"
-                                onClick={handleDownloadCsvTemplate}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs transition-colors cursor-pointer"
+                                onClick={handleDownloadExcelTemplate}
+                                className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-400 rounded-full transition-all duration-200 shadow-sm hover:shadow active:scale-95"
                             >
-                                <Download className="w-3.5 h-3.5 text-emerald-600" />
-                                <span>Unduh Template Lengkap CSV</span>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="w-4 h-4 text-emerald-700 stroke-[2.2]"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="7 10 12 15 17 10" />
+                                    <line x1="12" y1="15" x2="12" y2="3" />
+                                </svg>
+                                <span>Unduh Template Lengkap (Excel .xlsx)</span>
                             </button>
                         </div>
 
