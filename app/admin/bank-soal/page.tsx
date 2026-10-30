@@ -420,18 +420,35 @@ export default function AdminBankSoalPage() {
     };
 
     const handleEditQuestion = (item: any) => {
-        // 1. Rekonstruksi teks soal
-        let text = "";
-        if (item.stimulus) {
-            text += `Wacana: ${item.stimulus}\n`;
+        // 1. ISI FORM SATUAN MANUAL DENGAN VARIABEL ASLI
+        setNoSoal(String(item.no_soal || item.no || "1"));
+        if (item.subtes_code || item.subtes) {
+            setSelectedSubtest(item.subtes_code || item.subtes);
         }
+        setStimulus(item.stimulus || "");
+        setImageUrl(item.image_url || "");
+        setImagePosition(item.image_position === "above" ? "above" : "below");
+        setPertanyaan(item.pertanyaan || "");
+
+        setOpsiA(item.opsi_a || "");
+        setOpsiB(item.opsi_b || "");
+        setOpsiC(item.opsi_c || "");
+        setOpsiD(item.opsi_d || "");
+        setOpsiE(item.opsi_e || "");
+
+        setKunci(item.kunci || "A");
+        if (item.kesukaran) setKesukaran(item.kesukaran);
+        if (item.pembahasan) setPembahasan(item.pembahasan);
+
+        // 2. ISI JUGA KE SMART PASTE (CADANGAN TEKS LENGKAP)
+        let text = "";
+        if (item.stimulus) text += `Wacana: ${item.stimulus}\n`;
         if (item.image_url) {
             text += `Gambar: ${item.image_url}\n`;
             if (item.image_position) {
                 text += `Posisi: ${item.image_position === "above" ? "atas" : "bawah"}\n`;
             }
         }
-
         text += `${item.pertanyaan || ""}\n`;
         text += `A. ${item.opsi_a || ""}\n`;
         text += `B. ${item.opsi_b || ""}\n`;
@@ -439,25 +456,15 @@ export default function AdminBankSoalPage() {
         text += `D. ${item.opsi_d || ""}\n`;
         text += `E. ${item.opsi_e || ""}\n`;
         text += `Kunci: ${item.kunci || "A"}`;
-
-        // Masukkan kembali ke textarea Smart Paste
         setRawText(text);
 
-        // Pilih subtes jika ada
-        if (item.subtes_code && typeof setSelectedSubtest === "function") {
-            setSelectedSubtest(item.subtes_code);
-        }
+        // 3. TAMPILKAN STATUS DAN GULIR KE ATAS
+        setStatusMsg({
+            type: "success",
+            text: `Soal No. ${item.no_soal || item.no || ""} berhasil dimuat ke form input. Silakan edit kolom yang diinginkan lalu simpan.`
+        });
 
-        // Tampilkan pesan status
-        if (typeof setStatusMsg === "function") {
-            setStatusMsg({
-                type: "success",
-                text: `Soal No. ${item.no_soal || item.no || ""} dimuat kembali. Silakan sesuaikan lalu klik Bedah Soal & Simpan.`
-            });
-        }
-
-        // Gulir ke area input teks
-        window.scrollTo({ top: 350, behavior: "smooth" });
+        window.scrollTo({ top: 300, behavior: "smooth" });
     };
 
     const extractOptionAndImg = (rawOptionText: string) => {
