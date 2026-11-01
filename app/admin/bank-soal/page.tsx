@@ -33,15 +33,44 @@ import {
 const GOOGLE_SCRIPT_API_URL =
     "https://script.google.com/macros/s/AKfycbxXeMuz-VXgbdUOESiOOLL5NlLrSMVfrdvOCwhgBbjLWwOy3ASkTjnWJSAIONFDrdY7hg/exec";
 
-// HELPER RENDER FORMULA LATEX / KATEX (LANGSUNG RENDER VISUAL)
+// HELPER RENDER FORMULA LATEX / KATEX (OTOMATIS DETEKSI RUMUS MESKIPUN TANPA TANDA $)
 export const MathRenderer = ({ content }: { content: any }) => {
+    const [katexReady, setKatexReady] = useState(false);
+
+    // Pastikan KaTeX benar-benar sudah siap sebelum merender
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        if ((window as any).katex) {
+            setKatexReady(true);
+            return;
+        }
+        const timer = setInterval(() => {
+            if ((window as any).katex) {
+                setKatexReady(true);
+                clearInterval(timer);
+            }
+        }, 100);
+        return () => clearInterval(timer);
+    }, []);
+
     if (content === null || content === undefined) return null;
+    let text = String(content).replace(/\\n/g, "\n");
+    if (!text.trim()) return null;
 
-    // 1. Bersihkan \n harfiah menjadi spasi / baris baru
-    let textContent = String(content).replace(/\\n/g, "\n");
-    if (!textContent.trim()) return null;
+    // AUTO-WRAP: Jika teks memuat rumus (ada \log, \cdot, \frac, ^, dll) tapi lupa diberi tanda $, otomatis bungkus!
+    if (!text.includes("$") && /(\\log|\b\^|\\cdot|\\frac|\\sqrt|\\alpha|\\beta|\\times)/.test(text)) {
+        // Jika ada pengantar kalimat seperti "Nilai dari ...:\n", pisahkan teks pengantar dan rumusnya
+        const newlineIdx = text.indexOf("\n");
+        if (newlineIdx !== -1) {
+            const pre = text.slice(0, newlineIdx + 1);
+            const math = text.slice(newlineIdx + 1).trim();
+            text = `${pre}$$${math}$$`;
+        } else {
+            text = `$$${text.trim()}$$`;
+        }
+    }
 
-    const parts = textContent.split(/(\$\$[\s\S]*?\$\$|\$[^\$]+?\$)/g);
+    const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^\$]+?\$)/g);
 
     return (
         <span>
@@ -50,11 +79,10 @@ export const MathRenderer = ({ content }: { content: any }) => {
                     const isDisplay = part.startsWith("$$");
                     let formula = isDisplay ? part.slice(2, -2).trim() : part.slice(1, -1).trim();
 
-                    // OTOMATIS TAMBAHKAN BASIS KOSONG {} JIKA LOGARITMA DIAWALI TANDA ^
-                    // Mengubah ^3\log atau ^5\log menjadi {}^3\log agar KaTeX tidak error
+                    // Perbaiki basis logaritma depan ala Indonesia: ^3\log menjadi {}^3\log
                     formula = formula.replace(/(^|[\s\+\-\*\(\=\/])\^([0-9a-zA-Z]+)(\\log|\blog)/g, "$1{}^$2$3");
 
-                    if (typeof window !== "undefined" && (window as any).katex) {
+                    if (katexReady && typeof window !== "undefined" && (window as any).katex) {
                         try {
                             const html = (window as any).katex.renderToString(formula, {
                                 displayMode: isDisplay,
@@ -63,7 +91,7 @@ export const MathRenderer = ({ content }: { content: any }) => {
                             return (
                                 <span
                                     key={idx}
-                                    className={isDisplay ? "block my-2 overflow-x-auto text-center" : "inline-block px-0.5"}
+                                    className={isDisplay ? "block my-2 overflow-x-auto text-center" : "inline-block px-1"}
                                     dangerouslySetInnerHTML={{ __html: html }}
                                 />
                             );
