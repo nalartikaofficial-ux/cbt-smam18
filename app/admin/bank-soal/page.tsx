@@ -33,47 +33,61 @@ import {
 const GOOGLE_SCRIPT_API_URL =
     "https://script.google.com/macros/s/AKfycbxXeMuz-VXgbdUOESiOOLL5NlLrSMVfrdvOCwhgBbjLWwOy3ASkTjnWJSAIONFDrdY7hg/exec";
 
-// HELPER RENDER FORMULA LATEX / KATEX
+// HELPER RENDER FORMULA LATEX / KATEX (LANGSUNG RENDER VISUAL)
 export const MathRenderer = ({ content }: { content: any }) => {
-    if (content === null || content === undefined) return null;
-    const textContent = String(content);
-    if (!textContent.trim()) return null;
+    const [renderedHtml, setRenderedHtml] = useState<string | null>(null);
 
-    const parts = textContent.split(/(\$\$[\s\S]*?\$\$|\$[^\$]+?\$)/g);
+    useEffect(() => {
+        if (content === null || content === undefined) return;
+        const textContent = String(content);
+        if (!textContent.trim()) return;
 
-    return (
-        <span>
-            {parts.map((part, idx) => {
+        const renderFormulas = () => {
+            const katex = typeof window !== "undefined" ? (window as any).katex : null;
+            const parts = textContent.split(/(\$\$[\s\S]*?\$\$|\$[^\$]+?\$)/g);
+
+            const htmlResult = parts.map((part) => {
                 if (part.startsWith("$$") && part.endsWith("$$")) {
-                    const formula = part.slice(2, -2);
-                    if (typeof window !== "undefined" && (window as any).katex) {
+                    const formula = part.slice(2, -2).trim();
+                    if (katex) {
                         try {
-                            const html = (window as any).katex.renderToString(formula, { displayMode: true, throwOnError: false });
-                            return <span key={idx} className="block my-1 overflow-x-auto" dangerouslySetInnerHTML={{ __html: html }} />;
+                            return katex.renderToString(formula, { displayMode: true, throwOnError: false });
                         } catch { }
                     }
-                    return <span key={idx} className="font-mono text-blue-900 font-bold">{formula}</span>;
+                    return `<span class="block my-1 font-mono text-blue-900 font-bold">${formula}</span>`;
                 } else if (part.startsWith("$") && part.endsWith("$")) {
-                    const formula = part.slice(1, -1);
-                    if (typeof window !== "undefined" && (window as any).katex) {
+                    const formula = part.slice(1, -1).trim();
+                    if (katex) {
                         try {
-                            const html = (window as any).katex.renderToString(formula, { displayMode: false, throwOnError: false });
-                            return <span key={idx} className="inline-block px-0.5" dangerouslySetInnerHTML={{ __html: html }} />;
+                            return katex.renderToString(formula, { displayMode: false, throwOnError: false });
                         } catch { }
                     }
-                    return (
-                        <span
-                            key={idx}
-                            className="inline-block px-1 py-0.2 mx-0.5 rounded bg-blue-50 border border-blue-200 font-mono text-blue-900 font-semibold text-[11px]"
-                        >
-                            {formula}
-                        </span>
-                    );
+                    return `<span class="inline-block px-1 py-0.2 mx-0.5 rounded bg-blue-50 border border-blue-200 font-mono text-blue-900 font-semibold text-[11px]">${formula}</span>`;
                 }
-                return <span key={idx}>{part}</span>;
-            })}
-        </span>
-    );
+                return part;
+            }).join("");
+
+            setRenderedHtml(htmlResult);
+        };
+
+        if (typeof window !== "undefined" && (window as any).katex) {
+            renderFormulas();
+        } else {
+            const checkTimer = setInterval(() => {
+                if ((window as any).katex) {
+                    renderFormulas();
+                    clearInterval(checkTimer);
+                }
+            }, 100);
+            return () => clearInterval(checkTimer);
+        }
+    }, [content]);
+
+    if (!content) return null;
+    if (renderedHtml) {
+        return <span dangerouslySetInnerHTML={{ __html: renderedHtml }} />;
+    }
+    return <span>{String(content)}</span>;
 };
 
 // HELPER GAMBAR GOOGLE DRIVE CDN
@@ -132,7 +146,6 @@ interface SubtestDurationItem {
 export default function AdminBankSoalPage() {
     const router = useRouter();
 
-    // STATE REACT DITEMPATKAN DI DALAM KOMPONEN
     const [isAiFormatting, setIsAiFormatting] = useState(false);
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [loggedTeacher, setLoggedTeacher] = useState<{ nama: string; mapel?: string }>({
@@ -192,6 +205,9 @@ export default function AdminBankSoalPage() {
     ]);
     const [isSavingDurations, setIsSavingDurations] = useState(false);
 
+    // STATE BUKA / TUTUP PREVIEW IMPORT CSV
+    const [showCsvPreview, setShowCsvPreview] = useState(true);
+
     const [testInputUrl, setTestInputUrl] = useState("");
     const [testedDirectUrl, setTestedDirectUrl] = useState("");
     const [isCopied, setIsCopied] = useState(false);
@@ -239,17 +255,14 @@ export default function AdminBankSoalPage() {
         try {
             let res = rawText;
 
-            // 1. Normalisasi karakter minus & spasi Word yang sering merusak rumus
             res = res.replace(/[\u2010\u2013\u2014\u2212]/g, "-");
 
-            // 2. Kamus superscript unicode Word (⁰ ¹ ² ³ ⁴ ⁵ ⁶ ⁷ ⁸ ⁹ ⁻ ⁺)
             const supMap: Record<string, string> = {
                 '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
                 '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
                 '⁻': '-', '⁺': '+'
             };
 
-            // 3. Konversi notasi ilmiah eksponen: 10⁻⁶, 10⁻¹², 10^5, dll.
             res = res.replace(/10\s*([⁻\-]?)\s*([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_, sign, exps) => {
                 const s = sign ? "-" : "";
                 const e = exps.split("").map((c: string) => supMap[c] || c).join("");
@@ -257,32 +270,27 @@ export default function AdminBankSoalPage() {
             });
             res = res.replace(/10\s*\^\s*(-?\d+)/g, "$10^{$1}$");
 
-            // 4. Konversi satuan fisika berpangkat (W/m², m/s², kg/m³, dll.)
             res = res.replace(/\bW\s*\/\s*m[²2]/gi, "\\text{W/m}^2");
             res = res.replace(/\bm\s*\/\s*s[²2]/gi, "\\text{m/s}^2");
             res = res.replace(/\bm\s*\/\s*s\b/gi, "\\text{m/s}");
             res = res.replace(/\bkg\s*\/\s*m[³3]/gi, "\\text{kg/m}^3");
 
-            // 5. Gabungkan angka/eksponen yang berdampingan langsung dengan satuan
             res = res.replace(/(\$10\^\{[^\}]+\}\$)\s*(\\text\{[^\}]+\})/g, (_, exp, unit) => {
                 const cleanExp = exp.replace(/\$/g, "");
                 return `${cleanExp} ${unit}`;
             });
             res = res.replace(/(\b\d+(\.\d+)?)\s*(\\text\{[^\}]+\})/g, "$1 $3");
 
-            // 6. Subskrip fisika umum (I₀, v₀, a_t, F_total)
             res = res.replace(/\bI\s*[₀0]\b/g, "$I_0$");
             res = res.replace(/\bv\s*[₀0]\b/g, "$v_0$");
             res = res.replace(/\b([a-zA-Z])_([0-9a-zA-Z]+)\b/g, "$$1_{$2}$");
 
-            // 7. Simbol fisika Yunani & sudut
             res = res.replace(/θ/g, "$\\theta$");
             res = res.replace(/(\d+)\s*°/g, "$$1^\\circ$");
             res = res.replace(/λ/g, "$\\lambda$");
             res = res.replace(/μ/g, "$\\mu$");
             res = res.replace(/Δ/g, "$\\Delta$");
 
-            // 8. Pastikan opsi A-E yang memuat formula dibungkus rapi tanda dollar $
             const lines = res.split("\n");
             const sanitizedLines = lines.map((line: string) => {
                 const matchOpt = line.match(/^([A-E][\.\)])\s*(.*)$/i);
@@ -302,7 +310,6 @@ export default function AdminBankSoalPage() {
                 return line;
             });
 
-            // 9. Rapikan tanda dollar yang bertumpuk atau kosong ($ $ atau $$)
             let finalClean = sanitizedLines.join("\n");
             finalClean = finalClean.replace(/\$\s*\$/g, " ");
 
@@ -421,7 +428,6 @@ export default function AdminBankSoalPage() {
     };
 
     const handleEditQuestion = (item: any) => {
-        // 1. ISI FORM SATUAN MANUAL DENGAN VARIABEL ASLI
         setNoSoal(String(item.no_soal || item.no || "1"));
         if (item.subtes_code || item.subtes) {
             setSelectedSubtest(item.subtes_code || item.subtes);
@@ -441,7 +447,6 @@ export default function AdminBankSoalPage() {
         if (item.kesukaran) setKesukaran(item.kesukaran);
         if (item.pembahasan) setPembahasan(item.pembahasan);
 
-        // 2. ISI JUGA KE SMART PASTE (CADANGAN TEKS LENGKAP)
         let text = "";
         if (item.stimulus) text += `Wacana: ${item.stimulus}\n`;
         if (item.image_url) {
@@ -459,7 +464,6 @@ export default function AdminBankSoalPage() {
         text += `Kunci: ${item.kunci || "A"}`;
         setRawText(text);
 
-        // 3. TAMPILKAN STATUS DAN GULIR KE ATAS
         setStatusMsg({
             type: "success",
             text: `Soal No. ${item.no_soal || item.no || ""} berhasil dimuat ke form input. Silakan edit kolom yang diinginkan lalu simpan.`
@@ -483,7 +487,7 @@ export default function AdminBankSoalPage() {
     };
 
     // ========================================================
-    // PARSER SMART PASTE: MEMBEDAH SOAL & OPSI (AUTO-WRAP LATEX)
+    // PARSER SMART PASTE: MEMBEDAH SOAL & OPSI
     // ========================================================
     const handleParseRawText = () => {
         if (!rawText.trim()) return;
@@ -577,8 +581,10 @@ export default function AdminBankSoalPage() {
         }
     };
 
+    // ========================================================
+    // DOWNLOAD TEMPLATE EXCEL RESMI (.XLSX)
+    // ========================================================
     const handleDownloadExcelTemplate = () => {
-        // 1. Data template dengan kolom dan baris lengkap
         const data = [
             {
                 "No": 1,
@@ -630,33 +636,32 @@ export default function AdminBankSoalPage() {
             }
         ];
 
-        // 2. Buat Lembar Kerja (Worksheet)
         const worksheet = XLSX.utils.json_to_sheet(data);
-
-        // 3. Atur Lebar Kolom agar tidak dempet dan otomatis rapi saat dibuka
         worksheet["!cols"] = [
-            { wch: 6 },   // No
-            { wch: 10 },  // Subtes
-            { wch: 35 },  // Wacana
-            { wch: 30 },  // Link Gambar
-            { wch: 14 },  // Posisi Gambar
-            { wch: 45 },  // Pertanyaan
-            { wch: 18 },  // Opsi A
-            { wch: 18 },  // Opsi B
-            { wch: 18 },  // Opsi C
-            { wch: 18 },  // Opsi D
-            { wch: 18 },  // Opsi E
-            { wch: 14 },  // Kunci
-            { wch: 16 },  // Tingkat Kesukaran
-            { wch: 40 }   // Pembahasan
+            { wch: 6 },
+            { wch: 10 },
+            { wch: 35 },
+            { wch: 30 },
+            { wch: 14 },
+            { wch: 45 },
+            { wch: 18 },
+            { wch: 18 },
+            { wch: 18 },
+            { wch: 18 },
+            { wch: 18 },
+            { wch: 14 },
+            { wch: 16 },
+            { wch: 40 }
         ];
 
-        // 4. Masukkan ke Workbook dan Unduh sebagai .xlsx
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Bank Soal CBT");
         XLSX.writeFile(workbook, "Template_Bank_Soal_CBT_SMA_M18.xlsx");
     };
 
+    // ========================================================
+    // IMPORT FILE CSV / XLSX KE ANTRIAN BATCH
+    // ========================================================
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -667,12 +672,10 @@ export default function AdminBankSoalPage() {
                 const dataBuffer = event.target?.result;
                 if (!dataBuffer) return;
 
-                // Baca file secara universal (.xlsx maupun .csv)
                 const workbook = XLSX.read(dataBuffer, { type: "binary" });
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
 
-                // Konversi isi sheet menjadi baris array (raw: false agar teks dibaca utuh)
                 const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
 
                 if (!rows || rows.length < 2) {
@@ -680,7 +683,6 @@ export default function AdminBankSoalPage() {
                     return;
                 }
 
-                // Ambil baris header (baris ke-0) untuk deteksi kolom otomatis
                 const headerRow = (rows[0] || []).map((h) => String(h || "").trim().toLowerCase());
 
                 const findIdx = (keywords: string[], fallbackIdx: number) => {
@@ -688,7 +690,6 @@ export default function AdminBankSoalPage() {
                     return idx !== -1 ? idx : fallbackIdx;
                 };
 
-                // Deteksi dinamis nama kolom bahasa Indonesia & bahasa Inggris
                 const idxNo = findIdx(["no", "nomor"], 0);
                 const idxSub = findIdx(["subtes", "sub"], 1);
                 const idxStimulus = findIdx(["wacana", "stimulus"], 2);
@@ -711,7 +712,6 @@ export default function AdminBankSoalPage() {
                     if (!r || r.length === 0) continue;
 
                     const pertanyaanText = String(r[idxTanya] || "").trim();
-                    // Lewatkan baris kosong tanpa pertanyaan
                     if (!pertanyaanText) continue;
 
                     const optAParsed = extractOptionAndImg(String(r[idxA] || ""));
@@ -752,9 +752,10 @@ export default function AdminBankSoalPage() {
 
                 if (parsed.length > 0) {
                     setBatchQuestions(parsed);
+                    setShowCsvPreview(true);
                     setStatusMsg({
                         type: "success",
-                        text: `Berhasil mengimpor ${parsed.length} butir soal! Silakan periksa pratinjau di bawah lalu simpan.`
+                        text: `Berhasil mengimpor ${parsed.length} butir soal! Klik pratinjau di bawah untuk memeriksa isinya sebelum disimpan.`
                     });
                 } else {
                     setStatusMsg({
@@ -768,7 +769,6 @@ export default function AdminBankSoalPage() {
                     text: `Terjadi kendala saat membaca file: ${err.message}`
                 });
             } finally {
-                // Reset input file agar dapat memilih file yang sama berulang kali
                 if (e.target) e.target.value = "";
             }
         };
@@ -1160,7 +1160,7 @@ export default function AdminBankSoalPage() {
                         ) : filteredServerQuestions.length === 0 ? (
                             <div className="text-center py-12 text-slate-400 space-y-2">
                                 <p className="text-sm font-medium">Belum ada butir soal di {selectedPaket.replace("_", " ")}.</p>
-                                <p className="text-xs">Gunakan tab <strong>Smart Paste</strong> atau <strong>Input Satuan</strong> untuk menambahkan soal.</p>
+                                <p className="text-xs">Gunakan tab <strong>Smart Paste</strong>, <strong>Import Massal CSV</strong>, atau <strong>Input Satuan</strong> untuk menambahkan soal.</p>
                             </div>
                         ) : (
                             <div className="space-y-4 max-h-[600px] overflow-y-auto pr-1">
@@ -1180,7 +1180,6 @@ export default function AdminBankSoalPage() {
                                             </div>
 
                                             <div className="flex items-center gap-2">
-                                                {/* TOMBOL EDIT */}
                                                 <button
                                                     type="button"
                                                     onClick={() => handleEditQuestion(q)}
@@ -1203,7 +1202,6 @@ export default function AdminBankSoalPage() {
                                                     <span>Edit</span>
                                                 </button>
 
-                                                {/* TOMBOL HAPUS */}
                                                 <button
                                                     type="button"
                                                     onClick={() => handleDeleteServerQuestion(q.no_soal, q.subtes_code || "")}
@@ -1213,7 +1211,6 @@ export default function AdminBankSoalPage() {
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>
-
                                         </div>
 
                                         {q.stimulus && (
@@ -1452,13 +1449,13 @@ Kunci: A`}
                     </div>
                 )}
 
-                {/* TAB 2: UPLOAD MASSAL FILE CSV */}
+                {/* TAB 2: UPLOAD MASSAL FILE CSV / EXCEL DENGAN PREVIEW INTERAKTIF */}
                 {inputMode === "csv" && (
                     <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-6 shadow-sm">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                             <div>
                                 <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                                    Upload Massal Soal via File CSV
+                                    Upload Massal Soal via File CSV / Excel
                                 </h2>
                                 <p className="text-xs text-slate-500">
                                     Mendukung formula KaTeX serta link Google Drive langsung pada kolom stimulus maupun pilihan A–E.
@@ -1502,28 +1499,150 @@ Kunci: A`}
                                 <UploadCloud className="w-6 h-6" />
                             </div>
                             <div>
-                                <p className="text-sm font-bold text-slate-800">Klik untuk Memilih File CSV dari Komputer</p>
-                                <p className="text-xs text-slate-400 mt-0.5">Mendukung format .csv standar Excel atau Google Sheets</p>
+                                <p className="text-sm font-bold text-slate-800">Klik untuk Memilih File CSV atau Excel dari Komputer</p>
+                                <p className="text-xs text-slate-400 mt-0.5">Mendukung format .csv atau .xlsx standar Excel dan Google Sheets</p>
                             </div>
                         </div>
 
+                        {/* HASIL PREVIEW INTERAKTIF IMPORT CSV */}
                         {batchQuestions.length > 0 && (
-                            <div className="space-y-4 pt-2">
-                                <div className="flex items-center justify-between">
-                                    <div className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
-                                        <Eye className="w-4 h-4 text-blue-700" />
-                                        <span>Pratinjau Hasil Impor CSV ({batchQuestions.length} Soal)</span>
-                                    </div>
+                            <div className="space-y-4 pt-4 border-t border-slate-200">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                     <button
                                         type="button"
-                                        disabled={isSubmitting}
-                                        onClick={handleBulkSubmit}
-                                        className="px-5 py-2.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-blue-900/20 cursor-pointer disabled:opacity-50"
+                                        onClick={() => setShowCsvPreview(!showCsvPreview)}
+                                        className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition-all cursor-pointer shadow-xs active:scale-95"
                                     >
-                                        <Send className="w-3.5 h-3.5" />
-                                        <span>{isSubmitting ? "Mengunggah..." : `Simpan Semua ke ${selectedPaket}`}</span>
+                                        <Eye className="w-4 h-4 text-blue-700" />
+                                        <span>Pratinjau Hasil Impor CSV ({batchQuestions.length} Soal)</span>
+                                        <span className="text-[10px] bg-blue-200/70 text-blue-900 px-1.5 py-0.5 rounded font-mono">
+                                            {showCsvPreview ? "Tutup ▲" : "Lihat Hasil ▼"}
+                                        </span>
                                     </button>
+
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setBatchQuestions([])}
+                                            className="px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-xl transition-all cursor-pointer flex items-center gap-1"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                            <span>Bersihkan</span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            disabled={isSubmitting}
+                                            onClick={handleBulkSubmit}
+                                            className="px-5 py-2.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-blue-900/20 cursor-pointer disabled:opacity-50"
+                                        >
+                                            <Send className="w-3.5 h-3.5" />
+                                            <span>{isSubmitting ? "Mengunggah..." : `Simpan Semua ke ${selectedPaket}`}</span>
+                                        </button>
+                                    </div>
                                 </div>
+
+                                {showCsvPreview && (
+                                    <div className="space-y-4 max-h-[580px] overflow-y-auto pr-1 animate-in fade-in duration-200">
+                                        {batchQuestions.map((q, qIdx) => (
+                                            <div key={qIdx} className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 text-left">
+                                                <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="px-2 py-0.5 rounded bg-[#1e3a8a] text-white font-mono font-bold text-[10px]">
+                                                            SOAL NO. {q.no_soal}
+                                                        </span>
+                                                        <span className="font-semibold text-slate-700 text-[11px] font-mono">
+                                                            Subtes: {q.subtes_code}
+                                                        </span>
+                                                        <span className="text-[11px] text-slate-500 font-medium">
+                                                            Tingkat: {q.tingkat_kesukaran || "Sedang"}
+                                                        </span>
+                                                    </div>
+                                                    <span className="px-2.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-300 font-mono text-[11px] font-black">
+                                                        KUNCI: {q.kunci}
+                                                    </span>
+                                                </div>
+
+                                                {q.stimulus && (
+                                                    <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed italic">
+                                                        <MathRenderer content={q.stimulus} />
+                                                    </div>
+                                                )}
+
+                                                {q.image_url && q.image_position === "above" && (
+                                                    <div className="p-2 bg-white rounded-xl border border-slate-200 flex justify-center">
+                                                        <img
+                                                            src={q.image_url}
+                                                            alt={`Gambar Soal No. ${q.no_soal}`}
+                                                            referrerPolicy="no-referrer"
+                                                            className="max-h-52 rounded object-contain"
+                                                            onError={(e) => { (e.target as any).style.display = "none"; }}
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                <div className="text-xs font-semibold text-slate-900 leading-relaxed">
+                                                    <MathRenderer content={q.pertanyaan} />
+                                                </div>
+
+                                                {q.image_url && q.image_position !== "above" && (
+                                                    <div className="p-2 bg-white rounded-xl border border-slate-200 flex justify-center">
+                                                        <img
+                                                            src={q.image_url}
+                                                            alt={`Gambar Soal No. ${q.no_soal}`}
+                                                            referrerPolicy="no-referrer"
+                                                            className="max-h-52 rounded object-contain"
+                                                            onError={(e) => { (e.target as any).style.display = "none"; }}
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                                                    {[
+                                                        { label: "A", text: q.opsi_a, img: q.opsi_a_img },
+                                                        { label: "B", text: q.opsi_b, img: q.opsi_b_img },
+                                                        { label: "C", text: q.opsi_c, img: q.opsi_c_img },
+                                                        { label: "D", text: q.opsi_d, img: q.opsi_d_img },
+                                                        { label: "E", text: q.opsi_e, img: q.opsi_e_img }
+                                                    ].map((opt) => (
+                                                        <div
+                                                            key={opt.label}
+                                                            className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 ${String(q.kunci).trim().toUpperCase() === opt.label
+                                                                    ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
+                                                                    : "bg-white border-slate-200 text-slate-700"
+                                                                }`}
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="w-5 h-5 rounded bg-slate-100 flex items-center justify-center font-mono font-bold text-[10px] shrink-0 border border-slate-200">
+                                                                    {opt.label}
+                                                                </span>
+                                                                <span className="text-[11px] leading-tight">
+                                                                    <MathRenderer content={opt.text || "-"} />
+                                                                </span>
+                                                            </div>
+                                                            {opt.img && (
+                                                                <img
+                                                                    src={opt.img}
+                                                                    alt={`Gambar ${opt.label}`}
+                                                                    referrerPolicy="no-referrer"
+                                                                    className="h-8 max-w-[70px] object-contain rounded border bg-white p-0.5"
+                                                                    onError={(e) => { (e.target as any).style.display = "none"; }}
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                {q.pembahasan && (
+                                                    <div className="p-2.5 bg-blue-50/60 rounded-xl border border-blue-100 text-[11px] text-blue-900">
+                                                        <strong>Pembahasan: </strong>
+                                                        <MathRenderer content={q.pembahasan} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -1837,7 +1956,7 @@ Kunci: A`}
                                                     src={opt.img}
                                                     alt={`Gambar ${opt.label}`}
                                                     referrerPolicy="no-referrer"
-                                                    className="h-10 max-w-[90px] object-contain rounded border bg-white p-0.5"
+                                                    className="h-8 max-w-[70px] object-contain rounded border bg-white p-0.5"
                                                     onError={(e) => { (e.target as any).style.display = "none"; }}
                                                 />
                                             )}
