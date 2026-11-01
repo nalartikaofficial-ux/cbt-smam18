@@ -95,19 +95,20 @@ export function convertToDirectImageUrl(rawUrl: string): string {
     if (!rawUrl) return "";
     const clean = String(rawUrl).trim();
 
+    // Deteksi ID Google Drive dari berbagai variasi URL
     const driveRegex = /(?:drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)|id=)([a-zA-Z0-9_-]{20,})/;
     const driveMatch = clean.match(driveRegex);
     if (driveMatch && driveMatch[1]) {
         return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
     }
 
-    if (clean.includes("dropbox.com") && clean.includes("dl=0")) {
-        return clean.replace("dl=0", "dl=1");
+    // Jika sudah format lh3 Google CDN, langsung gunakan
+    if (clean.includes("lh3.googleusercontent.com")) {
+        return clean;
     }
 
-    const gimgMatch = clean.match(/imgurl=([^&]+)/);
-    if (gimgMatch && gimgMatch[1]) {
-        return decodeURIComponent(gimgMatch[1]);
+    if (clean.includes("dropbox.com") && clean.includes("dl=0")) {
+        return clean.replace("dl=0", "dl=1");
     }
 
     return clean;
@@ -1209,14 +1210,21 @@ export default function AdminBankSoalPage() {
                                         )}
 
                                         {q.image_url && (
-                                            <div className="p-2 bg-white rounded-xl border border-slate-200 flex justify-center">
+                                            <div className="p-3 my-2 bg-white rounded-xl border border-slate-200 flex flex-col items-center justify-center">
                                                 <img
-                                                    src={q.image_url}
-                                                    alt={`Soal No. ${q.no_soal}`}
+                                                    src={convertToDirectImageUrl(q.image_url)}
+                                                    alt={`Gambar Soal No. ${q.no_soal}`}
                                                     referrerPolicy="no-referrer"
-                                                    className="max-h-52 rounded object-contain"
-                                                    onError={(e) => { (e.target as any).style.display = "none"; }}
+                                                    className="max-h-64 max-w-full rounded-lg object-contain shadow-xs"
                                                 />
+                                                <a
+                                                    href={q.image_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-[10px] text-blue-600 hover:underline mt-1.5"
+                                                >
+                                                    Buka gambar di tab baru ↗
+                                                </a>
                                             </div>
                                         )}
 
