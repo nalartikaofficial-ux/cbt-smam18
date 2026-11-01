@@ -241,6 +241,8 @@ export default function AdminBankSoalPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+    const [isEditingMode, setIsEditingMode] = useState(false);
+
     // ========================================================
     // FORMAT SOAL DENGAN GEMINI AI + PENGAMAN REGEX
     // ========================================================
@@ -428,6 +430,7 @@ export default function AdminBankSoalPage() {
     };
 
     const handleEditQuestion = (item: any) => {
+        setIsEditingMode(true); // TANDAI SEDANG MODE EDIT
         setNoSoal(String(item.no_soal || item.no || "1"));
         if (item.subtes_code || item.subtes) {
             setSelectedSubtest(item.subtes_code || item.subtes);
@@ -444,32 +447,18 @@ export default function AdminBankSoalPage() {
         setOpsiE(item.opsi_e || "");
 
         setKunci(item.kunci || "A");
-        if (item.kesukaran) setKesukaran(item.kesukaran);
+        if (item.kesukaran || item.tingkat_kesukaran) setKesukaran(item.kesukaran || item.tingkat_kesukaran);
         if (item.pembahasan) setPembahasan(item.pembahasan);
 
-        let text = "";
-        if (item.stimulus) text += `Wacana: ${item.stimulus}\n`;
-        if (item.image_url) {
-            text += `Gambar: ${item.image_url}\n`;
-            if (item.image_position) {
-                text += `Posisi: ${item.image_position === "above" ? "atas" : "bawah"}\n`;
-            }
-        }
-        text += `${item.pertanyaan || ""}\n`;
-        text += `A. ${item.opsi_a || ""}\n`;
-        text += `B. ${item.opsi_b || ""}\n`;
-        text += `C. ${item.opsi_c || ""}\n`;
-        text += `D. ${item.opsi_d || ""}\n`;
-        text += `E. ${item.opsi_e || ""}\n`;
-        text += `Kunci: ${item.kunci || "A"}`;
-        setRawText(text);
+        // Buka tab form manual agar guru langsung melihat formnya
+        setInputMode("manual");
 
         setStatusMsg({
             type: "success",
-            text: `Soal No. ${item.no_soal || item.no || ""} berhasil dimuat ke form input. Silakan edit kolom yang diinginkan lalu simpan.`
+            text: `Memuat Soal No. ${item.no_soal} (${item.subtes_code}) untuk diedit. Setelah selesai, klik 'Perbarui Soal'.`
         });
 
-        window.scrollTo({ top: 300, behavior: "smooth" });
+        window.scrollTo({ top: 350, behavior: "smooth" });
     };
 
     const extractOptionAndImg = (rawOptionText: string) => {
@@ -1608,8 +1597,8 @@ Kunci: A`}
                                                         <div
                                                             key={opt.label}
                                                             className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 ${String(q.kunci).trim().toUpperCase() === opt.label
-                                                                    ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
-                                                                    : "bg-white border-slate-200 text-slate-700"
+                                                                ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
+                                                                : "bg-white border-slate-200 text-slate-700"
                                                                 }`}
                                                         >
                                                             <div className="flex items-center gap-2">
@@ -1658,7 +1647,7 @@ Kunci: A`}
                                 setStatusMsg(null);
 
                                 const payload = {
-                                    action: "add_question",
+                                    action: isEditingMode ? "edit_question" : "add_question",
                                     paket: selectedPaket,
                                     package: selectedPaket,
                                     subtes_code: selectedSubtest,
@@ -1871,7 +1860,13 @@ Kunci: A`}
                                 className="w-full py-3 rounded-2xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
                             >
                                 <Send className="w-4 h-4" />
-                                <span>{isSubmitting ? "Menyimpan..." : `Simpan Soal ke ${selectedPaket}`}</span>
+                                <span>
+                                    {isSubmitting
+                                        ? "Menyimpan ke Server..."
+                                        : isEditingMode
+                                            ? `Perbarui Soal No. ${noSoal} di ${selectedPaket}`
+                                            : `Simpan Soal Baru ke ${selectedPaket}`}
+                                </span>
                             </button>
                         </form>
 
