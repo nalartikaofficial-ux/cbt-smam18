@@ -35,59 +35,46 @@ const GOOGLE_SCRIPT_API_URL =
 
 // HELPER RENDER FORMULA LATEX / KATEX (LANGSUNG RENDER VISUAL)
 export const MathRenderer = ({ content }: { content: any }) => {
-    const [renderedHtml, setRenderedHtml] = useState<string | null>(null);
+    if (content === null || content === undefined) return null;
 
-    useEffect(() => {
-        if (content === null || content === undefined) return;
-        const textContent = String(content);
-        if (!textContent.trim()) return;
+    // 1. Bersihkan \n harfiah menjadi spasi / baris baru
+    let textContent = String(content).replace(/\\n/g, "\n");
+    if (!textContent.trim()) return null;
 
-        const renderFormulas = () => {
-            const katex = typeof window !== "undefined" ? (window as any).katex : null;
-            const parts = textContent.split(/(\$\$[\s\S]*?\$\$|\$[^\$]+?\$)/g);
+    const parts = textContent.split(/(\$\$[\s\S]*?\$\$|\$[^\$]+?\$)/g);
 
-            const htmlResult = parts.map((part) => {
-                if (part.startsWith("$$") && part.endsWith("$$")) {
-                    const formula = part.slice(2, -2).trim();
-                    if (katex) {
+    return (
+        <span>
+            {parts.map((part, idx) => {
+                if ((part.startsWith("$$") && part.endsWith("$$")) || (part.startsWith("$") && part.endsWith("$"))) {
+                    const isDisplay = part.startsWith("$$");
+                    let formula = isDisplay ? part.slice(2, -2).trim() : part.slice(1, -1).trim();
+
+                    // OTOMATIS TAMBAHKAN BASIS KOSONG {} JIKA LOGARITMA DIAWALI TANDA ^
+                    // Mengubah ^3\log atau ^5\log menjadi {}^3\log agar KaTeX tidak error
+                    formula = formula.replace(/(^|[\s\+\-\*\(\=\/])\^([0-9a-zA-Z]+)(\\log|\blog)/g, "$1{}^$2$3");
+
+                    if (typeof window !== "undefined" && (window as any).katex) {
                         try {
-                            return katex.renderToString(formula, { displayMode: true, throwOnError: false });
+                            const html = (window as any).katex.renderToString(formula, {
+                                displayMode: isDisplay,
+                                throwOnError: false
+                            });
+                            return (
+                                <span
+                                    key={idx}
+                                    className={isDisplay ? "block my-2 overflow-x-auto text-center" : "inline-block px-0.5"}
+                                    dangerouslySetInnerHTML={{ __html: html }}
+                                />
+                            );
                         } catch { }
                     }
-                    return `<span class="block my-1 font-mono text-blue-900 font-bold">${formula}</span>`;
-                } else if (part.startsWith("$") && part.endsWith("$")) {
-                    const formula = part.slice(1, -1).trim();
-                    if (katex) {
-                        try {
-                            return katex.renderToString(formula, { displayMode: false, throwOnError: false });
-                        } catch { }
-                    }
-                    return `<span class="inline-block px-1 py-0.2 mx-0.5 rounded bg-blue-50 border border-blue-200 font-mono text-blue-900 font-semibold text-[11px]">${formula}</span>`;
+                    return <span key={idx} className="font-mono text-blue-900 font-bold">{formula}</span>;
                 }
-                return part;
-            }).join("");
-
-            setRenderedHtml(htmlResult);
-        };
-
-        if (typeof window !== "undefined" && (window as any).katex) {
-            renderFormulas();
-        } else {
-            const checkTimer = setInterval(() => {
-                if ((window as any).katex) {
-                    renderFormulas();
-                    clearInterval(checkTimer);
-                }
-            }, 100);
-            return () => clearInterval(checkTimer);
-        }
-    }, [content]);
-
-    if (!content) return null;
-    if (renderedHtml) {
-        return <span dangerouslySetInnerHTML={{ __html: renderedHtml }} />;
-    }
-    return <span>{String(content)}</span>;
+                return <span key={idx}>{part}</span>;
+            })}
+        </span>
+    );
 };
 
 // HELPER GAMBAR GOOGLE DRIVE CDN
