@@ -1,0 +1,4762 @@
+[
+  {
+    "index": 34,
+    "kampus": "UNIVERSITAS SYIAH KUALA",
+    "prodi": "AGROTEKNOLOGI (PSDKU GAYO LUES)",
+    "daya": 23,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 23 kursi)"
+  },
+  {
+    "index": 35,
+    "kampus": "UNIVERSITAS SYIAH KUALA",
+    "prodi": "PENDIDIKAN BIOLOGI (PDSKU GAYO LUES)",
+    "daya": 17,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 17 kursi)"
+  },
+  {
+    "index": 36,
+    "kampus": "UNIVERSITAS SYIAH KUALA",
+    "prodi": "KEHUTANAN (PSDKU GAYO LUES)",
+    "daya": 36,
+    "peminat": 19,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 19 pelamar untuk 36 kursi)"
+  },
+  {
+    "index": 63,
+    "kampus": "UNIVERSITAS SYIAH KUALA",
+    "prodi": "MANAJEMEN (PSDKU GAYO LUES)",
+    "daya": 44,
+    "peminat": 10,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 10 pelamar untuk 44 kursi)"
+  },
+  {
+    "index": 83,
+    "kampus": "UNIVERSITAS MALIKUSSALEH",
+    "prodi": "TEKNIK KIMIA",
+    "daya": 133,
+    "peminat": 126,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 126 pelamar untuk 133 kursi)"
+  },
+  {
+    "index": 87,
+    "kampus": "UNIVERSITAS MALIKUSSALEH",
+    "prodi": "TEKNIK ARSITEKTUR",
+    "daya": 84,
+    "peminat": 73,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 73 pelamar untuk 84 kursi)"
+  },
+  {
+    "index": 90,
+    "kampus": "UNIVERSITAS MALIKUSSALEH",
+    "prodi": "AKUAKULTUR",
+    "daya": 87,
+    "peminat": 26,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 26 pelamar untuk 87 kursi)"
+  },
+  {
+    "index": 92,
+    "kampus": "UNIVERSITAS MALIKUSSALEH",
+    "prodi": "PENDIDIKAN FISIKA",
+    "daya": 88,
+    "peminat": 33,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 33 pelamar untuk 88 kursi)"
+  },
+  {
+    "index": 93,
+    "kampus": "UNIVERSITAS MALIKUSSALEH",
+    "prodi": "PENDIDIKAN KIMIA",
+    "daya": 70,
+    "peminat": 34,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 34 pelamar untuk 70 kursi)"
+  },
+  {
+    "index": 95,
+    "kampus": "UNIVERSITAS MALIKUSSALEH",
+    "prodi": "PENDIDIKAN VOKASIONAL TEKNIK MESIN",
+    "daya": 52,
+    "peminat": 21,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 21 pelamar untuk 52 kursi)"
+  },
+  {
+    "index": 97,
+    "kampus": "UNIVERSITAS MALIKUSSALEH",
+    "prodi": "ILMU KELAUTAN",
+    "daya": 82,
+    "peminat": 47,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 47 pelamar untuk 82 kursi)"
+  },
+  {
+    "index": 98,
+    "kampus": "UNIVERSITAS MALIKUSSALEH",
+    "prodi": "TEKNIK MATERIAL",
+    "daya": 82,
+    "peminat": 44,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 44 pelamar untuk 82 kursi)"
+  },
+  {
+    "index": 99,
+    "kampus": "UNIVERSITAS MALIKUSSALEH",
+    "prodi": "TEKNIK LOGISTIK",
+    "daya": 54,
+    "peminat": 46,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 46 pelamar untuk 54 kursi)"
+  },
+  {
+    "index": 102,
+    "kampus": "UNIVERSITAS MALIKUSSALEH",
+    "prodi": "ILMU EKONOMI & STUDI PEMBANGUNAN",
+    "daya": 153,
+    "peminat": 76,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 76 pelamar untuk 153 kursi)"
+  },
+  {
+    "index": 105,
+    "kampus": "UNIVERSITAS MALIKUSSALEH",
+    "prodi": "ILMU POLITIK",
+    "daya": 154,
+    "peminat": 54,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 54 pelamar untuk 154 kursi)"
+  },
+  {
+    "index": 106,
+    "kampus": "UNIVERSITAS MALIKUSSALEH",
+    "prodi": "ANTROPOLOGI",
+    "daya": 67,
+    "peminat": 30,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 30 pelamar untuk 67 kursi)"
+  },
+  {
+    "index": 109,
+    "kampus": "UNIVERSITAS MALIKUSSALEH",
+    "prodi": "EKONOMI SYARIAH",
+    "daya": 116,
+    "peminat": 105,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 105 pelamar untuk 116 kursi)"
+  },
+  {
+    "index": 113,
+    "kampus": "UNIVERSITAS MALIKUSSALEH",
+    "prodi": "KEWIRUSAHAAN",
+    "daya": 79,
+    "peminat": 72,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 72 pelamar untuk 79 kursi)"
+  },
+  {
+    "index": 124,
+    "kampus": "UNIVERSITAS TEUKU UMAR",
+    "prodi": "AGROTEKNOLOGI",
+    "daya": 64,
+    "peminat": 60,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 60 pelamar untuk 64 kursi)"
+  },
+  {
+    "index": 127,
+    "kampus": "UNIVERSITAS TEUKU UMAR",
+    "prodi": "AKUAKULTUR",
+    "daya": 49,
+    "peminat": 17,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 17 pelamar untuk 49 kursi)"
+  },
+  {
+    "index": 128,
+    "kampus": "UNIVERSITAS TEUKU UMAR",
+    "prodi": "SUMBER DAYA AKUATIK",
+    "daya": 45,
+    "peminat": 26,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 26 pelamar untuk 45 kursi)"
+  },
+  {
+    "index": 129,
+    "kampus": "UNIVERSITAS TEUKU UMAR",
+    "prodi": "TEKNOLOGI HASIL PERTANIAN",
+    "daya": 81,
+    "peminat": 55,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 55 pelamar untuk 81 kursi)"
+  },
+  {
+    "index": 130,
+    "kampus": "UNIVERSITAS TEUKU UMAR",
+    "prodi": "ILMU KELAUTAN",
+    "daya": 31,
+    "peminat": 17,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 17 pelamar untuk 31 kursi)"
+  },
+  {
+    "index": 133,
+    "kampus": "UNIVERSITAS TEUKU UMAR",
+    "prodi": "EKONOMI PEMBANGUNAN",
+    "daya": 62,
+    "peminat": 34,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 34 pelamar untuk 62 kursi)"
+  },
+  {
+    "index": 140,
+    "kampus": "UNIVERSITAS TEUKU UMAR",
+    "prodi": "PETERNAKAN",
+    "daya": 44,
+    "peminat": 29,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 29 pelamar untuk 44 kursi)"
+  },
+  {
+    "index": 151,
+    "kampus": "UNIVERSITAS SAMUDRA",
+    "prodi": "PENDIDIKAN FISIKA",
+    "daya": 19,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 19 kursi)"
+  },
+  {
+    "index": 152,
+    "kampus": "UNIVERSITAS SAMUDRA",
+    "prodi": "PENDIDIKAN KIMIA",
+    "daya": 15,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 15 kursi)"
+  },
+  {
+    "index": 158,
+    "kampus": "UNIVERSITAS SAMUDRA",
+    "prodi": "MATEMATIKA",
+    "daya": 16,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 16 kursi)"
+  },
+  {
+    "index": 159,
+    "kampus": "UNIVERSITAS SAMUDRA",
+    "prodi": "FISIKA",
+    "daya": 23,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 23 kursi)"
+  },
+  {
+    "index": 172,
+    "kampus": "UNIVERSITAS SAMUDRA",
+    "prodi": "GEOFISIKA",
+    "daya": 17,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 17 kursi)"
+  },
+  {
+    "index": 181,
+    "kampus": "ISBI ACEH",
+    "prodi": "SENI KARAWITAN",
+    "daya": 33,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 33 kursi)"
+  },
+  {
+    "index": 182,
+    "kampus": "ISBI ACEH",
+    "prodi": "SENI TARI",
+    "daya": 50,
+    "peminat": 31,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 31 pelamar untuk 50 kursi)"
+  },
+  {
+    "index": 183,
+    "kampus": "ISBI ACEH",
+    "prodi": "SENI TEATER",
+    "daya": 26,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 184,
+    "kampus": "ISBI ACEH",
+    "prodi": "SENI RUPA MURNI",
+    "daya": 35,
+    "peminat": 5,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 5 pelamar untuk 35 kursi)"
+  },
+  {
+    "index": 185,
+    "kampus": "ISBI ACEH",
+    "prodi": "KRIYA SENI",
+    "daya": 31,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 31 kursi)"
+  },
+  {
+    "index": 186,
+    "kampus": "ISBI ACEH",
+    "prodi": "DESAIN KOMUNIKASI VISUAL",
+    "daya": 53,
+    "peminat": 49,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 49 pelamar untuk 53 kursi)"
+  },
+  {
+    "index": 187,
+    "kampus": "ISBI ACEH",
+    "prodi": "KAJIAN SASTRA BUDAYA",
+    "daya": 26,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 188,
+    "kampus": "ISBI ACEH",
+    "prodi": "BAHASA ACEH",
+    "daya": 26,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 189,
+    "kampus": "ISBI ACEH",
+    "prodi": "DESAIN INTERIOR",
+    "daya": 32,
+    "peminat": 19,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 19 pelamar untuk 32 kursi)"
+  },
+  {
+    "index": 192,
+    "kampus": "UIN AR-RANIRY",
+    "prodi": "PENDIDIKAN TEKNIK ELEKTRO",
+    "daya": 31,
+    "peminat": 18,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 18 pelamar untuk 31 kursi)"
+  },
+  {
+    "index": 197,
+    "kampus": "UIN AR-RANIRY",
+    "prodi": "KIMIA",
+    "daya": 13,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 13 kursi)"
+  },
+  {
+    "index": 203,
+    "kampus": "UIN AR-RANIRY",
+    "prodi": "ILMU POLITIK",
+    "daya": 17,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 17 kursi)"
+  },
+  {
+    "index": 206,
+    "kampus": "UIN AR-RANIRY",
+    "prodi": "KESEJAHTERAAN SOSIAL",
+    "daya": 29,
+    "peminat": 25,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 25 pelamar untuk 29 kursi)"
+  },
+  {
+    "index": 207,
+    "kampus": "UIN AR-RANIRY",
+    "prodi": "TEKNIK FISIKA",
+    "daya": 20,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 20 kursi)"
+  },
+  {
+    "index": 246,
+    "kampus": "UNIVERSITAS SUMATERA UTARA",
+    "prodi": "SASTRA DAERAH UNTUK SASTRA MELAYU",
+    "daya": 55,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 55 kursi)"
+  },
+  {
+    "index": 248,
+    "kampus": "UNIVERSITAS SUMATERA UTARA",
+    "prodi": "SASTRA DAERAH UNTUK SASTRA BATAK",
+    "daya": 43,
+    "peminat": 28,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 28 pelamar untuk 43 kursi)"
+  },
+  {
+    "index": 278,
+    "kampus": "UNIVERSITAS NEGERI MEDAN",
+    "prodi": "PENDIDIKAN TEKNIK BANGUNAN",
+    "daya": 99,
+    "peminat": 67,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 67 pelamar untuk 99 kursi)"
+  },
+  {
+    "index": 304,
+    "kampus": "UNIVERSITAS NEGERI MEDAN",
+    "prodi": "PENDIDIKAN BAHASA PERANCIS",
+    "daya": 109,
+    "peminat": 39,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 39 pelamar untuk 109 kursi)"
+  },
+  {
+    "index": 321,
+    "kampus": "UNIVERSITAS NEGERI MEDAN",
+    "prodi": "SENI PERTUNJUKAN",
+    "daya": 51,
+    "peminat": 24,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 24 pelamar untuk 51 kursi)"
+  },
+  {
+    "index": 337,
+    "kampus": "UIN SUMATERA UTARA",
+    "prodi": "FISIKA",
+    "daya": 18,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 18 kursi)"
+  },
+  {
+    "index": 345,
+    "kampus": "UIN SYEKH ALI HASAN AHMAD ADDARY PADANGSIDIMPUAN",
+    "prodi": "BISNIS DIGITAL",
+    "daya": 94,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 94 kursi)"
+  },
+  {
+    "index": 346,
+    "kampus": "UIN SYEKH ALI HASAN AHMAD ADDARY PADANGSIDIMPUAN",
+    "prodi": "DESAIN KOMUNIKASI VISUAL",
+    "daya": 104,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 104 kursi)"
+  },
+  {
+    "index": 347,
+    "kampus": "UIN SYEKH ALI HASAN AHMAD ADDARY PADANGSIDIMPUAN",
+    "prodi": "TEKNOLOGI INFORMASI",
+    "daya": 103,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 103 kursi)"
+  },
+  {
+    "index": 413,
+    "kampus": "UIN SULTAN SYARIF KASIM",
+    "prodi": "PETERNAKAN",
+    "daya": 76,
+    "peminat": 54,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 54 pelamar untuk 76 kursi)"
+  },
+  {
+    "index": 414,
+    "kampus": "UIN SULTAN SYARIF KASIM",
+    "prodi": "MATEMATIKA",
+    "daya": 55,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 55 kursi)"
+  },
+  {
+    "index": 420,
+    "kampus": "UIN SULTAN SYARIF KASIM",
+    "prodi": "PENDIDIKAN KIMIA",
+    "daya": 67,
+    "peminat": 24,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 24 pelamar untuk 67 kursi)"
+  },
+  {
+    "index": 424,
+    "kampus": "UIN SULTAN SYARIF KASIM",
+    "prodi": "ILMU ADMINISTRASI NEGARA",
+    "daya": 156,
+    "peminat": 136,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 136 pelamar untuk 156 kursi)"
+  },
+  {
+    "index": 434,
+    "kampus": "UNIVERSITAS MARITIM RAJA ALI HAJI",
+    "prodi": "ILMU KELAUTAN",
+    "daya": 57,
+    "peminat": 50,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 50 pelamar untuk 57 kursi)"
+  },
+  {
+    "index": 435,
+    "kampus": "UNIVERSITAS MARITIM RAJA ALI HAJI",
+    "prodi": "MANAJEMEN SUMBERDAYA PERAIRAN",
+    "daya": 71,
+    "peminat": 28,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 28 pelamar untuk 71 kursi)"
+  },
+  {
+    "index": 436,
+    "kampus": "UNIVERSITAS MARITIM RAJA ALI HAJI",
+    "prodi": "PENDIDIKAN MATEMATIKA",
+    "daya": 54,
+    "peminat": 30,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 30 pelamar untuk 54 kursi)"
+  },
+  {
+    "index": 438,
+    "kampus": "UNIVERSITAS MARITIM RAJA ALI HAJI",
+    "prodi": "PENDIDIKAN KIMIA",
+    "daya": 64,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 64 kursi)"
+  },
+  {
+    "index": 439,
+    "kampus": "UNIVERSITAS MARITIM RAJA ALI HAJI",
+    "prodi": "BUDI DAYA PERAIRAN",
+    "daya": 79,
+    "peminat": 22,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 22 pelamar untuk 79 kursi)"
+  },
+  {
+    "index": 440,
+    "kampus": "UNIVERSITAS MARITIM RAJA ALI HAJI",
+    "prodi": "TEKNOLOGI HASIL PERIKANAN",
+    "daya": 71,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 71 kursi)"
+  },
+  {
+    "index": 441,
+    "kampus": "UNIVERSITAS MARITIM RAJA ALI HAJI",
+    "prodi": "SOSIAL EKONOMI PERIKANAN",
+    "daya": 85,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 85 kursi)"
+  },
+  {
+    "index": 454,
+    "kampus": "UNIVERSITAS MARITIM RAJA ALI HAJI",
+    "prodi": "KIMIA",
+    "daya": 55,
+    "peminat": 16,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 16 pelamar untuk 55 kursi)"
+  },
+  {
+    "index": 457,
+    "kampus": "UNIVERSITAS MARITIM RAJA ALI HAJI",
+    "prodi": "KAJIAN FILM, TELEVISI, DAN MEDIA",
+    "daya": 68,
+    "peminat": 48,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 48 pelamar untuk 68 kursi)"
+  },
+  {
+    "index": 545,
+    "kampus": "UNIVERSITAS NEGERI PADANG",
+    "prodi": "PENDIDIKAN NON FORMAL",
+    "daya": 77,
+    "peminat": 70,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 70 pelamar untuk 77 kursi)"
+  },
+  {
+    "index": 623,
+    "kampus": "ISI PADANG PANJANG",
+    "prodi": "SENI KARAWITAN",
+    "daya": 50,
+    "peminat": 37,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 37 pelamar untuk 50 kursi)"
+  },
+  {
+    "index": 626,
+    "kampus": "ISI PADANG PANJANG",
+    "prodi": "SENI TEATER",
+    "daya": 21,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 21 kursi)"
+  },
+  {
+    "index": 627,
+    "kampus": "ISI PADANG PANJANG",
+    "prodi": "SENI KRIYA",
+    "daya": 32,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 32 kursi)"
+  },
+  {
+    "index": 628,
+    "kampus": "ISI PADANG PANJANG",
+    "prodi": "TV DAN FILM",
+    "daya": 91,
+    "peminat": 87,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 87 pelamar untuk 91 kursi)"
+  },
+  {
+    "index": 629,
+    "kampus": "ISI PADANG PANJANG",
+    "prodi": "SENI MURNI",
+    "daya": 26,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 630,
+    "kampus": "ISI PADANG PANJANG",
+    "prodi": "FOTOGRAFI",
+    "daya": 67,
+    "peminat": 63,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 63 pelamar untuk 67 kursi)"
+  },
+  {
+    "index": 632,
+    "kampus": "ISI PADANG PANJANG",
+    "prodi": "ANTROPOLOGI BUDAYA",
+    "daya": 50,
+    "peminat": 18,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 18 pelamar untuk 50 kursi)"
+  },
+  {
+    "index": 633,
+    "kampus": "ISI PADANG PANJANG",
+    "prodi": "PENDIDIKAN KRIYA",
+    "daya": 32,
+    "peminat": 16,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 16 pelamar untuk 32 kursi)"
+  },
+  {
+    "index": 634,
+    "kampus": "ISI PADANG PANJANG",
+    "prodi": "DESAIN PRODUK",
+    "daya": 39,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 39 kursi)"
+  },
+  {
+    "index": 636,
+    "kampus": "ISI PADANG PANJANG",
+    "prodi": "HUMANITAS",
+    "daya": 25,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 25 kursi)"
+  },
+  {
+    "index": 641,
+    "kampus": "ISI PADANG PANJANG",
+    "prodi": "TARI MELAYU",
+    "daya": 26,
+    "peminat": 18,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 18 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 645,
+    "kampus": "UIN IMAM BONJOL PADANG",
+    "prodi": "MATEMATIKA",
+    "daya": 37,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 662,
+    "kampus": "UNIVERSITAS JAMBI",
+    "prodi": "PEMANFAATAN SUMBERDAYA PERIKANAN",
+    "daya": 89,
+    "peminat": 60,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 60 pelamar untuk 89 kursi)"
+  },
+  {
+    "index": 667,
+    "kampus": "UNIVERSITAS JAMBI",
+    "prodi": "FISIKA",
+    "daya": 37,
+    "peminat": 12,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 12 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 703,
+    "kampus": "UNIVERSITAS JAMBI",
+    "prodi": "SENI KARAWITAN",
+    "daya": 14,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 14 kursi)"
+  },
+  {
+    "index": 720,
+    "kampus": "UIN SULTAN THAHA SAIFUDDIN JAMBI",
+    "prodi": "KIMIA",
+    "daya": 18,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 18 kursi)"
+  },
+  {
+    "index": 721,
+    "kampus": "UIN SULTAN THAHA SAIFUDDIN JAMBI",
+    "prodi": "FISIKA",
+    "daya": 22,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 22 kursi)"
+  },
+  {
+    "index": 722,
+    "kampus": "UIN SULTAN THAHA SAIFUDDIN JAMBI",
+    "prodi": "STATISTIKA",
+    "daya": 20,
+    "peminat": 5,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 5 pelamar untuk 20 kursi)"
+  },
+  {
+    "index": 723,
+    "kampus": "UIN SULTAN THAHA SAIFUDDIN JAMBI",
+    "prodi": "BIOLOGI",
+    "daya": 36,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 36 kursi)"
+  },
+  {
+    "index": 724,
+    "kampus": "UIN SULTAN THAHA SAIFUDDIN JAMBI",
+    "prodi": "SAINS INFORMASI GEOGRAFI",
+    "daya": 41,
+    "peminat": 22,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 22 pelamar untuk 41 kursi)"
+  },
+  {
+    "index": 725,
+    "kampus": "UIN SULTAN THAHA SAIFUDDIN JAMBI",
+    "prodi": "ARSITEKTUR",
+    "daya": 38,
+    "peminat": 22,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 22 pelamar untuk 38 kursi)"
+  },
+  {
+    "index": 737,
+    "kampus": "UNIVERSITAS BENGKULU",
+    "prodi": "FISIKA",
+    "daya": 42,
+    "peminat": 29,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 29 pelamar untuk 42 kursi)"
+  },
+  {
+    "index": 739,
+    "kampus": "UNIVERSITAS BENGKULU",
+    "prodi": "KIMIA",
+    "daya": 50,
+    "peminat": 37,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 37 pelamar untuk 50 kursi)"
+  },
+  {
+    "index": 843,
+    "kampus": "UIN RADEN FATAH",
+    "prodi": "PENDIDIKAN MATEMATIKA",
+    "daya": 57,
+    "peminat": 53,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 53 pelamar untuk 57 kursi)"
+  },
+  {
+    "index": 845,
+    "kampus": "UIN RADEN FATAH",
+    "prodi": "KIMIA",
+    "daya": 80,
+    "peminat": 12,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 12 pelamar untuk 80 kursi)"
+  },
+  {
+    "index": 846,
+    "kampus": "UIN RADEN FATAH",
+    "prodi": "BIOLOGI",
+    "daya": 66,
+    "peminat": 37,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 37 pelamar untuk 66 kursi)"
+  },
+  {
+    "index": 847,
+    "kampus": "UIN RADEN FATAH",
+    "prodi": "PENDIDIKAN FISIKA",
+    "daya": 87,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 87 kursi)"
+  },
+  {
+    "index": 848,
+    "kampus": "UIN RADEN FATAH",
+    "prodi": "PENDIDIKAN KIMIA",
+    "daya": 74,
+    "peminat": 12,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 12 pelamar untuk 74 kursi)"
+  },
+  {
+    "index": 857,
+    "kampus": "UNIVERSITAS BANGKA BELITUNG",
+    "prodi": "MANAJEMEN SUMBERDAYA PERAIRAN",
+    "daya": 40,
+    "peminat": 35,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 35 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 860,
+    "kampus": "UNIVERSITAS BANGKA BELITUNG",
+    "prodi": "AKUAKULTUR",
+    "daya": 49,
+    "peminat": 41,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 41 pelamar untuk 49 kursi)"
+  },
+  {
+    "index": 863,
+    "kampus": "UNIVERSITAS BANGKA BELITUNG",
+    "prodi": "FISIKA",
+    "daya": 15,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 15 kursi)"
+  },
+  {
+    "index": 943,
+    "kampus": "UNIVERSITAS LAMPUNG",
+    "prodi": "PENDIDIKAN MUSIK",
+    "daya": 50,
+    "peminat": 39,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 39 pelamar untuk 50 kursi)"
+  },
+  {
+    "index": 948,
+    "kampus": "UNIVERSITAS LAMPUNG",
+    "prodi": "ILMU KOMPUTER PSDKU WAY KANAN",
+    "daya": 36,
+    "peminat": 27,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 27 pelamar untuk 36 kursi)"
+  },
+  {
+    "index": 962,
+    "kampus": "UNIVERSITAS LAMPUNG",
+    "prodi": "AKUNTANSI PSDKU WAY KANAN",
+    "daya": 94,
+    "peminat": 70,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 70 pelamar untuk 94 kursi)"
+  },
+  {
+    "index": 970,
+    "kampus": "INSTITUT TEKNOLOGI SUMATERA",
+    "prodi": "FISIKA",
+    "daya": 62,
+    "peminat": 42,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 42 pelamar untuk 62 kursi)"
+  },
+  {
+    "index": 983,
+    "kampus": "INSTITUT TEKNOLOGI SUMATERA",
+    "prodi": "SAINS ATMOSFIR DAN KEPLANETAN",
+    "daya": 81,
+    "peminat": 65,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 65 pelamar untuk 81 kursi)"
+  },
+  {
+    "index": 1005,
+    "kampus": "UIN RADEN INTAN LAMPUNG",
+    "prodi": "BIOLOGI",
+    "daya": 143,
+    "peminat": 47,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 47 pelamar untuk 143 kursi)"
+  },
+  {
+    "index": 1007,
+    "kampus": "UIN RADEN INTAN LAMPUNG",
+    "prodi": "SAINS DATA",
+    "daya": 144,
+    "peminat": 19,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 19 pelamar untuk 144 kursi)"
+  },
+  {
+    "index": 1008,
+    "kampus": "UIN RADEN INTAN LAMPUNG",
+    "prodi": "KIMIA",
+    "daya": 144,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 144 kursi)"
+  },
+  {
+    "index": 1009,
+    "kampus": "UIN MAHMUD YUNUS BATUSANGKAR",
+    "prodi": "SISTEM INFORMASI",
+    "daya": 122,
+    "peminat": 36,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 36 pelamar untuk 122 kursi)"
+  },
+  {
+    "index": 1010,
+    "kampus": "UIN SJECH M. DJAMIL DJAMBEK BUKITTINGGI",
+    "prodi": "STATISTIKA",
+    "daya": 46,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 46 kursi)"
+  },
+  {
+    "index": 1012,
+    "kampus": "UIN SJECH M. DJAMIL DJAMBEK BUKITTINGGI",
+    "prodi": "MATEMATIKA",
+    "daya": 46,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 46 kursi)"
+  },
+  {
+    "index": 1028,
+    "kampus": "UNIVERSITAS SULTAN AGENG TIRTAYASA",
+    "prodi": "PENDIDIKAN KIMIA",
+    "daya": 104,
+    "peminat": 100,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 100 pelamar untuk 104 kursi)"
+  },
+  {
+    "index": 1052,
+    "kampus": "UNIVERSITAS SULTAN AGENG TIRTAYASA",
+    "prodi": "PENDIDIKAN SENI PERTUNJUKAN",
+    "daya": 67,
+    "peminat": 43,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 43 pelamar untuk 67 kursi)"
+  },
+  {
+    "index": 1062,
+    "kampus": "UIN SULTAN MAULANA HASANUDDIN BANTEN",
+    "prodi": "FISIKA",
+    "daya": 19,
+    "peminat": 10,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 10 pelamar untuk 19 kursi)"
+  },
+  {
+    "index": 1159,
+    "kampus": "UIN JAKARTA",
+    "prodi": "PENDIDIKAN KIMIA",
+    "daya": 84,
+    "peminat": 67,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 67 pelamar untuk 84 kursi)"
+  },
+  {
+    "index": 1720,
+    "kampus": "ISI SURAKARTA",
+    "prodi": "ETNOMUSIKOLOGI",
+    "daya": 47,
+    "peminat": 18,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 18 pelamar untuk 47 kursi)"
+  },
+  {
+    "index": 1722,
+    "kampus": "ISI SURAKARTA",
+    "prodi": "KRIYA",
+    "daya": 34,
+    "peminat": 31,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 31 pelamar untuk 34 kursi)"
+  },
+  {
+    "index": 1735,
+    "kampus": "ISI SURAKARTA",
+    "prodi": "SENJATA TRADISIONAL KERIS",
+    "daya": 20,
+    "peminat": 5,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 5 pelamar untuk 20 kursi)"
+  },
+  {
+    "index": 1887,
+    "kampus": "UIN WALISONGO",
+    "prodi": "MATEMATIKA",
+    "daya": 59,
+    "peminat": 37,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 37 pelamar untuk 59 kursi)"
+  },
+  {
+    "index": 1888,
+    "kampus": "UIN WALISONGO",
+    "prodi": "KIMIA",
+    "daya": 75,
+    "peminat": 26,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 26 pelamar untuk 75 kursi)"
+  },
+  {
+    "index": 1889,
+    "kampus": "UIN WALISONGO",
+    "prodi": "FISIKA",
+    "daya": 50,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 50 kursi)"
+  },
+  {
+    "index": 1894,
+    "kampus": "UIN WALISONGO",
+    "prodi": "ILMU POLITIK",
+    "daya": 79,
+    "peminat": 56,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 56 pelamar untuk 79 kursi)"
+  },
+  {
+    "index": 2082,
+    "kampus": "UIN SUNAN KALIJAGA",
+    "prodi": "MATEMATIKA",
+    "daya": 66,
+    "peminat": 61,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 61 pelamar untuk 66 kursi)"
+  },
+  {
+    "index": 2083,
+    "kampus": "UIN SUNAN KALIJAGA",
+    "prodi": "FISIKA",
+    "daya": 40,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 2084,
+    "kampus": "UIN SUNAN KALIJAGA",
+    "prodi": "KIMIA",
+    "daya": 56,
+    "peminat": 42,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 42 pelamar untuk 56 kursi)"
+  },
+  {
+    "index": 2089,
+    "kampus": "UIN SUNAN KALIJAGA",
+    "prodi": "PENDIDIKAN FISIKA",
+    "daya": 61,
+    "peminat": 28,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 28 pelamar untuk 61 kursi)"
+  },
+  {
+    "index": 2090,
+    "kampus": "UIN SUNAN KALIJAGA",
+    "prodi": "PENDIDIKAN KIMIA",
+    "daya": 58,
+    "peminat": 24,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 24 pelamar untuk 58 kursi)"
+  },
+  {
+    "index": 2101,
+    "kampus": "UIN PROFESOR KIAI HAJI SAIFUDDIN ZUHRI PURWOKERTO",
+    "prodi": "ARSITEKTUR",
+    "daya": 63,
+    "peminat": 41,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 41 pelamar untuk 63 kursi)"
+  },
+  {
+    "index": 2107,
+    "kampus": "UIN SALATIGA",
+    "prodi": "SAINS DATA",
+    "daya": 54,
+    "peminat": 32,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 32 pelamar untuk 54 kursi)"
+  },
+  {
+    "index": 2108,
+    "kampus": "UIN SALATIGA",
+    "prodi": "PERPUSTAKAAN DAN SAINS INFORMASI",
+    "daya": 89,
+    "peminat": 35,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 35 pelamar untuk 89 kursi)"
+  },
+  {
+    "index": 2110,
+    "kampus": "UIN K.H. ABDURRAHMAN WAHID PEKALONGAN",
+    "prodi": "SAINS DATA",
+    "daya": 50,
+    "peminat": 40,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 40 pelamar untuk 50 kursi)"
+  },
+  {
+    "index": 2112,
+    "kampus": "UIN K.H. ABDURRAHMAN WAHID PEKALONGAN",
+    "prodi": "HUKUM BISNIS",
+    "daya": 62,
+    "peminat": 35,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 35 pelamar untuk 62 kursi)"
+  },
+  {
+    "index": 2124,
+    "kampus": "UNIVERSITAS JEMBER",
+    "prodi": "FISIKA",
+    "daya": 66,
+    "peminat": 55,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 55 pelamar untuk 66 kursi)"
+  },
+  {
+    "index": 2356,
+    "kampus": "UIN MALANG",
+    "prodi": "MATEMATIKA",
+    "daya": 105,
+    "peminat": 40,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 40 pelamar untuk 105 kursi)"
+  },
+  {
+    "index": 2357,
+    "kampus": "UIN MALANG",
+    "prodi": "BIOLOGI",
+    "daya": 135,
+    "peminat": 103,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 103 pelamar untuk 135 kursi)"
+  },
+  {
+    "index": 2358,
+    "kampus": "UIN MALANG",
+    "prodi": "KIMIA",
+    "daya": 107,
+    "peminat": 55,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 55 pelamar untuk 107 kursi)"
+  },
+  {
+    "index": 2359,
+    "kampus": "UIN MALANG",
+    "prodi": "FISIKA",
+    "daya": 133,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 133 kursi)"
+  },
+  {
+    "index": 2361,
+    "kampus": "UIN MALANG",
+    "prodi": "TEKNIK ARSITEKTUR",
+    "daya": 149,
+    "peminat": 102,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 102 pelamar untuk 149 kursi)"
+  },
+  {
+    "index": 2364,
+    "kampus": "UIN MALANG",
+    "prodi": "PENDIDIKAN IPS",
+    "daya": 170,
+    "peminat": 157,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 157 pelamar untuk 170 kursi)"
+  },
+  {
+    "index": 2365,
+    "kampus": "UIN MALANG",
+    "prodi": "BAHASA DAN SASTRA INGGRIS",
+    "daya": 219,
+    "peminat": 173,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 173 pelamar untuk 219 kursi)"
+  },
+  {
+    "index": 2369,
+    "kampus": "UIN MALANG",
+    "prodi": "PERPUSTAKAAN DAN ILMU INFORMASI",
+    "daya": 118,
+    "peminat": 86,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 86 pelamar untuk 118 kursi)"
+  },
+  {
+    "index": 2528,
+    "kampus": "UIN SUNAN AMPEL SURABAYA",
+    "prodi": "MATEMATIKA",
+    "daya": 53,
+    "peminat": 35,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 35 pelamar untuk 53 kursi)"
+  },
+  {
+    "index": 2554,
+    "kampus": "UNIVERSITAS TANJUNGPURA",
+    "prodi": "PEND. FISIKA",
+    "daya": 44,
+    "peminat": 42,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 42 pelamar untuk 44 kursi)"
+  },
+  {
+    "index": 2556,
+    "kampus": "UNIVERSITAS TANJUNGPURA",
+    "prodi": "MATEMATIKA",
+    "daya": 53,
+    "peminat": 44,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 44 pelamar untuk 53 kursi)"
+  },
+  {
+    "index": 2615,
+    "kampus": "UNIVERSITAS PALANGKARAYA",
+    "prodi": "MANAJEMEN SUMBERDAYA PERAIRAN",
+    "daya": 34,
+    "peminat": 18,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 18 pelamar untuk 34 kursi)"
+  },
+  {
+    "index": 2616,
+    "kampus": "UNIVERSITAS PALANGKARAYA",
+    "prodi": "BUDIDAYA PERAIRAN",
+    "daya": 30,
+    "peminat": 16,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 16 pelamar untuk 30 kursi)"
+  },
+  {
+    "index": 2621,
+    "kampus": "UNIVERSITAS PALANGKARAYA",
+    "prodi": "PEND. FISIKA",
+    "daya": 32,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 32 kursi)"
+  },
+  {
+    "index": 2622,
+    "kampus": "UNIVERSITAS PALANGKARAYA",
+    "prodi": "PEND. KIMIA",
+    "daya": 23,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 23 kursi)"
+  },
+  {
+    "index": 2628,
+    "kampus": "UNIVERSITAS PALANGKARAYA",
+    "prodi": "TEKNOLOGI HASIL PERIKANAN",
+    "daya": 21,
+    "peminat": 16,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 16 pelamar untuk 21 kursi)"
+  },
+  {
+    "index": 2630,
+    "kampus": "UNIVERSITAS PALANGKARAYA",
+    "prodi": "PENDIDIKAN TEKNIK BANGUNAN",
+    "daya": 30,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 30 kursi)"
+  },
+  {
+    "index": 2633,
+    "kampus": "UNIVERSITAS PALANGKARAYA",
+    "prodi": "FISIKA",
+    "daya": 23,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 23 kursi)"
+  },
+  {
+    "index": 2634,
+    "kampus": "UNIVERSITAS PALANGKARAYA",
+    "prodi": "KIMIA",
+    "daya": 30,
+    "peminat": 23,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 23 pelamar untuk 30 kursi)"
+  },
+  {
+    "index": 2643,
+    "kampus": "UNIVERSITAS PALANGKARAYA",
+    "prodi": "PEND. LUAR SEKOLAH",
+    "daya": 23,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 23 kursi)"
+  },
+  {
+    "index": 2660,
+    "kampus": "UNIVERSITAS LAMBUNG MANGKURAT",
+    "prodi": "PENDIDIKAN KIMIA",
+    "daya": 26,
+    "peminat": 23,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 23 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 2665,
+    "kampus": "UNIVERSITAS LAMBUNG MANGKURAT",
+    "prodi": "TEKNOLOGI HASIL PERIKANAN",
+    "daya": 29,
+    "peminat": 28,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 28 pelamar untuk 29 kursi)"
+  },
+  {
+    "index": 2666,
+    "kampus": "UNIVERSITAS LAMBUNG MANGKURAT",
+    "prodi": "AKUAKULTUR",
+    "daya": 21,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 21 kursi)"
+  },
+  {
+    "index": 2667,
+    "kampus": "UNIVERSITAS LAMBUNG MANGKURAT",
+    "prodi": "PERIKANAN TANGKAP",
+    "daya": 21,
+    "peminat": 12,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 12 pelamar untuk 21 kursi)"
+  },
+  {
+    "index": 2668,
+    "kampus": "UNIVERSITAS LAMBUNG MANGKURAT",
+    "prodi": "MANAJEMEN SUMBER DAYA PERAIRAN",
+    "daya": 24,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 24 kursi)"
+  },
+  {
+    "index": 2669,
+    "kampus": "UNIVERSITAS LAMBUNG MANGKURAT",
+    "prodi": "SOSIAL EKONOMI PERIKANAN",
+    "daya": 31,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 31 kursi)"
+  },
+  {
+    "index": 2682,
+    "kampus": "UNIVERSITAS LAMBUNG MANGKURAT",
+    "prodi": "FISIKA",
+    "daya": 25,
+    "peminat": 12,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 12 pelamar untuk 25 kursi)"
+  },
+  {
+    "index": 2686,
+    "kampus": "UNIVERSITAS LAMBUNG MANGKURAT",
+    "prodi": "PENDIDIKAN FISIKA",
+    "daya": 25,
+    "peminat": 19,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 19 pelamar untuk 25 kursi)"
+  },
+  {
+    "index": 2710,
+    "kampus": "UNIVERSITAS LAMBUNG MANGKURAT",
+    "prodi": "PENDIDIKAN GEOGRAFI",
+    "daya": 26,
+    "peminat": 24,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 24 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 2733,
+    "kampus": "UIN ANTASARI BANJARMASIN",
+    "prodi": "ILMU LINGKUNGAN",
+    "daya": 45,
+    "peminat": 21,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 21 pelamar untuk 45 kursi)"
+  },
+  {
+    "index": 2734,
+    "kampus": "INSTITUT TEKNOLOGI KALIMANTAN",
+    "prodi": "FISIKA",
+    "daya": 45,
+    "peminat": 19,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 19 pelamar untuk 45 kursi)"
+  },
+  {
+    "index": 2735,
+    "kampus": "INSTITUT TEKNOLOGI KALIMANTAN",
+    "prodi": "MATEMATIKA",
+    "daya": 40,
+    "peminat": 26,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 26 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 2749,
+    "kampus": "INSTITUT TEKNOLOGI KALIMANTAN",
+    "prodi": "STATISTIKA",
+    "daya": 58,
+    "peminat": 49,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 49 pelamar untuk 58 kursi)"
+  },
+  {
+    "index": 2763,
+    "kampus": "UNIVERSITAS BORNEO TARAKAN",
+    "prodi": "PENDIDIKAN MATEMATIKA",
+    "daya": 49,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 49 kursi)"
+  },
+  {
+    "index": 2765,
+    "kampus": "UNIVERSITAS BORNEO TARAKAN",
+    "prodi": "MANAJEMEN SUMBER DAYA PERAIRAN",
+    "daya": 40,
+    "peminat": 33,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 33 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 2766,
+    "kampus": "UNIVERSITAS BORNEO TARAKAN",
+    "prodi": "AKUAKULTUR",
+    "daya": 46,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 46 kursi)"
+  },
+  {
+    "index": 2767,
+    "kampus": "UNIVERSITAS BORNEO TARAKAN",
+    "prodi": "TEKNOLOGI HASIL PERIKANAN",
+    "daya": 52,
+    "peminat": 39,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 39 pelamar untuk 52 kursi)"
+  },
+  {
+    "index": 2793,
+    "kampus": "UNIVERSITAS UDAYANA",
+    "prodi": "FISIKA",
+    "daya": 64,
+    "peminat": 52,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 52 pelamar untuk 64 kursi)"
+  },
+  {
+    "index": 2808,
+    "kampus": "UNIVERSITAS UDAYANA",
+    "prodi": "MANAJEMEN SUMBER DAYA PERAIRAN",
+    "daya": 92,
+    "peminat": 91,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 91 pelamar untuk 92 kursi)"
+  },
+  {
+    "index": 2822,
+    "kampus": "UNIVERSITAS UDAYANA",
+    "prodi": "SASTRA BALI",
+    "daya": 31,
+    "peminat": 10,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 10 pelamar untuk 31 kursi)"
+  },
+  {
+    "index": 2832,
+    "kampus": "UNIVERSITAS UDAYANA",
+    "prodi": "AKUAKULTUR",
+    "daya": 50,
+    "peminat": 16,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 16 pelamar untuk 50 kursi)"
+  },
+  {
+    "index": 2838,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN MATEMATIKA",
+    "daya": 82,
+    "peminat": 62,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 62 pelamar untuk 82 kursi)"
+  },
+  {
+    "index": 2840,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN KIMIA",
+    "daya": 36,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 36 kursi)"
+  },
+  {
+    "index": 2841,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN FISIKA",
+    "daya": 46,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 46 kursi)"
+  },
+  {
+    "index": 2843,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "ILMU KEOLAHRAGAAN",
+    "daya": 34,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 34 kursi)"
+  },
+  {
+    "index": 2844,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN TEKNIK ELEKTRO",
+    "daya": 52,
+    "peminat": 21,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 21 pelamar untuk 52 kursi)"
+  },
+  {
+    "index": 2845,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN TEKNIK MESIN",
+    "daya": 60,
+    "peminat": 39,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 39 pelamar untuk 60 kursi)"
+  },
+  {
+    "index": 2846,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN IPA",
+    "daya": 85,
+    "peminat": 31,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 31 pelamar untuk 85 kursi)"
+  },
+  {
+    "index": 2847,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "KIMIA",
+    "daya": 44,
+    "peminat": 31,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 31 pelamar untuk 44 kursi)"
+  },
+  {
+    "index": 2848,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "MATEMATIKA",
+    "daya": 38,
+    "peminat": 17,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 17 pelamar untuk 38 kursi)"
+  },
+  {
+    "index": 2849,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "BIOLOGI",
+    "daya": 33,
+    "peminat": 32,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 32 pelamar untuk 33 kursi)"
+  },
+  {
+    "index": 2850,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "AKUAKULTUR",
+    "daya": 71,
+    "peminat": 22,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 22 pelamar untuk 71 kursi)"
+  },
+  {
+    "index": 2854,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN PANCASILA DAN KEWARGANEGARAAN",
+    "daya": 124,
+    "peminat": 77,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 77 pelamar untuk 124 kursi)"
+  },
+  {
+    "index": 2855,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN EKONOMI",
+    "daya": 90,
+    "peminat": 83,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 83 pelamar untuk 90 kursi)"
+  },
+  {
+    "index": 2856,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN SEJARAH",
+    "daya": 106,
+    "peminat": 51,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 51 pelamar untuk 106 kursi)"
+  },
+  {
+    "index": 2857,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN GEOGRAFI",
+    "daya": 95,
+    "peminat": 32,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 32 pelamar untuk 95 kursi)"
+  },
+  {
+    "index": 2860,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN SENI RUPA",
+    "daya": 67,
+    "peminat": 10,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 10 pelamar untuk 67 kursi)"
+  },
+  {
+    "index": 2861,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN KESEJAHTERAAN KELUARGA",
+    "daya": 67,
+    "peminat": 29,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 29 pelamar untuk 67 kursi)"
+  },
+  {
+    "index": 2863,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "TEKNOLOGI PENDIDIKAN",
+    "daya": 133,
+    "peminat": 29,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 29 pelamar untuk 133 kursi)"
+  },
+  {
+    "index": 2867,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN KEPELATIHAN OLAHRAGA",
+    "daya": 56,
+    "peminat": 30,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 30 pelamar untuk 56 kursi)"
+  },
+  {
+    "index": 2869,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN GURU ANAK USIA DINI",
+    "daya": 104,
+    "peminat": 45,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 45 pelamar untuk 104 kursi)"
+  },
+  {
+    "index": 2870,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PEND. BAHASA JEPANG",
+    "daya": 83,
+    "peminat": 40,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 40 pelamar untuk 83 kursi)"
+  },
+  {
+    "index": 2871,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN BAHASA BALI",
+    "daya": 64,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 64 kursi)"
+  },
+  {
+    "index": 2872,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN SOSIOLOGI",
+    "daya": 85,
+    "peminat": 48,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 48 pelamar untuk 85 kursi)"
+  },
+  {
+    "index": 2874,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "PENDIDIKAN VOKASIONAL SENI KULINER",
+    "daya": 71,
+    "peminat": 56,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 56 pelamar untuk 71 kursi)"
+  },
+  {
+    "index": 2875,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "GEOGRAFI",
+    "daya": 89,
+    "peminat": 29,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 29 pelamar untuk 89 kursi)"
+  },
+  {
+    "index": 2876,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "FISIKA",
+    "daya": 48,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 48 kursi)"
+  },
+  {
+    "index": 2880,
+    "kampus": "UNIVERSITAS PENDIDIKAN GANESHA",
+    "prodi": "TEKNOLOGI REKAYASA PENGINDERAAN JAUH",
+    "daya": 67,
+    "peminat": 40,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 40 pelamar untuk 67 kursi)"
+  },
+  {
+    "index": 2908,
+    "kampus": "UNIVERSITAS NUSA CENDANA",
+    "prodi": "FISIKA",
+    "daya": 41,
+    "peminat": 32,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 32 pelamar untuk 41 kursi)"
+  },
+  {
+    "index": 2909,
+    "kampus": "UNIVERSITAS NUSA CENDANA",
+    "prodi": "KIMIA",
+    "daya": 48,
+    "peminat": 44,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 44 pelamar untuk 48 kursi)"
+  },
+  {
+    "index": 2928,
+    "kampus": "UNIVERSITAS NUSA CENDANA",
+    "prodi": "PEND. LUAR SEKOLAH",
+    "daya": 40,
+    "peminat": 39,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 39 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 2945,
+    "kampus": "UNIVERSITAS TIMOR",
+    "prodi": "AGROTEKNOLOGI",
+    "daya": 68,
+    "peminat": 60,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 60 pelamar untuk 68 kursi)"
+  },
+  {
+    "index": 2948,
+    "kampus": "UNIVERSITAS TIMOR",
+    "prodi": "PEND. MATEMATIKA",
+    "daya": 86,
+    "peminat": 53,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 53 pelamar untuk 86 kursi)"
+  },
+  {
+    "index": 2949,
+    "kampus": "UNIVERSITAS TIMOR",
+    "prodi": "BIOLOGI",
+    "daya": 54,
+    "peminat": 47,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 47 pelamar untuk 54 kursi)"
+  },
+  {
+    "index": 2950,
+    "kampus": "UNIVERSITAS TIMOR",
+    "prodi": "MATEMATIKA",
+    "daya": 32,
+    "peminat": 12,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 12 pelamar untuk 32 kursi)"
+  },
+  {
+    "index": 2951,
+    "kampus": "UNIVERSITAS TIMOR",
+    "prodi": "KIMIA",
+    "daya": 54,
+    "peminat": 37,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 37 pelamar untuk 54 kursi)"
+  },
+  {
+    "index": 2953,
+    "kampus": "UNIVERSITAS TIMOR",
+    "prodi": "ADM. NEGARA",
+    "daya": 172,
+    "peminat": 116,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 116 pelamar untuk 172 kursi)"
+  },
+  {
+    "index": 2954,
+    "kampus": "UNIVERSITAS TIMOR",
+    "prodi": "ILMU PEMERINTAHAN",
+    "daya": 153,
+    "peminat": 109,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 109 pelamar untuk 153 kursi)"
+  },
+  {
+    "index": 2956,
+    "kampus": "UNIVERSITAS TIMOR",
+    "prodi": "PEND. BAHASA INGGRIS",
+    "daya": 94,
+    "peminat": 88,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 88 pelamar untuk 94 kursi)"
+  },
+  {
+    "index": 2958,
+    "kampus": "UNIVERSITAS TIMOR",
+    "prodi": "EKO. PEMBANGUNAN",
+    "daya": 146,
+    "peminat": 45,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 45 pelamar untuk 146 kursi)"
+  },
+  {
+    "index": 2978,
+    "kampus": "UNIVERSITAS NEGERI MAKASSAR",
+    "prodi": "PEND. KIMIA KLS INTERNASIONAL (BILINGUAL)",
+    "daya": 17,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 17 kursi)"
+  },
+  {
+    "index": 2982,
+    "kampus": "UNIVERSITAS NEGERI MAKASSAR",
+    "prodi": "PEND. FISIKA KLS INTERNASIONAL (BILINGUAL)",
+    "daya": 22,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 22 kursi)"
+  },
+  {
+    "index": 2985,
+    "kampus": "UNIVERSITAS NEGERI MAKASSAR",
+    "prodi": "PENDIDIKAN IPA KLS INTERNASIONAL (BILINGUAL)",
+    "daya": 18,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 18 kursi)"
+  },
+  {
+    "index": 3000,
+    "kampus": "UNIVERSITAS NEGERI MAKASSAR",
+    "prodi": "PENDIDIKAN LUAR SEKOLAH",
+    "daya": 49,
+    "peminat": 34,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 34 pelamar untuk 49 kursi)"
+  },
+  {
+    "index": 3006,
+    "kampus": "UNIVERSITAS NEGERI MAKASSAR",
+    "prodi": "PENDIDIKAN BAHASA JERMAN",
+    "daya": 47,
+    "peminat": 30,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 30 pelamar untuk 47 kursi)"
+  },
+  {
+    "index": 3061,
+    "kampus": "UIN ALAUDDIN",
+    "prodi": "MATEMATIKA",
+    "daya": 52,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 52 kursi)"
+  },
+  {
+    "index": 3062,
+    "kampus": "UIN ALAUDDIN",
+    "prodi": "KIMIA",
+    "daya": 59,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 59 kursi)"
+  },
+  {
+    "index": 3065,
+    "kampus": "UIN ALAUDDIN",
+    "prodi": "ILMU PETERNAKAN",
+    "daya": 60,
+    "peminat": 31,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 31 pelamar untuk 60 kursi)"
+  },
+  {
+    "index": 3069,
+    "kampus": "UIN ALAUDDIN",
+    "prodi": "JURNALISTIK",
+    "daya": 77,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 77 kursi)"
+  },
+  {
+    "index": 3073,
+    "kampus": "UIN ALAUDDIN",
+    "prodi": "ILMU POLITIK",
+    "daya": 72,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 72 kursi)"
+  },
+  {
+    "index": 3075,
+    "kampus": "UIN ALAUDDIN",
+    "prodi": "HUBUNGAN INTERNASIONAL",
+    "daya": 53,
+    "peminat": 51,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 51 pelamar untuk 53 kursi)"
+  },
+  {
+    "index": 3076,
+    "kampus": "UIN ALAUDDIN",
+    "prodi": "KESEJAHTERAAN SOSIAL",
+    "daya": 60,
+    "peminat": 31,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 31 pelamar untuk 60 kursi)"
+  },
+  {
+    "index": 3080,
+    "kampus": "INSTITUT TEKNOLOGI BJ. HABIBIE SULAWESI SELATAN",
+    "prodi": "MATEMATIKA",
+    "daya": 20,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 20 kursi)"
+  },
+  {
+    "index": 3081,
+    "kampus": "INSTITUT TEKNOLOGI BJ. HABIBIE SULAWESI SELATAN",
+    "prodi": "TEKNOLOGI PANGAN",
+    "daya": 43,
+    "peminat": 35,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 35 pelamar untuk 43 kursi)"
+  },
+  {
+    "index": 3082,
+    "kampus": "INSTITUT TEKNOLOGI BJ. HABIBIE SULAWESI SELATAN",
+    "prodi": "SAINS DATA",
+    "daya": 36,
+    "peminat": 33,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 33 pelamar untuk 36 kursi)"
+  },
+  {
+    "index": 3083,
+    "kampus": "INSTITUT TEKNOLOGI BJ. HABIBIE SULAWESI SELATAN",
+    "prodi": "SAINS AKTUARIA",
+    "daya": 39,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 39 kursi)"
+  },
+  {
+    "index": 3084,
+    "kampus": "INSTITUT TEKNOLOGI BJ. HABIBIE SULAWESI SELATAN",
+    "prodi": "TEKNIK SISTEM ENERGI",
+    "daya": 41,
+    "peminat": 10,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 10 pelamar untuk 41 kursi)"
+  },
+  {
+    "index": 3088,
+    "kampus": "INSTITUT TEKNOLOGI BJ. HABIBIE SULAWESI SELATAN",
+    "prodi": "ARSITEKTUR",
+    "daya": 35,
+    "peminat": 24,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 24 pelamar untuk 35 kursi)"
+  },
+  {
+    "index": 3089,
+    "kampus": "INSTITUT TEKNOLOGI BJ. HABIBIE SULAWESI SELATAN",
+    "prodi": "TEKNIK PERKAPALAN",
+    "daya": 35,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 35 kursi)"
+  },
+  {
+    "index": 3090,
+    "kampus": "INSTITUT TEKNOLOGI BJ. HABIBIE SULAWESI SELATAN",
+    "prodi": "TEKNIK ROBOTIKA DAN KECERDASAN BUATAN",
+    "daya": 46,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 46 kursi)"
+  },
+  {
+    "index": 3107,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "MATEMATIKA",
+    "daya": 54,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 54 kursi)"
+  },
+  {
+    "index": 3108,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "FISIKA",
+    "daya": 45,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 45 kursi)"
+  },
+  {
+    "index": 3109,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "BIOLOGI",
+    "daya": 55,
+    "peminat": 36,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 36 pelamar untuk 55 kursi)"
+  },
+  {
+    "index": 3110,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "KIMIA",
+    "daya": 49,
+    "peminat": 23,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 23 pelamar untuk 49 kursi)"
+  },
+  {
+    "index": 3111,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "AGRIBISNIS",
+    "daya": 102,
+    "peminat": 94,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 94 pelamar untuk 102 kursi)"
+  },
+  {
+    "index": 3112,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "AGROEKOTEKNOLOGI",
+    "daya": 46,
+    "peminat": 36,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 36 pelamar untuk 46 kursi)"
+  },
+  {
+    "index": 3113,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "PETERNAKAN",
+    "daya": 95,
+    "peminat": 48,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 48 pelamar untuk 95 kursi)"
+  },
+  {
+    "index": 3114,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "ILMU KELAUTAN",
+    "daya": 91,
+    "peminat": 35,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 35 pelamar untuk 91 kursi)"
+  },
+  {
+    "index": 3115,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "MANAJEMEN SUMBERDAYA PERAIRAN",
+    "daya": 36,
+    "peminat": 19,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 19 pelamar untuk 36 kursi)"
+  },
+  {
+    "index": 3116,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "BUDIDAYA PERAIRAN",
+    "daya": 33,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 33 kursi)"
+  },
+  {
+    "index": 3117,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "TEKNOLOGI HASIL PERIKANAN",
+    "daya": 33,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 33 kursi)"
+  },
+  {
+    "index": 3118,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "AGROBISNIS PERIKANAN",
+    "daya": 41,
+    "peminat": 12,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 12 pelamar untuk 41 kursi)"
+  },
+  {
+    "index": 3119,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "PEMANFAATAN SUMBERDAYA PERIKANAN",
+    "daya": 21,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 21 kursi)"
+  },
+  {
+    "index": 3120,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "KEHUTANAN",
+    "daya": 43,
+    "peminat": 40,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 40 pelamar untuk 43 kursi)"
+  },
+  {
+    "index": 3125,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "ILMU TANAH",
+    "daya": 37,
+    "peminat": 12,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 12 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 3126,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "AGRONOMI",
+    "daya": 39,
+    "peminat": 10,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 10 pelamar untuk 39 kursi)"
+  },
+  {
+    "index": 3127,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "PROTEKSI TANAMAN",
+    "daya": 35,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 35 kursi)"
+  },
+  {
+    "index": 3135,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "SOSIOLOGI",
+    "daya": 49,
+    "peminat": 34,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 34 pelamar untuk 49 kursi)"
+  },
+  {
+    "index": 3137,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "ILMU PERPUSTAKAAN",
+    "daya": 34,
+    "peminat": 18,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 18 pelamar untuk 34 kursi)"
+  },
+  {
+    "index": 3139,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "SASTRA INDONESIA",
+    "daya": 36,
+    "peminat": 16,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 16 pelamar untuk 36 kursi)"
+  },
+  {
+    "index": 3141,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "SASTRA JERMAN",
+    "daya": 26,
+    "peminat": 12,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 12 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 3142,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "ILMU SEJARAH",
+    "daya": 28,
+    "peminat": 10,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 10 pelamar untuk 28 kursi)"
+  },
+  {
+    "index": 3143,
+    "kampus": "UNIVERSITAS SAM RATULANGI",
+    "prodi": "ANTROPOLOGI SOSIAL",
+    "daya": 30,
+    "peminat": 27,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 27 pelamar untuk 30 kursi)"
+  },
+  {
+    "index": 3146,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. BIOLOGI",
+    "daya": 20,
+    "peminat": 16,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 16 pelamar untuk 20 kursi)"
+  },
+  {
+    "index": 3147,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "ILMU BIOLOGI",
+    "daya": 26,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 3148,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. KIMIA",
+    "daya": 39,
+    "peminat": 5,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 5 pelamar untuk 39 kursi)"
+  },
+  {
+    "index": 3149,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "ILMU KIMIA",
+    "daya": 26,
+    "peminat": 5,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 5 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 3150,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. FISIKA",
+    "daya": 19,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 19 kursi)"
+  },
+  {
+    "index": 3151,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "ILMU FISIKA",
+    "daya": 20,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 20 kursi)"
+  },
+  {
+    "index": 3152,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. MATEMATIKA",
+    "daya": 55,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 55 kursi)"
+  },
+  {
+    "index": 3153,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. TEK BANGUNAN",
+    "daya": 26,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 3154,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. TEK ELEKTRO",
+    "daya": 23,
+    "peminat": 10,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 10 pelamar untuk 23 kursi)"
+  },
+  {
+    "index": 3155,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. INF./KOM",
+    "daya": 62,
+    "peminat": 45,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 45 pelamar untuk 62 kursi)"
+  },
+  {
+    "index": 3156,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. TEK MESIN",
+    "daya": 24,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 24 kursi)"
+  },
+  {
+    "index": 3157,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "ILMU GEOGRAFI",
+    "daya": 10,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 10 kursi)"
+  },
+  {
+    "index": 3158,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "ILMU KEOLAHRAGAAN",
+    "daya": 17,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 17 kursi)"
+  },
+  {
+    "index": 3159,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PENDIDIKAN IPA",
+    "daya": 37,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 3164,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "TEKNIK MESIN",
+    "daya": 42,
+    "peminat": 38,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 38 pelamar untuk 42 kursi)"
+  },
+  {
+    "index": 3165,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. KES. KEL",
+    "daya": 19,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 19 kursi)"
+  },
+  {
+    "index": 3168,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "BAH & SASTRA INGGRIS",
+    "daya": 30,
+    "peminat": 27,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 27 pelamar untuk 30 kursi)"
+  },
+  {
+    "index": 3169,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. BAHASA JEPANG",
+    "daya": 28,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 28 kursi)"
+  },
+  {
+    "index": 3170,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. BAH. JERMAN",
+    "daya": 5,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 5 kursi)"
+  },
+  {
+    "index": 3172,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. SENI MUSIK",
+    "daya": 20,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 20 kursi)"
+  },
+  {
+    "index": 3173,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. SENI RUPA",
+    "daya": 10,
+    "peminat": 5,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 5 pelamar untuk 10 kursi)"
+  },
+  {
+    "index": 3175,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. SEJARAH",
+    "daya": 20,
+    "peminat": 19,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 19 pelamar untuk 20 kursi)"
+  },
+  {
+    "index": 3176,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND GEOGRAFI",
+    "daya": 17,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 17 kursi)"
+  },
+  {
+    "index": 3179,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND EKONOMI S1",
+    "daya": 34,
+    "peminat": 24,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 24 pelamar untuk 34 kursi)"
+  },
+  {
+    "index": 3181,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. KEPELATIHAN OR",
+    "daya": 75,
+    "peminat": 26,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 26 pelamar untuk 75 kursi)"
+  },
+  {
+    "index": 3182,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. JASMANI, KES. REK",
+    "daya": 71,
+    "peminat": 32,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 32 pelamar untuk 71 kursi)"
+  },
+  {
+    "index": 3183,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PLB/P.KH",
+    "daya": 62,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 62 kursi)"
+  },
+  {
+    "index": 3188,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "PEND. ANAK USIA DINI",
+    "daya": 67,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 67 kursi)"
+  },
+  {
+    "index": 3192,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "GEOFISIKA",
+    "daya": 14,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 14 kursi)"
+  },
+  {
+    "index": 3193,
+    "kampus": "UNIVERSITAS NEGERI MANADO",
+    "prodi": "ILMU LINGKUNGAN",
+    "daya": 19,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 19 kursi)"
+  },
+  {
+    "index": 3197,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "PEND. FISIKA",
+    "daya": 64,
+    "peminat": 35,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 35 pelamar untuk 64 kursi)"
+  },
+  {
+    "index": 3198,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "PEND. KIMIA",
+    "daya": 57,
+    "peminat": 51,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 51 pelamar untuk 57 kursi)"
+  },
+  {
+    "index": 3202,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "PETERNAKAN",
+    "daya": 143,
+    "peminat": 114,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 114 pelamar untuk 143 kursi)"
+  },
+  {
+    "index": 3207,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "FISIKA",
+    "daya": 29,
+    "peminat": 17,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 17 pelamar untuk 29 kursi)"
+  },
+  {
+    "index": 3213,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "AKUAKULTUR",
+    "daya": 99,
+    "peminat": 23,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 23 pelamar untuk 99 kursi)"
+  },
+  {
+    "index": 3220,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "TEKNIK GEO FISIKA",
+    "daya": 32,
+    "peminat": 30,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 30 pelamar untuk 32 kursi)"
+  },
+  {
+    "index": 3221,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "AGROTEKNOLOGI (PSDKU MOROWALI)",
+    "daya": 37,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 3222,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "TEKNIK SIPIL (PSDKU MOROWALI)",
+    "daya": 30,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 30 kursi)"
+  },
+  {
+    "index": 3223,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "AGROTEKNOLOGI (PSDKU TOUNA)",
+    "daya": 38,
+    "peminat": 25,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 25 pelamar untuk 38 kursi)"
+  },
+  {
+    "index": 3224,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "TEKNIK SIPIL (PSDKU TOUNA)",
+    "daya": 32,
+    "peminat": 22,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 22 pelamar untuk 32 kursi)"
+  },
+  {
+    "index": 3245,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "MANAJEMEN (PSDKU MOROWALI)",
+    "daya": 77,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 77 kursi)"
+  },
+  {
+    "index": 3246,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "MANAJEMEN (PSDKU TOUNA)",
+    "daya": 138,
+    "peminat": 54,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 54 pelamar untuk 138 kursi)"
+  },
+  {
+    "index": 3248,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "SUMBER DAYA AKUATIK",
+    "daya": 69,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 69 kursi)"
+  },
+  {
+    "index": 3249,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "PROTEKSI TANAMAN",
+    "daya": 47,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 47 kursi)"
+  },
+  {
+    "index": 3250,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "SOSIAL EKONOMI PETERNAKAN",
+    "daya": 69,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 69 kursi)"
+  },
+  {
+    "index": 3251,
+    "kampus": "UNIVERSITAS TADULAKO",
+    "prodi": "ILMU KELAUTAN",
+    "daya": 38,
+    "peminat": 18,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 18 pelamar untuk 38 kursi)"
+  },
+  {
+    "index": 3260,
+    "kampus": "UIN DATOKARAMA PALU",
+    "prodi": "INFORMATIKA",
+    "daya": 51,
+    "peminat": 46,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 46 pelamar untuk 51 kursi)"
+  },
+  {
+    "index": 3261,
+    "kampus": "UIN DATOKARAMA PALU",
+    "prodi": "ARSITEKTUR",
+    "daya": 44,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 44 kursi)"
+  },
+  {
+    "index": 3262,
+    "kampus": "UIN DATOKARAMA PALU",
+    "prodi": "SISTEM INFORMASI",
+    "daya": 36,
+    "peminat": 29,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 29 pelamar untuk 36 kursi)"
+  },
+  {
+    "index": 3271,
+    "kampus": "UNIVERSITAS SULAWESI BARAT",
+    "prodi": "PEND. FISIKA",
+    "daya": 32,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 32 kursi)"
+  },
+  {
+    "index": 3272,
+    "kampus": "UNIVERSITAS SULAWESI BARAT",
+    "prodi": "PETERNAKAN",
+    "daya": 69,
+    "peminat": 66,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 66 pelamar untuk 69 kursi)"
+  },
+  {
+    "index": 3273,
+    "kampus": "UNIVERSITAS SULAWESI BARAT",
+    "prodi": "AKUAKULTUR",
+    "daya": 32,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 32 kursi)"
+  },
+  {
+    "index": 3274,
+    "kampus": "UNIVERSITAS SULAWESI BARAT",
+    "prodi": "PERIKANAN TANGKAP",
+    "daya": 51,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 51 kursi)"
+  },
+  {
+    "index": 3276,
+    "kampus": "UNIVERSITAS SULAWESI BARAT",
+    "prodi": "PERENCANAAN WILAYAH DAN KOTA",
+    "daya": 74,
+    "peminat": 54,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 54 pelamar untuk 74 kursi)"
+  },
+  {
+    "index": 3283,
+    "kampus": "UNIVERSITAS SULAWESI BARAT",
+    "prodi": "ILMU POLITIK",
+    "daya": 67,
+    "peminat": 43,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 43 pelamar untuk 67 kursi)"
+  },
+  {
+    "index": 3290,
+    "kampus": "UNIVERSITAS SULAWESI BARAT",
+    "prodi": "SUMBER DAYA AKUATIK",
+    "daya": 27,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 27 kursi)"
+  },
+  {
+    "index": 3292,
+    "kampus": "UNIVERSITAS SULAWESI BARAT",
+    "prodi": "BIOTEKNOLOGI",
+    "daya": 16,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 16 kursi)"
+  },
+  {
+    "index": 3294,
+    "kampus": "UNIVERSITAS SULAWESI BARAT",
+    "prodi": "ILMU AKTUARIA",
+    "daya": 18,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 18 kursi)"
+  },
+  {
+    "index": 3303,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "PETERNAKAN",
+    "daya": 124,
+    "peminat": 37,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 37 pelamar untuk 124 kursi)"
+  },
+  {
+    "index": 3304,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "MANAJEMEN SUMBERDAYA PERAIRAN",
+    "daya": 48,
+    "peminat": 23,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 23 pelamar untuk 48 kursi)"
+  },
+  {
+    "index": 3305,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "BUDIDAYA PERAIRAN",
+    "daya": 46,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 46 kursi)"
+  },
+  {
+    "index": 3306,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "MATEMATIKA",
+    "daya": 27,
+    "peminat": 26,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 26 pelamar untuk 27 kursi)"
+  },
+  {
+    "index": 3307,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "FISIKA",
+    "daya": 33,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 33 kursi)"
+  },
+  {
+    "index": 3313,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "PENDIDIKAN FISIKA",
+    "daya": 42,
+    "peminat": 40,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 40 pelamar untuk 42 kursi)"
+  },
+  {
+    "index": 3322,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "ILMU DAN TEKNOLOGI PANGAN",
+    "daya": 44,
+    "peminat": 41,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 41 pelamar untuk 44 kursi)"
+  },
+  {
+    "index": 3324,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "AGROBISNIS PERIKANAN",
+    "daya": 40,
+    "peminat": 22,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 22 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 3327,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "ILMU KELAUTAN",
+    "daya": 37,
+    "peminat": 28,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 28 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 3330,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "TEKNOLOGI HASIL PERIKANAN",
+    "daya": 36,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 36 kursi)"
+  },
+  {
+    "index": 3332,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "ILMU TANAH",
+    "daya": 26,
+    "peminat": 12,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 12 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 3333,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "PROTEKSI TANAMAN",
+    "daya": 33,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 33 kursi)"
+  },
+  {
+    "index": 3337,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "OSEANOGRAFI",
+    "daya": 39,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 39 kursi)"
+  },
+  {
+    "index": 3338,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "PERIKANAN TANGKAP",
+    "daya": 39,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 39 kursi)"
+  },
+  {
+    "index": 3344,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "PENDIDIKAN VOKASIONAL TEKNIK",
+    "daya": 60,
+    "peminat": 27,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 27 pelamar untuk 60 kursi)"
+  },
+  {
+    "index": 3351,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "ANTROPOLOGI SOSIAL",
+    "daya": 69,
+    "peminat": 26,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 26 pelamar untuk 69 kursi)"
+  },
+  {
+    "index": 3364,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "ARKEOLOGI",
+    "daya": 34,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 34 kursi)"
+  },
+  {
+    "index": 3365,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "ILMU KESEJAHTERAAN SOSIAL",
+    "daya": 76,
+    "peminat": 40,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 40 pelamar untuk 76 kursi)"
+  },
+  {
+    "index": 3366,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "ILMU SEJARAH",
+    "daya": 70,
+    "peminat": 34,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 34 pelamar untuk 70 kursi)"
+  },
+  {
+    "index": 3367,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "JURNALISTIK",
+    "daya": 74,
+    "peminat": 31,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 31 pelamar untuk 74 kursi)"
+  },
+  {
+    "index": 3369,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "SASTRA INDONESIA",
+    "daya": 61,
+    "peminat": 58,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 58 pelamar untuk 61 kursi)"
+  },
+  {
+    "index": 3371,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "TRADISI LISAN",
+    "daya": 44,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 44 kursi)"
+  },
+  {
+    "index": 3373,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "ILMU POLITIK",
+    "daya": 83,
+    "peminat": 74,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 74 pelamar untuk 83 kursi)"
+  },
+  {
+    "index": 3375,
+    "kampus": "UNIVERSITAS HALUOLEO",
+    "prodi": "SASTRA PRANCIS",
+    "daya": 32,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 32 kursi)"
+  },
+  {
+    "index": 3385,
+    "kampus": "UNIVERSITAS NEGERI GORONTALO",
+    "prodi": "PENDIDIKAN FISIKA",
+    "daya": 23,
+    "peminat": 18,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 18 pelamar untuk 23 kursi)"
+  },
+  {
+    "index": 3393,
+    "kampus": "UNIVERSITAS NEGERI GORONTALO",
+    "prodi": "MANAJAMEN SUMBERDAYA PERAIRAN",
+    "daya": 65,
+    "peminat": 21,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 21 pelamar untuk 65 kursi)"
+  },
+  {
+    "index": 3394,
+    "kampus": "UNIVERSITAS NEGERI GORONTALO",
+    "prodi": "PETERNAKAN",
+    "daya": 55,
+    "peminat": 38,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 38 pelamar untuk 55 kursi)"
+  },
+  {
+    "index": 3395,
+    "kampus": "UNIVERSITAS NEGERI GORONTALO",
+    "prodi": "BUDIDAYA PERAIRAN",
+    "daya": 62,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 62 kursi)"
+  },
+  {
+    "index": 3397,
+    "kampus": "UNIVERSITAS NEGERI GORONTALO",
+    "prodi": "TEKNOLOGI HASIL PERIKANAN",
+    "daya": 65,
+    "peminat": 19,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 19 pelamar untuk 65 kursi)"
+  },
+  {
+    "index": 3402,
+    "kampus": "UNIVERSITAS NEGERI GORONTALO",
+    "prodi": "PENDIDIKAN VOKASIONAL KONSTRUKSI BANGUNAN",
+    "daya": 20,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 20 kursi)"
+  },
+  {
+    "index": 3405,
+    "kampus": "UNIVERSITAS NEGERI GORONTALO",
+    "prodi": "ILMU TEKNOLOGI PANGAN",
+    "daya": 55,
+    "peminat": 51,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 51 pelamar untuk 55 kursi)"
+  },
+  {
+    "index": 3406,
+    "kampus": "UNIVERSITAS NEGERI GORONTALO",
+    "prodi": "PENDIDIKAN TEKNIK MESIN",
+    "daya": 58,
+    "peminat": 53,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 53 pelamar untuk 58 kursi)"
+  },
+  {
+    "index": 3412,
+    "kampus": "UNIVERSITAS NEGERI GORONTALO",
+    "prodi": "PENDIDIKAN ILMU PENGETAHUAN ALAM",
+    "daya": 58,
+    "peminat": 51,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 51 pelamar untuk 58 kursi)"
+  },
+  {
+    "index": 3425,
+    "kampus": "UNIVERSITAS NEGERI GORONTALO",
+    "prodi": "PENDIDIKAN MASYARAKAT",
+    "daya": 44,
+    "peminat": 18,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 18 pelamar untuk 44 kursi)"
+  },
+  {
+    "index": 3436,
+    "kampus": "UNIVERSITAS NEGERI GORONTALO",
+    "prodi": "PENDIDIKAN SENI RUPA",
+    "daya": 41,
+    "peminat": 37,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 37 pelamar untuk 41 kursi)"
+  },
+  {
+    "index": 3441,
+    "kampus": "UNIVERSITAS NEGERI GORONTALO",
+    "prodi": "TEKNOLOGI PENANGKAPAN IKAN",
+    "daya": 35,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 35 kursi)"
+  },
+  {
+    "index": 3445,
+    "kampus": "UNIVERSITAS NEGERI GORONTALO",
+    "prodi": "TEKNOLOGI REKAYASA ENERGI TERBARUKAN",
+    "daya": 66,
+    "peminat": 63,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 63 pelamar untuk 66 kursi)"
+  },
+  {
+    "index": 3450,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "PENDIDIKAN MATEMATIKA",
+    "daya": 31,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 31 kursi)"
+  },
+  {
+    "index": 3456,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "PETERNAKAN",
+    "daya": 23,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 23 kursi)"
+  },
+  {
+    "index": 3457,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "ILMU PERIKANAN",
+    "daya": 25,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 25 kursi)"
+  },
+  {
+    "index": 3458,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "PENDIDIKAN BIOLOGI",
+    "daya": 39,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 39 kursi)"
+  },
+  {
+    "index": 3459,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "PENDIDIKAN KIMIA",
+    "daya": 21,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 21 kursi)"
+  },
+  {
+    "index": 3460,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "TEKNOLOGI HASIL PERTANIAN",
+    "daya": 19,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 19 kursi)"
+  },
+  {
+    "index": 3461,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "KIMIA",
+    "daya": 22,
+    "peminat": 5,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 5 pelamar untuk 22 kursi)"
+  },
+  {
+    "index": 3464,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "PENDIDIKAN FISIKA",
+    "daya": 22,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 22 kursi)"
+  },
+  {
+    "index": 3465,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "ILMU KELAUTAN",
+    "daya": 19,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 19 kursi)"
+  },
+  {
+    "index": 3466,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "TEKNIK MESIN",
+    "daya": 29,
+    "peminat": 21,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 21 pelamar untuk 29 kursi)"
+  },
+  {
+    "index": 3467,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "TEKNIK PERKAPALAN",
+    "daya": 29,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 29 kursi)"
+  },
+  {
+    "index": 3468,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "MATEMATIKA",
+    "daya": 24,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 24 kursi)"
+  },
+  {
+    "index": 3469,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "HUKUM",
+    "daya": 99,
+    "peminat": 56,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 56 pelamar untuk 99 kursi)"
+  },
+  {
+    "index": 3471,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "PENDIDIKAN BAHASA INDONESIA",
+    "daya": 45,
+    "peminat": 32,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 32 pelamar untuk 45 kursi)"
+  },
+  {
+    "index": 3472,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "PENDIDIKAN BAHASA INGGRIS",
+    "daya": 37,
+    "peminat": 28,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 28 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 3473,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "PENDIDIKAN GEOGRAFI",
+    "daya": 50,
+    "peminat": 21,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 21 pelamar untuk 50 kursi)"
+  },
+  {
+    "index": 3475,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "PENDIDIKAN PANCASILA DAN KEWARGANEGARAAN",
+    "daya": 37,
+    "peminat": 33,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 33 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 3477,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "PENDIDIKAN JASMANI",
+    "daya": 73,
+    "peminat": 29,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 29 pelamar untuk 73 kursi)"
+  },
+  {
+    "index": 3478,
+    "kampus": "UNIVERSITAS SEMBILAN BELAS NOVEMBER KOLAKA",
+    "prodi": "EKONOMI PEMBANGUNAN",
+    "daya": 53,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 53 kursi)"
+  },
+  {
+    "index": 3481,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PEND. BIOLOGI",
+    "daya": 45,
+    "peminat": 43,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 43 pelamar untuk 45 kursi)"
+  },
+  {
+    "index": 3482,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PEND. FISIKA",
+    "daya": 48,
+    "peminat": 24,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 24 pelamar untuk 48 kursi)"
+  },
+  {
+    "index": 3484,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PEND. KIMIA",
+    "daya": 39,
+    "peminat": 12,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 12 pelamar untuk 39 kursi)"
+  },
+  {
+    "index": 3488,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "KEHUTANAN",
+    "daya": 33,
+    "peminat": 30,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 30 pelamar untuk 33 kursi)"
+  },
+  {
+    "index": 3494,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "MAJEMEN SUMB.PERAIRAN",
+    "daya": 31,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 31 kursi)"
+  },
+  {
+    "index": 3495,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "IL. KELAUTAN",
+    "daya": 37,
+    "peminat": 18,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 18 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 3496,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "BUDIDAYA PERAIRAN",
+    "daya": 36,
+    "peminat": 10,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 10 pelamar untuk 36 kursi)"
+  },
+  {
+    "index": 3497,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PEMANFAATAN SD PERIKANAN",
+    "daya": 52,
+    "peminat": 16,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 16 pelamar untuk 52 kursi)"
+  },
+  {
+    "index": 3498,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "TEK. HASIL PERIKANAN",
+    "daya": 54,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 54 kursi)"
+  },
+  {
+    "index": 3499,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "AGROBISNIS PERIKANAN",
+    "daya": 50,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 50 kursi)"
+  },
+  {
+    "index": 3500,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "MATEMATIKA",
+    "daya": 24,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 24 kursi)"
+  },
+  {
+    "index": 3501,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "FISIKA",
+    "daya": 27,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 27 kursi)"
+  },
+  {
+    "index": 3502,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "KIMIA",
+    "daya": 23,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 23 kursi)"
+  },
+  {
+    "index": 3503,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "BIOLOGI",
+    "daya": 30,
+    "peminat": 17,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 17 pelamar untuk 30 kursi)"
+  },
+  {
+    "index": 3505,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PERENCANAAN WILAYAH DAN KOTA",
+    "daya": 50,
+    "peminat": 49,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 49 pelamar untuk 50 kursi)"
+  },
+  {
+    "index": 3507,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PEMULIAAN TANAMAN",
+    "daya": 12,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 12 kursi)"
+  },
+  {
+    "index": 3508,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "ILMU TANAH",
+    "daya": 13,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 13 kursi)"
+  },
+  {
+    "index": 3511,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PETERNAKAN (PSDKU KAB. MBD)",
+    "daya": 21,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 21 kursi)"
+  },
+  {
+    "index": 3514,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "TEKNIK GEOFISIKA",
+    "daya": 20,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 20 kursi)"
+  },
+  {
+    "index": 3516,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "TEKNIK KIMIA",
+    "daya": 16,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 16 kursi)"
+  },
+  {
+    "index": 3517,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "TEKNIK TRANSPORTASI LAUT",
+    "daya": 26,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 3521,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "SOSIOLOGI",
+    "daya": 80,
+    "peminat": 55,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 55 pelamar untuk 80 kursi)"
+  },
+  {
+    "index": 3523,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "EKONOMI PEMBANGUNAN",
+    "daya": 87,
+    "peminat": 58,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 58 pelamar untuk 87 kursi)"
+  },
+  {
+    "index": 3534,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PEND. LUAR SEKOLAH",
+    "daya": 46,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 46 kursi)"
+  },
+  {
+    "index": 3538,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "ILMU HUKUM (PSDKU KAB. MBD)",
+    "daya": 34,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 34 kursi)"
+  },
+  {
+    "index": 3539,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "AKUNTANSI (PSDKU KAB. MBD)",
+    "daya": 34,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 34 kursi)"
+  },
+  {
+    "index": 3540,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PEND. GURU SEKOLAH DASAR (PSDKU KAB. MBD)",
+    "daya": 46,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 46 kursi)"
+  },
+  {
+    "index": 3541,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PEND. BAHASA INGGRIS (PSDKU KAB. MBD)",
+    "daya": 28,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 28 kursi)"
+  },
+  {
+    "index": 3542,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "ILMU HUKUM (PSDKU KAB. ARU)",
+    "daya": 33,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 33 kursi)"
+  },
+  {
+    "index": 3543,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "AKUNTANSI (PSDKU KAB. ARU)",
+    "daya": 35,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 35 kursi)"
+  },
+  {
+    "index": 3544,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PEND. GURU SEKOLAH DASAR (PSDKU KAB. ARU)",
+    "daya": 45,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 45 kursi)"
+  },
+  {
+    "index": 3545,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PEND. BAHASA INGGRIS (PSDKU KAB. ARU)",
+    "daya": 28,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 28 kursi)"
+  },
+  {
+    "index": 3546,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PEND. JASMANI, KESEHATAN, DAN REKREASI (PSDKU KAB. ARU)",
+    "daya": 46,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 46 kursi)"
+  },
+  {
+    "index": 3548,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "ILMU LINGKUNGAN",
+    "daya": 14,
+    "peminat": 5,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 5 pelamar untuk 14 kursi)"
+  },
+  {
+    "index": 3549,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "BIOTEKNOLOGI",
+    "daya": 22,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 22 kursi)"
+  },
+  {
+    "index": 3550,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PENDIDIKAN AKUNTANSI",
+    "daya": 36,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 36 kursi)"
+  },
+  {
+    "index": 3552,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "PENGELOLAAN HUTAN",
+    "daya": 14,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 14 kursi)"
+  },
+  {
+    "index": 3556,
+    "kampus": "UNIVERSITAS PATTIMURA",
+    "prodi": "REKAYASA INSTRUMENTASI DAN OTOMASI",
+    "daya": 10,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 10 kursi)"
+  },
+  {
+    "index": 3564,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "TEKNIK MESIN",
+    "daya": 52,
+    "peminat": 38,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 38 pelamar untuk 52 kursi)"
+  },
+  {
+    "index": 3565,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "TEKNIK ELEKTRO",
+    "daya": 64,
+    "peminat": 36,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 36 pelamar untuk 64 kursi)"
+  },
+  {
+    "index": 3566,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "ARSITEKTUR",
+    "daya": 53,
+    "peminat": 47,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 47 pelamar untuk 53 kursi)"
+  },
+  {
+    "index": 3567,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "TEKNOLOGI PERTANIAN",
+    "daya": 20,
+    "peminat": 17,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 17 pelamar untuk 20 kursi)"
+  },
+  {
+    "index": 3568,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "PETERNAKAN",
+    "daya": 33,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 33 kursi)"
+  },
+  {
+    "index": 3569,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "MANAJEMEN SUMBERDAYA PERAIRAN",
+    "daya": 37,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 3570,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "ILMU KELAUTAN",
+    "daya": 27,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 27 kursi)"
+  },
+  {
+    "index": 3571,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "PEMANFAATAN SUMBERDAYA PERAIRAN",
+    "daya": 27,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 27 kursi)"
+  },
+  {
+    "index": 3572,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "BUDIDAYA PERAIRAN",
+    "daya": 27,
+    "peminat": 12,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 12 pelamar untuk 27 kursi)"
+  },
+  {
+    "index": 3573,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "PEND. MATEMATIKA",
+    "daya": 38,
+    "peminat": 34,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 34 pelamar untuk 38 kursi)"
+  },
+  {
+    "index": 3574,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "PEND. BIOLOGI",
+    "daya": 40,
+    "peminat": 35,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 35 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 3575,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "PEND. FISIKA",
+    "daya": 27,
+    "peminat": 21,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 21 pelamar untuk 27 kursi)"
+  },
+  {
+    "index": 3576,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "PEND. KIMIA",
+    "daya": 40,
+    "peminat": 18,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 18 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 3577,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "AGROTEKNOLOGI",
+    "daya": 33,
+    "peminat": 16,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 16 pelamar untuk 33 kursi)"
+  },
+  {
+    "index": 3579,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "KEHUTANAN",
+    "daya": 28,
+    "peminat": 22,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 22 pelamar untuk 28 kursi)"
+  },
+  {
+    "index": 3581,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "AGRIBISNIS",
+    "daya": 35,
+    "peminat": 31,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 31 pelamar untuk 35 kursi)"
+  },
+  {
+    "index": 3583,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "ILMU TANAH",
+    "daya": 26,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 3586,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "EKONOMI PEMBANGUNAN",
+    "daya": 114,
+    "peminat": 69,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 69 pelamar untuk 114 kursi)"
+  },
+  {
+    "index": 3588,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "ILMU SEJARAH",
+    "daya": 21,
+    "peminat": 17,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 17 pelamar untuk 21 kursi)"
+  },
+  {
+    "index": 3590,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "SASTRA INGGRIS",
+    "daya": 48,
+    "peminat": 37,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 37 pelamar untuk 48 kursi)"
+  },
+  {
+    "index": 3595,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "PEND. GEOGRAFI",
+    "daya": 36,
+    "peminat": 25,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 25 pelamar untuk 36 kursi)"
+  },
+  {
+    "index": 3597,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "ANTROPOLOGI SOSIAL",
+    "daya": 19,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 19 kursi)"
+  },
+  {
+    "index": 3598,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "PG PAUD",
+    "daya": 102,
+    "peminat": 94,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 94 pelamar untuk 102 kursi)"
+  },
+  {
+    "index": 3601,
+    "kampus": "UNIVERSITAS KHAIRUN",
+    "prodi": "PENDIDIKAN ILMU PENGETAHUAN ALAM",
+    "daya": 52,
+    "peminat": 16,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 16 pelamar untuk 52 kursi)"
+  },
+  {
+    "index": 3603,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "MATEMATIKA",
+    "daya": 27,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 27 kursi)"
+  },
+  {
+    "index": 3604,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "BIOLOGI",
+    "daya": 22,
+    "peminat": 12,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 12 pelamar untuk 22 kursi)"
+  },
+  {
+    "index": 3605,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "KIMIA",
+    "daya": 25,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 25 kursi)"
+  },
+  {
+    "index": 3606,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "FISIKA",
+    "daya": 27,
+    "peminat": 5,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 5 pelamar untuk 27 kursi)"
+  },
+  {
+    "index": 3607,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "ILMU KESEHATAN MASYARAKAT",
+    "daya": 247,
+    "peminat": 177,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 177 pelamar untuk 247 kursi)"
+  },
+  {
+    "index": 3608,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "PEND. MATEMATIKA",
+    "daya": 60,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 60 kursi)"
+  },
+  {
+    "index": 3609,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "PEND. BIOLOGI",
+    "daya": 53,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 53 kursi)"
+  },
+  {
+    "index": 3610,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "PEND. KIMIA",
+    "daya": 64,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 64 kursi)"
+  },
+  {
+    "index": 3611,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "PEND. FISIKA",
+    "daya": 65,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 65 kursi)"
+  },
+  {
+    "index": 3616,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "TEKNIK MESIN",
+    "daya": 29,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 29 kursi)"
+  },
+  {
+    "index": 3618,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "ILMU KELAUTAN",
+    "daya": 22,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 22 kursi)"
+  },
+  {
+    "index": 3623,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "ILMU KEOLAHRAGAAN",
+    "daya": 104,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 104 kursi)"
+  },
+  {
+    "index": 3624,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "ILMU PERIKANAN",
+    "daya": 26,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 3625,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "STATISTIKA",
+    "daya": 21,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 21 kursi)"
+  },
+  {
+    "index": 3626,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "ILMU EKONOMI",
+    "daya": 146,
+    "peminat": 24,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 24 pelamar untuk 146 kursi)"
+  },
+  {
+    "index": 3627,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "ILMU ADMINISTRASI NEGARA",
+    "daya": 42,
+    "peminat": 30,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 30 pelamar untuk 42 kursi)"
+  },
+  {
+    "index": 3628,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "ANTROPOLOGI SOSIAL",
+    "daya": 51,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 51 kursi)"
+  },
+  {
+    "index": 3629,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "ILMU HUKUM",
+    "daya": 225,
+    "peminat": 79,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 79 pelamar untuk 225 kursi)"
+  },
+  {
+    "index": 3630,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "MANAJEMEN",
+    "daya": 121,
+    "peminat": 96,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 96 pelamar untuk 121 kursi)"
+  },
+  {
+    "index": 3631,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "ILMU KESEJAHTERAAN SOSIAL",
+    "daya": 55,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 55 kursi)"
+  },
+  {
+    "index": 3632,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "PEND. PANCASILA & KEWARGANEG.",
+    "daya": 57,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 57 kursi)"
+  },
+  {
+    "index": 3633,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "AKUNTANSI",
+    "daya": 123,
+    "peminat": 103,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 103 pelamar untuk 123 kursi)"
+  },
+  {
+    "index": 3634,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "ILMU PEMERINTAHAN",
+    "daya": 43,
+    "peminat": 27,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 27 pelamar untuk 43 kursi)"
+  },
+  {
+    "index": 3635,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "BIMBINGAN KONSELING",
+    "daya": 57,
+    "peminat": 12,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 12 pelamar untuk 57 kursi)"
+  },
+  {
+    "index": 3636,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "PEND. GEOGRAFI",
+    "daya": 57,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 57 kursi)"
+  },
+  {
+    "index": 3637,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "PEND. SEJARAH",
+    "daya": 59,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 59 kursi)"
+  },
+  {
+    "index": 3638,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "PEND. BHS. SASTRA IND. & DAERAH",
+    "daya": 54,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 54 kursi)"
+  },
+  {
+    "index": 3639,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "PEND. BAHASA INGGRIS",
+    "daya": 53,
+    "peminat": 19,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 19 pelamar untuk 53 kursi)"
+  },
+  {
+    "index": 3640,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "HUBUNGAN INTERNASIONAL",
+    "daya": 45,
+    "peminat": 41,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 41 pelamar untuk 45 kursi)"
+  },
+  {
+    "index": 3642,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "PENDIDKAN JASMANI KESEHATAN REKREASI",
+    "daya": 64,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 64 kursi)"
+  },
+  {
+    "index": 3643,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "PG PAUD",
+    "daya": 64,
+    "peminat": 10,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 10 pelamar untuk 64 kursi)"
+  },
+  {
+    "index": 3644,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "ILMU PERPUSTAKAAN",
+    "daya": 51,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 51 kursi)"
+  },
+  {
+    "index": 3646,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "MANAJEMEN PENDIDIKAN",
+    "daya": 66,
+    "peminat": 10,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 10 pelamar untuk 66 kursi)"
+  },
+  {
+    "index": 3647,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "PENDIDIKAN KEPELATIHAN OLAHRAGA",
+    "daya": 138,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 138 kursi)"
+  },
+  {
+    "index": 3648,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "TEKNIK GEOLOGI",
+    "daya": 25,
+    "peminat": 17,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 17 pelamar untuk 25 kursi)"
+  },
+  {
+    "index": 3649,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "TEKNOLOGI PANGAN",
+    "daya": 19,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 19 kursi)"
+  },
+  {
+    "index": 3650,
+    "kampus": "UNIVERSITAS CENDERAWASIH",
+    "prodi": "SOSIOLOGI",
+    "daya": 50,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 50 kursi)"
+  },
+  {
+    "index": 3657,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "TEKNIK ELEKTRO",
+    "daya": 30,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 30 kursi)"
+  },
+  {
+    "index": 3658,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "TEKNIK MESIN",
+    "daya": 34,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 34 kursi)"
+  },
+  {
+    "index": 3659,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "TEKNIK SIPIL",
+    "daya": 48,
+    "peminat": 29,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 29 pelamar untuk 48 kursi)"
+  },
+  {
+    "index": 3660,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "ARSITEKTUR",
+    "daya": 26,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 3661,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "KETEKNIKAN PERTANIAN",
+    "daya": 32,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 32 kursi)"
+  },
+  {
+    "index": 3662,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "AGRIBISNIS",
+    "daya": 40,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 3663,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "AGROTEKNOLOGI",
+    "daya": 30,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 30 kursi)"
+  },
+  {
+    "index": 3664,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "PETERNAKAN",
+    "daya": 22,
+    "peminat": 5,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 5 pelamar untuk 22 kursi)"
+  },
+  {
+    "index": 3665,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "MANAJEMEN SUMBERDAYA PERAIRAN",
+    "daya": 32,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 32 kursi)"
+  },
+  {
+    "index": 3666,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "TEKNIK INFORMATIKA",
+    "daya": 68,
+    "peminat": 55,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 55 pelamar untuk 68 kursi)"
+  },
+  {
+    "index": 3667,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "SISTEM INFORMASI",
+    "daya": 50,
+    "peminat": 28,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 28 pelamar untuk 50 kursi)"
+  },
+  {
+    "index": 3668,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "PENDIDIKAN MATEMATIKA",
+    "daya": 15,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 15 kursi)"
+  },
+  {
+    "index": 3669,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "PENDIDIKAN FISIKA",
+    "daya": 19,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 19 kursi)"
+  },
+  {
+    "index": 3670,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "PENDIDIKAN KIMIA",
+    "daya": 18,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 18 kursi)"
+  },
+  {
+    "index": 3671,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "PENDIDIKAN KOMPUTER",
+    "daya": 47,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 47 kursi)"
+  },
+  {
+    "index": 3672,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "EKONOMI PEMBANGUNAN",
+    "daya": 53,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 53 kursi)"
+  },
+  {
+    "index": 3673,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "MANAJEMEN",
+    "daya": 108,
+    "peminat": 74,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 74 pelamar untuk 108 kursi)"
+  },
+  {
+    "index": 3674,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "AKUNTANSI",
+    "daya": 60,
+    "peminat": 33,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 33 pelamar untuk 60 kursi)"
+  },
+  {
+    "index": 3675,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "ILMU ADMINISTRASI NEGARA",
+    "daya": 100,
+    "peminat": 43,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 43 pelamar untuk 100 kursi)"
+  },
+  {
+    "index": 3676,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "PENDIDIKAN JASMANI, KESEHATAN DAN REKREASI",
+    "daya": 93,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 93 kursi)"
+  },
+  {
+    "index": 3677,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "PENDIDIKAN BAHASA DAN SASTRA INDONESIA",
+    "daya": 52,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 52 kursi)"
+  },
+  {
+    "index": 3678,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "PENDIDIKAN BAHASA INGGRIS",
+    "daya": 24,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 24 kursi)"
+  },
+  {
+    "index": 3679,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "PENDIDIKAN GURU SEKOLAH DASAR",
+    "daya": 88,
+    "peminat": 33,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 33 pelamar untuk 88 kursi)"
+  },
+  {
+    "index": 3680,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "PENDIDIKAN GURU PENDIDIKAN ANAK USIA DINI",
+    "daya": 31,
+    "peminat": 5,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 5 pelamar untuk 31 kursi)"
+  },
+  {
+    "index": 3681,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "ILMU HUKUM",
+    "daya": 108,
+    "peminat": 40,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 40 pelamar untuk 108 kursi)"
+  },
+  {
+    "index": 3682,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "SASTRA INGGRIS",
+    "daya": 15,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 15 kursi)"
+  },
+  {
+    "index": 3683,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "PENDIDIKAN EKONOMI",
+    "daya": 47,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 47 kursi)"
+  },
+  {
+    "index": 3684,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "PERENCANAAN WILAYAH DAN KOTA",
+    "daya": 29,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 29 kursi)"
+  },
+  {
+    "index": 3685,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "TEKNIK SISTEM PERKAPALAN",
+    "daya": 18,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 18 kursi)"
+  },
+  {
+    "index": 3686,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "ILMU POLITIK",
+    "daya": 23,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 23 kursi)"
+  },
+  {
+    "index": 3687,
+    "kampus": "UNIVERSITAS MUSAMUS MERAUKE",
+    "prodi": "PEMBANGUNAN SOSIAL",
+    "daya": 19,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 19 kursi)"
+  },
+  {
+    "index": 3688,
+    "kampus": "ISBI TANAH PAPUA",
+    "prodi": "DESAIN KOMUNIKASI VISUAL",
+    "daya": 22,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 22 kursi)"
+  },
+  {
+    "index": 3689,
+    "kampus": "ISBI TANAH PAPUA",
+    "prodi": "SENI RUPA MURNI",
+    "daya": 22,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 22 kursi)"
+  },
+  {
+    "index": 3690,
+    "kampus": "ISBI TANAH PAPUA",
+    "prodi": "SENI KRIYA",
+    "daya": 22,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 22 kursi)"
+  },
+  {
+    "index": 3693,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "TEKNOLOGI HASIL PERTANIAN",
+    "daya": 41,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 41 kursi)"
+  },
+  {
+    "index": 3695,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "ILMU KELAUTAN",
+    "daya": 41,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 41 kursi)"
+  },
+  {
+    "index": 3696,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "MATEMATIKA",
+    "daya": 40,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 3698,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "BIOLOGI",
+    "daya": 43,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 43 kursi)"
+  },
+  {
+    "index": 3699,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "KIMIA",
+    "daya": 42,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 42 kursi)"
+  },
+  {
+    "index": 3700,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "AGRIBISNIS",
+    "daya": 40,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 3701,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "AGROTEKNOLOGI",
+    "daya": 41,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 41 kursi)"
+  },
+  {
+    "index": 3702,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "PETERNAKAN",
+    "daya": 39,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 39 kursi)"
+  },
+  {
+    "index": 3703,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "KEHUTANAN",
+    "daya": 81,
+    "peminat": 17,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 17 pelamar untuk 81 kursi)"
+  },
+  {
+    "index": 3706,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "TEKNIK ELEKTRO",
+    "daya": 37,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 3707,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "PENDIDIKAN BIOLOGI",
+    "daya": 65,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 65 kursi)"
+  },
+  {
+    "index": 3708,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "PENDIDIKAN MATEMATIKA",
+    "daya": 63,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 63 kursi)"
+  },
+  {
+    "index": 3709,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "PENDIDIKAN KIMIA",
+    "daya": 69,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 69 kursi)"
+  },
+  {
+    "index": 3710,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "TEKNIK GEOLOGI",
+    "daya": 37,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 3714,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "TEKNIK PERTANIAN DAN BIOSISTEM",
+    "daya": 40,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 3716,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "EKONOMI PEMBANGUNAN",
+    "daya": 52,
+    "peminat": 16,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 16 pelamar untuk 52 kursi)"
+  },
+  {
+    "index": 3717,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "SASTRA INGGRIS",
+    "daya": 21,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 21 kursi)"
+  },
+  {
+    "index": 3720,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "AKUNTANSI",
+    "daya": 39,
+    "peminat": 29,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 29 pelamar untuk 39 kursi)"
+  },
+  {
+    "index": 3721,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "SASTRA INDONESIA",
+    "daya": 24,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 24 kursi)"
+  },
+  {
+    "index": 3722,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "PENDIDIKAN BAHASA INGGRIS",
+    "daya": 64,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 64 kursi)"
+  },
+  {
+    "index": 3723,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "TEKNIK PERMINYAKAN",
+    "daya": 49,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 49 kursi)"
+  },
+  {
+    "index": 3724,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "PENDIDKAN GURU SEKOLAH DASAR",
+    "daya": 48,
+    "peminat": 18,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 18 pelamar untuk 48 kursi)"
+  },
+  {
+    "index": 3725,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "KONSERVASI HUTAN",
+    "daya": 42,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 42 kursi)"
+  },
+  {
+    "index": 3727,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "ILMU LINGKUNGAN",
+    "daya": 39,
+    "peminat": 1,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 1 pelamar untuk 39 kursi)"
+  },
+  {
+    "index": 3731,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "KESEHATAN HEWAN",
+    "daya": 27,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 27 kursi)"
+  },
+  {
+    "index": 3732,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "TEKNIK KOMPUTER",
+    "daya": 37,
+    "peminat": 26,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 26 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 3733,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "EKOWISATA",
+    "daya": 28,
+    "peminat": 4,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 4 pelamar untuk 28 kursi)"
+  },
+  {
+    "index": 3734,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "TEKNIK LISTRIK",
+    "daya": 27,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 27 kursi)"
+  },
+  {
+    "index": 3735,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "BUDIDAYA TANAMAN PANGAN",
+    "daya": 35,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 35 kursi)"
+  },
+  {
+    "index": 3736,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "KONSERVASI SUMBERDAYA HUTAN",
+    "daya": 18,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 18 kursi)"
+  },
+  {
+    "index": 3737,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "BUDIDAYA PERIKANAN",
+    "daya": 28,
+    "peminat": 10,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 10 pelamar untuk 28 kursi)"
+  },
+  {
+    "index": 3738,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "BUDIDAYA TANAMAN PERKEBUNAN",
+    "daya": 35,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 35 kursi)"
+  },
+  {
+    "index": 3739,
+    "kampus": "UNIVERSITAS PAPUA",
+    "prodi": "BUDIDAYA TERNAK",
+    "daya": 28,
+    "peminat": 3,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 3 pelamar untuk 28 kursi)"
+  },
+  {
+    "index": 3819,
+    "kampus": "POLITEKNIK NEGERI BENGKALIS",
+    "prodi": "TEKNOLOGI REKAYASA ARSITEKTUR PERKAPALAN",
+    "daya": 37,
+    "peminat": 35,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 35 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 3823,
+    "kampus": "POLITEKNIK NEGERI BENGKALIS",
+    "prodi": "BAHASA INGGRIS UNTUK KOMUNIKASI BISNIS DAN PROFESIONAL",
+    "daya": 36,
+    "peminat": 30,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 30 pelamar untuk 36 kursi)"
+  },
+  {
+    "index": 3878,
+    "kampus": "POLITEKNIK PERTANIAN NEGERI PAYAKUMBUH",
+    "prodi": "TATA AIR PERTANIAN",
+    "daya": 49,
+    "peminat": 42,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 42 pelamar untuk 49 kursi)"
+  },
+  {
+    "index": 3894,
+    "kampus": "POLITEKNIK NEGERI SRIWIJAYA",
+    "prodi": "AKUNTANSI SEKTOR PUBLIK PSDKU SIAK",
+    "daya": 22,
+    "peminat": 9,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 9 pelamar untuk 22 kursi)"
+  },
+  {
+    "index": 3905,
+    "kampus": "POLITEKNIK NEGERI SRIWIJAYA",
+    "prodi": "TEKNIK KIMIA (KAMPUS KAB SIAK)",
+    "daya": 24,
+    "peminat": 21,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 21 pelamar untuk 24 kursi)"
+  },
+  {
+    "index": 3927,
+    "kampus": "POLITEKNIK NEGERI LAMPUNG",
+    "prodi": "TEKNOLOGI PERBENIHAN",
+    "daya": 76,
+    "peminat": 41,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 41 pelamar untuk 76 kursi)"
+  },
+  {
+    "index": 3928,
+    "kampus": "POLITEKNIK NEGERI LAMPUNG",
+    "prodi": "TEKNOLOGI PRODUKSI TANAMAN HORTIKULTURA",
+    "daya": 97,
+    "peminat": 75,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 75 pelamar untuk 97 kursi)"
+  },
+  {
+    "index": 3932,
+    "kampus": "POLITEKNIK NEGERI LAMPUNG",
+    "prodi": "PENGEMBANGAN PRODUK AGRO INDUSTRI",
+    "daya": 102,
+    "peminat": 68,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 68 pelamar untuk 102 kursi)"
+  },
+  {
+    "index": 3933,
+    "kampus": "POLITEKNIK NEGERI LAMPUNG",
+    "prodi": "TEKNOLOGI PRODUKSI TERNAK",
+    "daya": 90,
+    "peminat": 74,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 74 pelamar untuk 90 kursi)"
+  },
+  {
+    "index": 3934,
+    "kampus": "POLITEKNIK NEGERI LAMPUNG",
+    "prodi": "TEKNOLOGI PEMBENIHAN IKAN",
+    "daya": 104,
+    "peminat": 34,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 34 pelamar untuk 104 kursi)"
+  },
+  {
+    "index": 3936,
+    "kampus": "POLITEKNIK NEGERI LAMPUNG",
+    "prodi": "PENGELOLAAN PERKEBUNAN KOPI",
+    "daya": 51,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 51 kursi)"
+  },
+  {
+    "index": 3941,
+    "kampus": "POLITEKNIK NEGERI LAMPUNG",
+    "prodi": "TEKNOLOGI PAKAN TERNAK",
+    "daya": 74,
+    "peminat": 64,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 64 pelamar untuk 74 kursi)"
+  },
+  {
+    "index": 3947,
+    "kampus": "POLITEKNIK NEGERI LAMPUNG",
+    "prodi": "PENGELOLAAN KONVENSI DAN ACARA",
+    "daya": 47,
+    "peminat": 31,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 31 pelamar untuk 47 kursi)"
+  },
+  {
+    "index": 3981,
+    "kampus": "POLITEKNIK NEGERI MEDIA KREATIF",
+    "prodi": "TEKNIK GRAFIKA (PSDKU MAKASSAR)",
+    "daya": 38,
+    "peminat": 21,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 21 pelamar untuk 38 kursi)"
+  },
+  {
+    "index": 3985,
+    "kampus": "POLITEKNIK NEGERI MEDIA KREATIF",
+    "prodi": "PENERBITAN (PSDKU MAKASSAR)",
+    "daya": 29,
+    "peminat": 17,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 17 pelamar untuk 29 kursi)"
+  },
+  {
+    "index": 3986,
+    "kampus": "POLITEKNIK NEGERI MEDIA KREATIF",
+    "prodi": "PERIKLANAN (PSDKU MAKASSAR)",
+    "daya": 26,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 26 kursi)"
+  },
+  {
+    "index": 4104,
+    "kampus": "POLITEKNIK MARITIM NEGERI INDONESIA",
+    "prodi": "TEKNOLOGI REKAYASA MEKATRONIKA",
+    "daya": 70,
+    "peminat": 26,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 26 pelamar untuk 70 kursi)"
+  },
+  {
+    "index": 4109,
+    "kampus": "POLITEKNIK NEGERI BANYUWANGI",
+    "prodi": "TEKNOLOGI PENGOLAHAN HASIL TERNAK",
+    "daya": 74,
+    "peminat": 44,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 44 pelamar untuk 74 kursi)"
+  },
+  {
+    "index": 4112,
+    "kampus": "POLITEKNIK NEGERI BANYUWANGI",
+    "prodi": "TEKNOLOGI REKAYASA MANUFAKTUR",
+    "daya": 53,
+    "peminat": 50,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 50 pelamar untuk 53 kursi)"
+  },
+  {
+    "index": 4116,
+    "kampus": "POLITEKNIK NEGERI BANYUWANGI",
+    "prodi": "TEKNOLOGI REKAYASA KONSTRUKSI JALAN DAN JEMBATAN",
+    "daya": 42,
+    "peminat": 33,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 33 pelamar untuk 42 kursi)"
+  },
+  {
+    "index": 4117,
+    "kampus": "POLITEKNIK NEGERI BANYUWANGI",
+    "prodi": "TEKNOLOGI PRODUKSI TERNAK",
+    "daya": 49,
+    "peminat": 26,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 26 pelamar untuk 49 kursi)"
+  },
+  {
+    "index": 4118,
+    "kampus": "POLITEKNIK NEGERI BANYUWANGI",
+    "prodi": "PENGEMBANGAN PRODUK AGROINDUSTRI",
+    "daya": 44,
+    "peminat": 38,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 38 pelamar untuk 44 kursi)"
+  },
+  {
+    "index": 4119,
+    "kampus": "POLITEKNIK NEGERI BANYUWANGI",
+    "prodi": "TEKNOLOGI BUDI DAYA PERIKANAN/TEKNOLOGI AKUAKULTUR",
+    "daya": 42,
+    "peminat": 40,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 40 pelamar untuk 42 kursi)"
+  },
+  {
+    "index": 4151,
+    "kampus": "POLITEKNIK NEGERI JEMBER",
+    "prodi": "PRODUKSI MEDIA KAMPUS BONDOWOSO",
+    "daya": 42,
+    "peminat": 29,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 29 pelamar untuk 42 kursi)"
+  },
+  {
+    "index": 4152,
+    "kampus": "POLITEKNIK NEGERI JEMBER",
+    "prodi": "PSDKU TEKNOLOGI REKAYASA PERANGKAT LUNAK KAB. SABU RAIJUA",
+    "daya": 46,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 46 kursi)"
+  },
+  {
+    "index": 4193,
+    "kampus": "POLITEKNIK NEGERI MALANG",
+    "prodi": "TEKNIK OTOMOTIF ELEKTRONIK (PSDKU PAMEKASAN)",
+    "daya": 20,
+    "peminat": 15,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 15 pelamar untuk 20 kursi)"
+  },
+  {
+    "index": 4263,
+    "kampus": "POLITEKNIK NEGERI MADURA",
+    "prodi": "TEKNOLOGI REKAYASA OTOMASI",
+    "daya": 23,
+    "peminat": 21,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 21 pelamar untuk 23 kursi)"
+  },
+  {
+    "index": 4274,
+    "kampus": "POLITEKNIK NEGERI PONTIANAK",
+    "prodi": "DESAIN KAWASAN BINAAN",
+    "daya": 39,
+    "peminat": 30,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 30 pelamar untuk 39 kursi)"
+  },
+  {
+    "index": 4284,
+    "kampus": "POLITEKNIK NEGERI PONTIANAK",
+    "prodi": "PENGOLAHAN DAN PENYIMPANAN HASIL PERIKANAN",
+    "daya": 33,
+    "peminat": 22,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 22 pelamar untuk 33 kursi)"
+  },
+  {
+    "index": 4288,
+    "kampus": "POLITEKNIK NEGERI PONTIANAK",
+    "prodi": "TEKNOLOGI BUDIDAYA PERIKANAN K. KAB. KAPUAS HULU",
+    "daya": 17,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 17 kursi)"
+  },
+  {
+    "index": 4289,
+    "kampus": "POLITEKNIK NEGERI PONTIANAK",
+    "prodi": "PENGELOLAAN HASIL PERKEBUNAN (KAMPUS KAB. SANGGAU)",
+    "daya": 30,
+    "peminat": 27,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 27 pelamar untuk 30 kursi)"
+  },
+  {
+    "index": 4295,
+    "kampus": "POLITEKNIK NEGERI PONTIANAK",
+    "prodi": "AKUNTANSI (KAMPUS KAB. SANGGAU)",
+    "daya": 44,
+    "peminat": 21,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 21 pelamar untuk 44 kursi)"
+  },
+  {
+    "index": 4298,
+    "kampus": "POLITEKNIK NEGERI PONTIANAK",
+    "prodi": "TEKNIK SIPIL K. KAB. KAPUAS HULU",
+    "daya": 60,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 60 kursi)"
+  },
+  {
+    "index": 4299,
+    "kampus": "POLITEKNIK NEGERI PONTIANAK",
+    "prodi": "TEKNOLOGI PENGOLAHAN HASIL PERKEBUNAN K, KAB KAPUAS HULU",
+    "daya": 41,
+    "peminat": 19,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 19 pelamar untuk 41 kursi)"
+  },
+  {
+    "index": 4300,
+    "kampus": "POLITEKNIK NEGERI PONTIANAK",
+    "prodi": "TEKNOLOGI PENANGKAPAN IKAN",
+    "daya": 32,
+    "peminat": 20,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 20 pelamar untuk 32 kursi)"
+  },
+  {
+    "index": 4301,
+    "kampus": "POLITEKNIK NEGERI PONTIANAK",
+    "prodi": "TEKNOLOGI MESIN (KAMPUS KAB. SANGGAU)",
+    "daya": 19,
+    "peminat": 7,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 7 pelamar untuk 19 kursi)"
+  },
+  {
+    "index": 4302,
+    "kampus": "POLITEKNIK NEGERI PONTIANAK",
+    "prodi": "BUDI DAYA IKAN (KAMPUS KAB.SUKAMARA)",
+    "daya": 16,
+    "peminat": 2,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 2 pelamar untuk 16 kursi)"
+  },
+  {
+    "index": 4303,
+    "kampus": "POLITEKNIK NEGERI PONTIANAK",
+    "prodi": "TEKNOLOGI INFORMASI (KAMPUS KAB.SUKAMARA)",
+    "daya": 24,
+    "peminat": 8,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 8 pelamar untuk 24 kursi)"
+  },
+  {
+    "index": 4307,
+    "kampus": "POLITEKNIK NEGERI KETAPANG",
+    "prodi": "TEKNOLOGI HASIL PERKEBUNAN",
+    "daya": 40,
+    "peminat": 28,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 28 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 4308,
+    "kampus": "POLITEKNIK NEGERI KETAPANG",
+    "prodi": "PEMELIHARAAN MESIN",
+    "daya": 35,
+    "peminat": 16,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 16 pelamar untuk 35 kursi)"
+  },
+  {
+    "index": 4312,
+    "kampus": "POLITEKNIK NEGERI KETAPANG",
+    "prodi": "AGROINDUSTRI",
+    "daya": 37,
+    "peminat": 35,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 35 pelamar untuk 37 kursi)"
+  },
+  {
+    "index": 4315,
+    "kampus": "POLITEKNIK NEGERI SAMBAS",
+    "prodi": "TEKNIK MESIN PERTANIAN",
+    "daya": 32,
+    "peminat": 30,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 30 pelamar untuk 32 kursi)"
+  },
+  {
+    "index": 4316,
+    "kampus": "POLITEKNIK NEGERI SAMBAS",
+    "prodi": "AGRIBISNIS PERIKANAN DAN KELAUTAN",
+    "daya": 45,
+    "peminat": 33,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 33 pelamar untuk 45 kursi)"
+  },
+  {
+    "index": 4320,
+    "kampus": "POLITEKNIK NEGERI SAMBAS",
+    "prodi": "PENGELOLAAN PERKEBUNAN",
+    "daya": 34,
+    "peminat": 31,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 31 pelamar untuk 34 kursi)"
+  },
+  {
+    "index": 4324,
+    "kampus": "POLITEKNIK NEGERI BANJARMASIN",
+    "prodi": "TEKNIK BANGUNAN RAWA",
+    "daya": 22,
+    "peminat": 18,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 18 pelamar untuk 22 kursi)"
+  },
+  {
+    "index": 4331,
+    "kampus": "POLITEKNIK NEGERI BANJARMASIN",
+    "prodi": "TEKNOLOGI REKAYASA OTOMOTIF",
+    "daya": 70,
+    "peminat": 34,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 34 pelamar untuk 70 kursi)"
+  },
+  {
+    "index": 4332,
+    "kampus": "POLITEKNIK NEGERI BANJARMASIN",
+    "prodi": "TEKNOLOGI REKAYASA OTOMASI",
+    "daya": 40,
+    "peminat": 14,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 14 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 4346,
+    "kampus": "POLITEKNIK NEGERI TANAH LAUT",
+    "prodi": "TEKNOLOGI REKAYASA KONSTRUKSI JALAN DAN JEMBATAN",
+    "daya": 39,
+    "peminat": 38,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 38 pelamar untuk 39 kursi)"
+  },
+  {
+    "index": 4347,
+    "kampus": "POLITEKNIK NEGERI TANAH LAUT",
+    "prodi": "TEKNOLOGI PAKAN TERNAK",
+    "daya": 40,
+    "peminat": 21,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 21 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 4352,
+    "kampus": "POLITEKNIK NEGERI TANAH LAUT",
+    "prodi": "TEKNOLOGI OTOMOTIF",
+    "daya": 35,
+    "peminat": 26,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 26 pelamar untuk 35 kursi)"
+  },
+  {
+    "index": 4355,
+    "kampus": "POLITEKNIK NEGERI NUNUKAN",
+    "prodi": "ADMINISTRASI BISNIS",
+    "daya": 40,
+    "peminat": 31,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 31 pelamar untuk 40 kursi)"
+  },
+  {
+    "index": 4357,
+    "kampus": "POLITEKNIK NEGERI NUNUKAN",
+    "prodi": "TEKNIK SIPIL INFRASTRUKTUR PERKOTAAN",
+    "daya": 27,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 27 kursi)"
+  },
+  {
+    "index": 4358,
+    "kampus": "POLITEKNIK NEGERI NUNUKAN",
+    "prodi": "TEKNOLOGI HASIL PERIKANAN",
+    "daya": 29,
+    "peminat": 6,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 6 pelamar untuk 29 kursi)"
+  },
+  {
+    "index": 4360,
+    "kampus": "POLITEKNIK PERTANIAN NEGERI SAMARINDA",
+    "prodi": "TEKNOLOGI REKAYASA PERANGKAT LUNAK",
+    "daya": 47,
+    "peminat": 28,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 28 pelamar untuk 47 kursi)"
+  },
+  {
+    "index": 4361,
+    "kampus": "POLITEKNIK PERTANIAN NEGERI SAMARINDA",
+    "prodi": "REKAYASA KAYU",
+    "daya": 20,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 20 kursi)"
+  },
+  {
+    "index": 4364,
+    "kampus": "POLITEKNIK PERTANIAN NEGERI SAMARINDA",
+    "prodi": "TEKNOLOGI REKAYASA PENGENDALIAN PENCEMARAN LINGKUNGAN",
+    "daya": 20,
+    "peminat": 16,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 16 pelamar untuk 20 kursi)"
+  },
+  {
+    "index": 4365,
+    "kampus": "POLITEKNIK PERTANIAN NEGERI SAMARINDA",
+    "prodi": "TEKNOLOGI REKAYASA PANGAN",
+    "daya": 16,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 16 kursi)"
+  },
+  {
+    "index": 4367,
+    "kampus": "POLITEKNIK PERTANIAN NEGERI SAMARINDA",
+    "prodi": "TEKNOLOGI HASIL PERKEBUNAN",
+    "daya": 42,
+    "peminat": 36,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 36 pelamar untuk 42 kursi)"
+  },
+  {
+    "index": 4368,
+    "kampus": "POLITEKNIK PERTANIAN NEGERI SAMARINDA",
+    "prodi": "PENGOLAHAN HASIL HUTAN",
+    "daya": 42,
+    "peminat": 13,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 13 pelamar untuk 42 kursi)"
+  },
+  {
+    "index": 4412,
+    "kampus": "POLITEKNIK NEGERI BALI",
+    "prodi": "TEKNOLOGI REKAYASA UTILITAS",
+    "daya": 35,
+    "peminat": 16,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 16 pelamar untuk 35 kursi)"
+  },
+  {
+    "index": 4421,
+    "kampus": "POLITEKNIK NEGERI BALI",
+    "prodi": "TEKNOLOGI REKAYASA KONSTRUKSI BANGUNAN AIR",
+    "daya": 20,
+    "peminat": 11,
+    "status": "Peminat Rendah (Wilayah Khusus/Seni: 11 pelamar untuk 20 kursi)"
+  }
+]
