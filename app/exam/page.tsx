@@ -375,25 +375,79 @@ function OfficialExamChamberContent() {
         return filtered.length > 0 ? filtered : allQuestions;
     }, [allQuestions, activeSubtestConfig]);
 
+    // HELPER PENCOCOKAN PRESISI STRING TARGET PILIHAN SISWA
+    const parseTargetSelection = useCallback((val: string) => {
+        if (!val || typeof val !== "string") return null;
+        const trimmed = val.trim();
+        if (!trimmed.includes(" - ")) return null;
+
+        const parts = trimmed.split(" - ");
+        const rawKampus = parts[0] || "";
+        const rawProdi = parts.slice(1).join(" - ") || "";
+
+        // Bersihkan singkatan kurung seperti (UI), (UNS), (S1), (D4)
+        const cleanKampus = rawKampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
+        const cleanProdi = rawProdi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
+
+        const matchJenjang = rawProdi.match(/\b(S1|D4|D3|D2)\b/i);
+        const jenjang = matchJenjang ? matchJenjang[1].toUpperCase() : null;
+
+        return { cleanKampus, cleanProdi, jenjang };
+    }, []);
+
     const benchmarkData1 = useMemo(() => {
         if (!pilihanKampus1 || ptnBenchmarks.length === 0) return null;
-        const clean = pilihanKampus1.toLowerCase();
-        return ptnBenchmarks.find((b) =>
-            clean.includes(b.prodi.toLowerCase()) &&
-            (clean.includes(b.kampus.toLowerCase()) || clean.includes(b.kampus.split(" ")[0].toLowerCase())) &&
-            (b.jenjang ? clean.includes(b.jenjang.toLowerCase()) : true)
-        ) || null;
-    }, [pilihanKampus1, ptnBenchmarks]);
+        const parsed = parseTargetSelection(pilihanKampus1);
+        if (!parsed) return null;
+
+        return ptnBenchmarks.find((b) => {
+            const bKampus = b.kampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
+            const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
+
+            // Cocokkan nama kampus secara eksak atau saling inklusif
+            const isKampusMatch =
+                bKampus === parsed.cleanKampus ||
+                bKampus.includes(parsed.cleanKampus) ||
+                parsed.cleanKampus.includes(bKampus);
+
+            // Cocokkan nama prodi secara eksak atau saling inklusif
+            const isProdiMatch =
+                bProdi === parsed.cleanProdi ||
+                bProdi.includes(parsed.cleanProdi) ||
+                parsed.cleanProdi.includes(bProdi);
+
+            const isJenjangMatch = parsed.jenjang ? (b.jenjang || "S1").toUpperCase() === parsed.jenjang : true;
+
+            return isKampusMatch && isProdiMatch && isJenjangMatch;
+        }) || null;
+    }, [pilihanKampus1, ptnBenchmarks, parseTargetSelection]);
 
     const benchmarkData2 = useMemo(() => {
         if (!pilihanKampus2 || ptnBenchmarks.length === 0) return null;
-        const clean = pilihanKampus2.toLowerCase();
-        return ptnBenchmarks.find((b) =>
-            clean.includes(b.prodi.toLowerCase()) &&
-            (clean.includes(b.kampus.toLowerCase()) || clean.includes(b.kampus.split(" ")[0].toLowerCase())) &&
-            (b.jenjang ? clean.includes(b.jenjang.toLowerCase()) : true)
-        ) || null;
-    }, [pilihanKampus2, ptnBenchmarks]);
+        const parsed = parseTargetSelection(pilihanKampus2);
+        if (!parsed) return null;
+
+        return ptnBenchmarks.find((b) => {
+            const bKampus = b.kampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
+            const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
+
+            // Cocokkan nama kampus secara eksak atau saling inklusif
+            const isKampusMatch =
+                bKampus === parsed.cleanKampus ||
+                bKampus.includes(parsed.cleanKampus) ||
+                parsed.cleanKampus.includes(bKampus);
+
+            // Cocokkan nama prodi secara eksak atau saling inklusif
+            const isProdiMatch =
+                bProdi === parsed.cleanProdi ||
+                bProdi.includes(parsed.cleanProdi) ||
+                parsed.cleanProdi.includes(bProdi);
+
+            const isJenjangMatch = parsed.jenjang ? (b.jenjang || "S1").toUpperCase() === parsed.jenjang : true;
+
+            return isKampusMatch && isProdiMatch && isJenjangMatch;
+        }) || null;
+    }, [pilihanKampus2, ptnBenchmarks, parseTargetSelection]);
 
     // FILTER MODAL PENCARIAN DENGAN PEMBATAS 50 TAMPILAN SUPAYA RINGAN
     const filteredModalBenchmarks = useMemo(() => {
