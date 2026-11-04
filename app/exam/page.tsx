@@ -52,6 +52,19 @@ export interface PTNProdiBenchmark {
     passingGradeMin: number;
 }
 
+// Konversi format database lokal ke format benchmark komponen
+const LOCAL_BENCHMARKS: PTNProdiBenchmark[] = (LIST_PRODI_SNBT || []).map((item) => ({
+    id: String(item.id),
+    kampus: item.kampus,
+    prodi: item.prodi,
+    jenjang: item.jenjang || "S1",
+    rumpun: item.kelompok || "SAINTEK",
+    dayaTampung: Number(item.dayaTampung || 0),
+    peminat: Number(item.peminat || 0),
+    keketatan: `${item.keketatan}%`,
+    passingGradeMin: Number(item.passingGrade || 650)
+}));
+
 // HELPER FORMAT PERSENTASE KEKETATAN OTOMATIS
 export function formatKeketatan(val: any): string {
     if (!val && val !== 0) return "0%";
@@ -158,8 +171,8 @@ function OfficialExamChamberContent() {
     const [pilihanKampus1, setPilihanKampus1] = useState("");
     const [pilihanKampus2, setPilihanKampus2] = useState("");
 
-    // DATABASE PTN DINAMIS DARI GOOGLE SHEETS DENGAN LOCALSTORAGE CACHE
-    const [ptnBenchmarks, setPtnBenchmarks] = useState<PTNProdiBenchmark[]>([]);
+    // DATABASE PTN LANGSUNG DARI FILE JSON LOKAL (INSTAN & LENGKAP)
+    const [ptnBenchmarks, setPtnBenchmarks] = useState<PTNProdiBenchmark[]>(LOCAL_BENCHMARKS);
     const [isLoadingPTN, setIsLoadingPTN] = useState(false);
 
     // MODAL DATABASE PTN LENGKAP FILTER JENJANG & RUMPUN
@@ -279,30 +292,6 @@ function OfficialExamChamberContent() {
             })
             .catch(() => { });
 
-        // Cek Cache PTN Benchmarks agar instan tanpa loading
-        const cachedPTN = localStorage.getItem("cbt_ptn_benchmarks_cache");
-        if (cachedPTN) {
-            try {
-                const parsed = JSON.parse(cachedPTN);
-                if (Array.isArray(parsed) && parsed.length > 0) setPtnBenchmarks(parsed);
-            } catch { }
-        } else {
-            setIsLoadingPTN(true);
-        }
-
-        fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_ptn_benchmarks&_t=${Date.now()}`, { cache: "no-store" })
-            .then((r) => r.json())
-            .then((res) => {
-                if (res.status === "success" && Array.isArray(res.data) && res.data.length > 0) {
-                    setPtnBenchmarks(res.data);
-                    localStorage.setItem("cbt_ptn_benchmarks_cache", JSON.stringify(res.data));
-                }
-            })
-            .catch(() => { })
-            .finally(() => {
-                setIsLoadingPTN(false);
-            });
-
         // Pulihkan progres pengerjaan siswa
         const savedProgressKey = `cbt_progress_${sessionData.nisn}`;
         const savedProgress = localStorage.getItem(savedProgressKey);
@@ -406,11 +395,14 @@ function OfficialExamChamberContent() {
         ) || null;
     }, [pilihanKampus2, ptnBenchmarks]);
 
+    // FILTER MODAL PENCARIAN DENGAN PEMBATAS 50 TAMPILAN SUPAYA RINGAN
     const filteredModalBenchmarks = useMemo(() => {
+        const q = modalSearchQuery.toLowerCase().trim();
         return ptnBenchmarks.filter((item) => {
             const matchesQuery =
-                item.kampus.toLowerCase().includes(modalSearchQuery.toLowerCase()) ||
-                item.prodi.toLowerCase().includes(modalSearchQuery.toLowerCase());
+                !q ||
+                item.kampus.toLowerCase().includes(q) ||
+                item.prodi.toLowerCase().includes(q);
             const matchesRumpun = modalRumpunFilter === "ALL" || item.rumpun === modalRumpunFilter;
             const matchesJenjang = modalJenjangFilter === "ALL" || (item.jenjang || "S1") === modalJenjangFilter;
             return matchesQuery && matchesRumpun && matchesJenjang;
@@ -792,7 +784,7 @@ function OfficialExamChamberContent() {
         });
     }, [ptnBenchmarks, scoreResults.scaledScore]);
 
-    // TAHAP 1: GERBANG KARANTINA (DILENGKAPI DATA KEKETATAN & PASSING GRADE)
+    // TAHAP 1: GERBANG KARANTINA
     if (!isInExam) {
         return (
             <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans text-slate-800">
@@ -809,7 +801,7 @@ function OfficialExamChamberContent() {
                                             Database Resmi SNBT &bull; Target Pilihan {targetSlotForSelection}
                                         </h3>
                                         <p className="text-[11px] text-slate-500">
-                                            Pilihan program studi jenjang <strong>Sarjana (S1)</strong>, <strong>Diploma 4 (D4)</strong>, dan <strong>Diploma 3 (D3)</strong>.
+                                            Menampilkan {filteredModalBenchmarks.length} prodi terdaftar nasional (S1, D4, D3)
                                         </p>
                                     </div>
                                 </div>
@@ -864,12 +856,7 @@ function OfficialExamChamberContent() {
                             </div>
 
                             <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[300px]">
-                                {isLoadingPTN ? (
-                                    <div className="text-center py-12 text-slate-400 space-y-2">
-                                        <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-700" />
-                                        <p className="text-xs">Mengunduh database PTN dari Google Sheets...</p>
-                                    </div>
-                                ) : filteredModalBenchmarks.map((item) => (
+                                {filteredModalBenchmarks.slice(0, 50).map((item) => (
                                     <div
                                         key={item.id}
                                         onClick={() => handleSelectBenchmark(item)}
@@ -910,9 +897,9 @@ function OfficialExamChamberContent() {
                                     </div>
                                 ))}
 
-                                {!isLoadingPTN && filteredModalBenchmarks.length === 0 && (
-                                    <div className="text-center py-10 text-slate-400 text-xs font-medium">
-                                        Data prodi jenjang ini tidak ditemukan. Anda dapat mengetik manual di luar atau menambahkannya ke tab DATABASE_PTN di Google Sheets.
+                                {filteredModalBenchmarks.length === 0 && (
+                                    <div className="text-center py-12 text-slate-400 text-xs font-medium">
+                                        Program studi atau kampus tidak ditemukan. Periksa kata kunci pencarian Anda.
                                     </div>
                                 )}
                             </div>
@@ -1078,7 +1065,7 @@ function OfficialExamChamberContent() {
                         </div>
 
                         <datalist id="ptn-options-list">
-                            {ptnBenchmarks.map((item) => (
+                            {ptnBenchmarks.slice(0, 300).map((item) => (
                                 <option key={item.id} value={`${item.kampus} - ${item.prodi} (${item.jenjang || "S1"})`}>
                                     Jenjang: {item.jenjang || "S1"} | Keketatan: {formatKeketatan(item.keketatan)} | Min Skor: &ge; {item.passingGradeMin}
                                 </option>
@@ -1145,7 +1132,7 @@ function OfficialExamChamberContent() {
         );
     }
 
-    // TAHAP 4: RAPOR SKOR LENGKAP & EVALUASI DIAGNOSTIK KOMPLEKS (SETARA SIMULASI)
+    // TAHAP 4: RAPOR SKOR LENGKAP & EVALUASI DIAGNOSTIK
     if (isExamCompleted) {
         const p1Eval = benchmarkData1 ? renderAdmissionProbabilityBadge(benchmarkData1.passingGradeMin, scoreResults.scaledScore) : null;
         const p2Eval = benchmarkData2 ? renderAdmissionProbabilityBadge(benchmarkData2.passingGradeMin, scoreResults.scaledScore) : null;
@@ -1319,7 +1306,7 @@ function OfficialExamChamberContent() {
 
                 {/* RAPOR RESMI BENTUK DOKUMEN CETAK */}
                 <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-10 space-y-6 print-card">
-                    {/* 2. KOP SURAT RESMI SMA MUHAMMADIYAH 18 JAKARTA */}
+                    {/* 2. KOP SURAT */}
                     <div className="flex items-center gap-4 border-b-2 border-slate-900 pb-4 text-center">
                         <div className="w-20 h-20 shrink-0 flex items-center justify-center p-1">
                             <img
@@ -1719,7 +1706,6 @@ function OfficialExamChamberContent() {
                         </div>
 
                         <div className="space-y-3 relative pt-3">
-                            {/* TARGET LINE 650 */}
                             <div className="absolute top-0 bottom-0 left-[65%] w-px border-l-2 border-dashed border-slate-400 z-10 pointer-events-none">
                                 <span className="absolute -top-3 -left-6 bg-slate-900 text-white font-mono text-[9px] font-black px-1.5 py-0.2 rounded">
                                     TARGET 650
@@ -1746,7 +1732,7 @@ function OfficialExamChamberContent() {
                         </div>
                     </div>
 
-                    {/* 11. REKOMENDASI PTN LAIN - PROGRAM STUDI SERUPA */}
+                    {/* 11. REKOMENDASI PTN LAIN */}
                     <div className="space-y-1 text-left">
                         <div className="p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-xs font-bold font-mono">
                             <span>REKOMENDASI PTN LAIN - PROGRAM STUDI SERUPA DENGAN PILIHAN 1</span>
@@ -1804,7 +1790,7 @@ function OfficialExamChamberContent() {
                         </button>
                     </div>
 
-                    {/* 13. TANDA TANGAN RESMI KEPALA & PEMBINA KIR (BISA DIEDIT MANUAL SEBELUM CETAK) */}
+                    {/* 13. TANDA TANGAN */}
                     <div className="pt-8 pb-4 grid grid-cols-2 gap-8 text-center text-xs font-serif text-slate-800">
                         <div className="space-y-16">
                             <div>
@@ -2160,7 +2146,7 @@ function OfficialExamChamberContent() {
     );
 }
 
-// WRAPPER UTAMA SUSPENSE (MENCEGAH ERROR PRERENDERING SAAT BUILD NEXT.JS)
+// WRAPPER UTAMA SUSPENSE
 export default function OfficialExamChamberPage() {
     return (
         <Suspense
