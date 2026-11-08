@@ -1029,14 +1029,15 @@ export default function AdminBankSoalPage() {
                     </div>
                 )}
 
-                {/* TAB 1: IMPORT DOKUMEN WORD (.DOCX) DENGAN PRATINJAU INTERAKTIF */}
+                {/* TAB 1: IMPORT DOKUMEN WORD (.DOCX) */}
                 {inputMode === "docx_upload" && (
                     <WordDocxImporter
                         selectedSubtest={selectedSubtest}
                         selectedPaket={selectedPaket}
                         currentCount={serverQuestions.length}
-                        onBulkSubmitQuestions={async (staged) => {
-                            const readyQuestions: ParsedQuestion[] = staged.map((sq) => ({
+                        renderMath={(content: any) => <MathRenderer content={content} />}
+                        onBulkSubmitQuestions={async (staged: StagedWordQuestion[]) => {
+                            const readyQuestions: ParsedQuestion[] = staged.map((sq: StagedWordQuestion) => ({
                                 subtes_code: sq.subtes_code || selectedSubtest,
                                 no_soal: sq.no_soal,
                                 stimulus: sq.stimulus,
