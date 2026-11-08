@@ -35,7 +35,7 @@ import {
 const GOOGLE_SCRIPT_API_URL =
     "https://script.google.com/macros/s/AKfycbxXeMuz-VXgbdUOESiOOLL5NlLrSMVfrdvOCwhgBbjLWwOy3ASkTjnWJSAIONFDrdY7hg/exec";
 
-// HELPER RENDER FORMULA LATEX / KATEX
+// HELPER RENDER MATEMATIKA: BISA DENGAN ATAU TANPA TANDA $
 export const MathRenderer = ({ content }: { content: any }) => {
     const [katexReady, setKatexReady] = useState(false);
 
@@ -58,46 +58,66 @@ export const MathRenderer = ({ content }: { content: any }) => {
     let text = String(content).replace(/\\n/g, "\n");
     if (!text.trim()) return null;
 
-    if (!text.includes("$") && /(\\log|\b\^|\\cdot|\\frac|\\sqrt|\\alpha|\\beta|\\times)/.test(text)) {
-        const newlineIdx = text.indexOf("\n");
-        if (newlineIdx !== -1) {
-            const pre = text.slice(0, newlineIdx + 1);
-            const math = text.slice(newlineIdx + 1).trim();
-            text = `${pre}$$${math}$$`;
-        } else {
-            text = `$$${text.trim()}$$`;
-        }
+    // Bersihkan sisa tag HTML bawaan Word jika ada
+    text = text.replace(/<[^>]*>/g, "");
+
+    // 1. Jika teks SUDAH mengandung tanda $, render KaTeX normal
+    if (text.includes("$")) {
+        const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^\$]+?\$)/g);
+        return (
+            <span>
+                {parts.map((part, idx) => {
+                    if ((part.startsWith("$$") && part.endsWith("$$")) || (part.startsWith("$") && part.endsWith("$"))) {
+                        const isDisplay = part.startsWith("$$");
+                        let formula = isDisplay ? part.slice(2, -2).trim() : part.slice(1, -1).trim();
+
+                        if (katexReady && typeof window !== "undefined" && (window as any).katex) {
+                            try {
+                                const html = (window as any).katex.renderToString(formula, {
+                                    displayMode: isDisplay,
+                                    throwOnError: false
+                                });
+                                return (
+                                    <span
+                                        key={idx}
+                                        className={isDisplay ? "block my-2 overflow-x-auto text-center" : "inline-block px-0.5"}
+                                        dangerouslySetInnerHTML={{ __html: html }}
+                                    />
+                                );
+                            } catch { }
+                        }
+                        return <span key={idx} className="font-serif italic font-semibold">{formula}</span>;
+                    }
+                    return <span key={idx}>{part}</span>;
+                })}
+            </span>
+        );
     }
 
-    const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^\$]+?\$)/g);
+    // 2. JIKA GURU TIDAK PAKAI TANDA $ (TEKS MATEMATIKA POLOS DARI WORD)
+    // Otomatis ubah simbol umum dan format pangkat agar terlihat ilmiah & cantik
+    // Mengubah x^2 menjadi x² jika belum berupa karakter pangkat
+    const formatPlainTextMath = (str: string) => {
+        return str
+            .replace(/\^0/g, "⁰")
+            .replace(/\^1/g, "¹")
+            .replace(/\^2/g, "²")
+            .replace(/\^3/g, "³")
+            .replace(/\^4/g, "⁴")
+            .replace(/\^5/g, "⁵")
+            .replace(/\^6/g, "⁶")
+            .replace(/\^7/g, "⁷")
+            .replace(/\^8/g, "⁸")
+            .replace(/\^9/g, "⁹")
+            .replace(/<=/g, "≤")
+            .replace(/>=/g, "≥")
+            .replace(/!=/g, "≠")
+            .replace(/\+-/g, "±");
+    };
 
     return (
-        <span>
-            {parts.map((part, idx) => {
-                if ((part.startsWith("$$") && part.endsWith("$$")) || (part.startsWith("$") && part.endsWith("$"))) {
-                    const isDisplay = part.startsWith("$$");
-                    let formula = isDisplay ? part.slice(2, -2).trim() : part.slice(1, -1).trim();
-                    formula = formula.replace(/(^|[\s\+\-\*\(\=\/])\^([0-9a-zA-Z]+)(\\log|\blog)/g, "$1{}^$2$3");
-
-                    if (katexReady && typeof window !== "undefined" && (window as any).katex) {
-                        try {
-                            const html = (window as any).katex.renderToString(formula, {
-                                displayMode: isDisplay,
-                                throwOnError: false
-                            });
-                            return (
-                                <span
-                                    key={idx}
-                                    className={isDisplay ? "block my-2 overflow-x-auto text-center" : "inline-block px-1"}
-                                    dangerouslySetInnerHTML={{ __html: html }}
-                                />
-                            );
-                        } catch { }
-                    }
-                    return <span key={idx} className="font-mono text-blue-900 font-bold">{formula}</span>;
-                }
-                return <span key={idx}>{part}</span>;
-            })}
+        <span className="leading-relaxed">
+            {formatPlainTextMath(text)}
         </span>
     );
 };
