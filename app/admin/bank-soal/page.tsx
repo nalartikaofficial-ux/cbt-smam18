@@ -175,10 +175,11 @@ function WordImporterSection({
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editForm, setEditForm] = useState<ParsedQuestion | null>(null);
 
-    // Parser super cerdas untuk memisahkan opsi A, B, C, D, E baik berjejer ke samping maupun ke bawah
+    // Parser ultra-toleran untuk mendeteksi opsi A, B, C, D, E dalam format apa pun (titik, kurung, spasi rapat/renggang)
     const extractAllOptions = (text: string) => {
         const result = { a: "", b: "", c: "", d: "", e: "" };
-        const regex = /\b([A-Ea-e])[\.\)]\s*/g;
+        // Mendeteksi A., a., A), a), A． (full-width) dengan spasi fleksibel
+        const regex = /\b([A-Ea-e])[\.\)\uff0e]\s*/g;
         const matches = Array.from(text.matchAll(regex));
 
         if (matches.length >= 2) {
@@ -265,7 +266,7 @@ function WordImporterSection({
             };
 
             elements.forEach((el) => {
-                const rawText = (el.textContent || "").trim();
+                const rawText = (el.textContent || "").replace(/\u00A0/g, " ").trim();
                 const img = el.querySelector("img");
 
                 if (img && img.src) {
@@ -280,18 +281,17 @@ function WordImporterSection({
                 }
 
                 // 2. Deteksi Nomor Soal Baru (misal: "1. Koordinat...", "1) Berapakah...")
-                const qStartMatch = rawText.match(/^(?:\[SOAL\s*\d*\]|(\d+)[\.\)])\s*(.*)/i);
-                if (qStartMatch && !/^[A-Ea-e][\.\)]/i.test(rawText)) {
+                const qStartMatch = rawText.match(/^(?:\[SOAL\s*\d*\]|(\d+)[\.\)\uff0e])\s*(.*)/i);
+                if (qStartMatch && !/^[A-Ea-e][\.\)\uff0e]/i.test(rawText)) {
                     commitCurrent();
                     current.pertanyaan = qStartMatch[2] || "";
                     return;
                 }
 
-                // 3. Cek apakah teks baris ini mengandung pilihan ganda sejajar (A. ... B. ... C. ...)
+                // 3. Cek apakah teks baris ini mengandung pilihan ganda sejajar (A. B. C. D. E.)
                 const inlineOpts = extractAllOptions(rawText);
                 if (inlineOpts.a || inlineOpts.b || inlineOpts.c || inlineOpts.d || inlineOpts.e) {
-                    // Jika baris ini berisi opsi, pisahkan teks sebelum opsi sebagai bagian pertanyaan (jika pertanyaan belum lengkap)
-                    const firstOptIdx = rawText.search(/\b[Aa][\.\)]\s*/);
+                    const firstOptIdx = rawText.search(/\b[Aa][\.\)\uff0e]\s*/);
                     if (firstOptIdx > 0 && !current.opsi_a) {
                         const extraQ = rawText.substring(0, firstOptIdx).trim();
                         if (extraQ) current.pertanyaan = (current.pertanyaan ? current.pertanyaan + " " : "") + extraQ;
@@ -305,7 +305,7 @@ function WordImporterSection({
                 }
 
                 // 4. Deteksi Opsi Terpisah per Baris (A. ... / B. ...)
-                const singleOptMatch = rawText.match(/^([A-Ea-e])[\.\)]\s*(.*)/i);
+                const singleOptMatch = rawText.match(/^([A-Ea-e])[\.\)\uff0e]\s*(.*)/i);
                 if (singleOptMatch) {
                     const char = singleOptMatch[1].toUpperCase();
                     const val = singleOptMatch[2].trim();
@@ -370,10 +370,10 @@ function WordImporterSection({
             <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                        Import Dokumen Word (.docx) &bull; Auto-Split Opsi A-E (Sejajar / Ke Bawah)
+                        Import Dokumen Word (.docx) &bull; Auto-Split Opsi A-E (Format Alami)
                     </h2>
                     <p className="text-xs text-slate-500">
-                        Unggah naskah Word Anda. Sistem otomatis memecah opsi A, B, C, D, E secara presisi meskipun diketik menyamping dalam satu baris.
+                        Mendukung naskah Word biasa. Opsi A, B, C, D, E yang diketik menyamping otomatis terpisah dengan sempurna.
                     </p>
                 </div>
             </div>
@@ -415,7 +415,7 @@ function WordImporterSection({
                             <span className="text-xs text-slate-300">Siap disimpan ke {selectedPaket.replace("_", " ")}</span>
                         </div>
                         <p className="text-[11px] text-slate-400">
-                            Periksa hasil pemisahan opsi di bawah ini. Semua opsi A, B, C, D, E sudah terisi mandiri.
+                            Periksa hasil pratinjau di bawah ini. Opsi A, B, C, D, E sudah terdistribusi rapi ke kotaknya masing-masing.
                         </p>
                     </div>
 
@@ -607,8 +607,8 @@ function WordImporterSection({
                                         <div
                                             key={opt.label}
                                             className={`p-2 rounded-xl border text-xs flex items-center gap-2 ${q.kunci === opt.label
-                                                    ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
-                                                    : "bg-white border-slate-200 text-slate-700"
+                                                ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
+                                                : "bg-white border-slate-200 text-slate-700"
                                                 }`}
                                         >
                                             <span className="font-mono font-bold">{opt.label}.</span>
