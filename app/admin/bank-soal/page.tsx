@@ -175,6 +175,21 @@ function WordImporterSection({
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editForm, setEditForm] = useState<ParsedQuestion | null>(null);
 
+    // Helper untuk memisahkan opsi jika guru mengetik sejajar ke samping: "A. 10  B. 20  C. 30  D. 40  E. 50"
+    const parseInlineOptions = (text: string) => {
+        const regex = /(?:^|\s+)([A-Ea-e])[\.\)]\s+([\s\S]*?)(?=(?:\s+[A-Ea-e][\.\)]\s+)|$)/g;
+        const matches = Array.from(text.matchAll(regex));
+        if (matches.length >= 2) {
+            const opts: { [key: string]: string } = {};
+            matches.forEach(m => {
+                const letter = m[1].toUpperCase();
+                opts[letter] = m[2].trim();
+            });
+            return opts;
+        }
+        return null;
+    };
+
     const handleDocxUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -220,7 +235,7 @@ function WordImporterSection({
                         stimulus: current.stimulus || "",
                         image_url: current.image_url || "",
                         image_position: current.image_position || "above",
-                        pertanyaan: current.pertanyaan || "Pertanyaan belum terisi",
+                        pertanyaan: (current.pertanyaan || "Pertanyaan").trim(),
                         opsi_a: current.opsi_a || "",
                         opsi_b: current.opsi_b || "",
                         opsi_c: current.opsi_c || "",
@@ -228,7 +243,7 @@ function WordImporterSection({
                         opsi_e: current.opsi_e || "",
                         kunci: current.kunci || "A",
                         tingkat_kesukaran: current.tingkat_kesukaran || "Sedang",
-                        pembahasan: current.pembahasan || "",
+                        pembahasan: (current.pembahasan || "").trim(),
                     });
                     counter++;
                     current = {
@@ -241,24 +256,44 @@ function WordImporterSection({
             };
 
             elements.forEach((el) => {
-                const text = (el.textContent || "").trim();
+                const rawText = (el.textContent || "").trim();
                 const img = el.querySelector("img");
 
                 if (img && img.src) {
                     current.image_url = img.src;
                 }
 
-                const qStartMatch = text.match(/^(?:\[SOAL\s*\d*\]|\d+[\.\)])\s*(.*)/i);
-                if (qStartMatch && !/^[A-E][\.\)]/i.test(text)) {
-                    commitCurrent();
-                    current.pertanyaan = qStartMatch[1] || "";
+                if (!rawText) return;
+
+                // 1. Abaikan tulisan header / badge seperti "SOAL NOMOR 1", "BUTIR SOAL 1"
+                if (/^(?:SOAL\s+NOMOR\s*\d+|BUTIR\s+SOAL\s*\d+)/i.test(rawText)) {
                     return;
                 }
 
-                const optMatch = text.match(/^([A-E])[\.\)]\s*(.*)/i);
-                if (optMatch) {
-                    const char = optMatch[1].toUpperCase();
-                    const val = optMatch[2].trim();
+                // 2. Deteksi Awal Nomor Soal (misal: "1. Sebuah bola...", "1) Diketahui...")
+                const qStartMatch = rawText.match(/^(?:\[SOAL\s*\d*\]|(\d+)[\.\)])\s*(.*)/i);
+                if (qStartMatch && !/^[A-Ea-e][\.\)]/i.test(rawText)) {
+                    commitCurrent();
+                    current.pertanyaan = qStartMatch[2] || "";
+                    return;
+                }
+
+                // 3. Deteksi apakah opsi A - E diketik menyamping sekaligus di satu baris
+                const inlineOpts = parseInlineOptions(rawText);
+                if (inlineOpts) {
+                    if (inlineOpts["A"]) current.opsi_a = inlineOpts["A"];
+                    if (inlineOpts["B"]) current.opsi_b = inlineOpts["B"];
+                    if (inlineOpts["C"]) current.opsi_c = inlineOpts["C"];
+                    if (inlineOpts["D"]) current.opsi_d = inlineOpts["D"];
+                    if (inlineOpts["E"]) current.opsi_e = inlineOpts["E"];
+                    return;
+                }
+
+                // 4. Deteksi Opsi A - E per baris satuan (A. ... atau A) ...)
+                const singleOptMatch = rawText.match(/^([A-Ea-e])[\.\)]\s*(.*)/i);
+                if (singleOptMatch) {
+                    const char = singleOptMatch[1].toUpperCase();
+                    const val = singleOptMatch[2].trim();
                     if (char === "A") current.opsi_a = val;
                     if (char === "B") current.opsi_b = val;
                     if (char === "C") current.opsi_c = val;
@@ -267,30 +302,34 @@ function WordImporterSection({
                     return;
                 }
 
-                const keyMatch = text.match(/^(?:KUNCI(?:\s*JAWABAN)?|KUNCI)\s*[:=]\s*([A-E])/i);
+                // 5. Deteksi Kunci Jawaban (Kunci: B / Jawaban: B / Kunci Jawaban = B)
+                const keyMatch = rawText.match(/(?:KUNCI(?:\s*JAWABAN)?|JAWABAN)\s*[:=]\s*([A-Ea-e])/i);
                 if (keyMatch) {
                     current.kunci = keyMatch[1].toUpperCase();
                     return;
                 }
 
-                const pbhMatch = text.match(/^PEMBAHASAN\s*[:=]\s*(.*)/i);
+                // 6. Deteksi Pembahasan (Pembahasan: ...)
+                const pbhMatch = rawText.match(/^PEMBAHASAN(?:\s+SOAL\s+NOMOR\s*\d+)?\s*[:=]\s*(.*)/i);
                 if (pbhMatch) {
                     current.pembahasan = pbhMatch[1].trim();
                     return;
                 }
 
-                if (/^Wacana:\s*/i.test(text)) {
-                    current.stimulus = text.replace(/^Wacana:\s*/i, "").trim();
+                // 7. Deteksi Wacana / Stimulus
+                if (/^Wacana:\s*/i.test(rawText)) {
+                    current.stimulus = rawText.replace(/^Wacana:\s*/i, "").trim();
                     return;
                 }
 
-                if (text.length > 0) {
+                // 8. Teks pelengkap (kelanjutan pertanyaan atau kelanjutan pembahasan)
+                if (current.pembahasan !== undefined) {
+                    current.pembahasan += "\n" + rawText;
+                } else if (!current.opsi_a) {
                     if (!current.pertanyaan) {
-                        current.pertanyaan = text;
-                    } else if (!current.opsi_a) {
-                        current.pertanyaan += "\n" + text;
-                    } else if (current.pembahasan !== undefined) {
-                        current.pembahasan += "\n" + text;
+                        current.pertanyaan = rawText;
+                    } else {
+                        current.pertanyaan += "\n" + rawText;
                     }
                 }
             });
@@ -298,7 +337,7 @@ function WordImporterSection({
             commitCurrent();
 
             if (questions.length === 0) {
-                alert("Tidak ada butir soal yang terbaca. Pastikan penulisan nomor soal (1., 2.) dan opsi pilihan (A., B., C., D., E.) sudah sesuai.");
+                alert("Tidak ada butir soal yang terbaca. Pastikan terdapat nomor soal (1., 2.) dan opsi pilihan (A., B., C., D., E.).");
             } else {
                 setStagedList(questions);
             }
@@ -316,30 +355,12 @@ function WordImporterSection({
             <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                        Import Dokumen Word (.docx) &bull; Ekstraksi Massal + Gambar
+                        Import Dokumen Word (.docx) &bull; Format Guru Alami
                     </h2>
                     <p className="text-xs text-slate-500">
-                        Unggah satu berkas dokumen Word. Semua teks, rumus, gambar yang di-paste, opsi, dan kunci langsung terbaca otomatis ke area pratinjau.
+                        Cukup tulis soal seperti naskah ujian biasa. Opsi A–E bisa disusun ke bawah atau sejajar ke samping tanpa perlu kode khusus.
                     </p>
                 </div>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-200 text-xs text-indigo-950 space-y-1.5">
-                <div className="font-bold flex items-center gap-1.5 text-indigo-900">
-                    <HelpCircle className="w-4 h-4" />
-                    <span>Panduan Format Penulisan di Word:</span>
-                </div>
-                <pre className="font-mono text-[11px] bg-white p-3 rounded-xl border border-indigo-200 text-slate-700 leading-relaxed overflow-x-auto">
-                    {`1. Sebuah partikel bergerak harmonik sederhana dengan simpangan y = A sin(ωt).
-(Tempelkan atau paste gambar langsung di sini jika ada)
-A. Opsi pertama
-B. Opsi kedua
-C. Opsi ketiga
-D. Opsi keempat
-E. Opsi kelima
-Kunci: B
-Pembahasan: Menggunakan konsep simpangan maksimum.`}
-                </pre>
             </div>
 
             <div className="border-2 border-dashed border-indigo-300 hover:border-indigo-600 bg-indigo-50/20 hover:bg-indigo-50/40 rounded-3xl p-8 text-center transition-all">
@@ -374,12 +395,12 @@ Pembahasan: Menggunakan konsep simpangan maksimum.`}
                     <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
                             <span className="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-xs font-mono">
-                                {stagedList.length} Soal Terbaca
+                                {stagedList.length} Soal Terbaca Sempurna
                             </span>
                             <span className="text-xs text-slate-300">Siap disimpan ke {selectedPaket.replace("_", " ")}</span>
                         </div>
                         <p className="text-[11px] text-slate-400">
-                            Periksa butir soal di bawah sebelum disimpan ke server.
+                            Opsi A, B, C, D, E sudah otomatis terpisah ke kotaknya masing-masing.
                         </p>
                     </div>
 
@@ -571,8 +592,8 @@ Pembahasan: Menggunakan konsep simpangan maksimum.`}
                                         <div
                                             key={opt.label}
                                             className={`p-2 rounded-xl border text-xs flex items-center gap-2 ${q.kunci === opt.label
-                                                    ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
-                                                    : "bg-white border-slate-200 text-slate-700"
+                                                ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
+                                                : "bg-white border-slate-200 text-slate-700"
                                                 }`}
                                         >
                                             <span className="font-mono font-bold">{opt.label}.</span>
