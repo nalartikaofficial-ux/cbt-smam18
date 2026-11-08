@@ -175,19 +175,28 @@ function WordImporterSection({
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editForm, setEditForm] = useState<ParsedQuestion | null>(null);
 
-    // Helper untuk memisahkan opsi jika guru mengetik sejajar ke samping: "A. 10  B. 20  C. 30  D. 40  E. 50"
-    const parseInlineOptions = (text: string) => {
-        const regex = /(?:^|\s+)([A-Ea-e])[\.\)]\s+([\s\S]*?)(?=(?:\s+[A-Ea-e][\.\)]\s+)|$)/g;
+    // Parser super cerdas untuk memisahkan opsi A, B, C, D, E baik berjejer ke samping maupun ke bawah
+    const extractAllOptions = (text: string) => {
+        const result = { a: "", b: "", c: "", d: "", e: "" };
+        const regex = /\b([A-Ea-e])[\.\)]\s*/g;
         const matches = Array.from(text.matchAll(regex));
+
         if (matches.length >= 2) {
-            const opts: { [key: string]: string } = {};
-            matches.forEach(m => {
-                const letter = m[1].toUpperCase();
-                opts[letter] = m[2].trim();
-            });
-            return opts;
+            for (let i = 0; i < matches.length; i++) {
+                const currentMatch = matches[i];
+                const letter = currentMatch[1].toUpperCase();
+                const startIndex = currentMatch.index! + currentMatch[0].length;
+                const endIndex = (i + 1 < matches.length) ? matches[i + 1].index! : text.length;
+                const val = text.substring(startIndex, endIndex).trim();
+
+                if (letter === "A") result.a = val;
+                if (letter === "B") result.b = val;
+                if (letter === "C") result.c = val;
+                if (letter === "D") result.d = val;
+                if (letter === "E") result.e = val;
+            }
         }
-        return null;
+        return result;
     };
 
     const handleDocxUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -265,12 +274,12 @@ function WordImporterSection({
 
                 if (!rawText) return;
 
-                // 1. Abaikan tulisan header / badge seperti "SOAL NOMOR 1", "BUTIR SOAL 1"
+                // 1. Abaikan baris header otomatis
                 if (/^(?:SOAL\s+NOMOR\s*\d+|BUTIR\s+SOAL\s*\d+)/i.test(rawText)) {
                     return;
                 }
 
-                // 2. Deteksi Awal Nomor Soal (misal: "1. Sebuah bola...", "1) Diketahui...")
+                // 2. Deteksi Nomor Soal Baru (misal: "1. Koordinat...", "1) Berapakah...")
                 const qStartMatch = rawText.match(/^(?:\[SOAL\s*\d*\]|(\d+)[\.\)])\s*(.*)/i);
                 if (qStartMatch && !/^[A-Ea-e][\.\)]/i.test(rawText)) {
                     commitCurrent();
@@ -278,18 +287,24 @@ function WordImporterSection({
                     return;
                 }
 
-                // 3. Deteksi apakah opsi A - E diketik menyamping sekaligus di satu baris
-                const inlineOpts = parseInlineOptions(rawText);
-                if (inlineOpts) {
-                    if (inlineOpts["A"]) current.opsi_a = inlineOpts["A"];
-                    if (inlineOpts["B"]) current.opsi_b = inlineOpts["B"];
-                    if (inlineOpts["C"]) current.opsi_c = inlineOpts["C"];
-                    if (inlineOpts["D"]) current.opsi_d = inlineOpts["D"];
-                    if (inlineOpts["E"]) current.opsi_e = inlineOpts["E"];
+                // 3. Cek apakah teks baris ini mengandung pilihan ganda sejajar (A. ... B. ... C. ...)
+                const inlineOpts = extractAllOptions(rawText);
+                if (inlineOpts.a || inlineOpts.b || inlineOpts.c || inlineOpts.d || inlineOpts.e) {
+                    // Jika baris ini berisi opsi, pisahkan teks sebelum opsi sebagai bagian pertanyaan (jika pertanyaan belum lengkap)
+                    const firstOptIdx = rawText.search(/\b[Aa][\.\)]\s*/);
+                    if (firstOptIdx > 0 && !current.opsi_a) {
+                        const extraQ = rawText.substring(0, firstOptIdx).trim();
+                        if (extraQ) current.pertanyaan = (current.pertanyaan ? current.pertanyaan + " " : "") + extraQ;
+                    }
+                    if (inlineOpts.a) current.opsi_a = inlineOpts.a;
+                    if (inlineOpts.b) current.opsi_b = inlineOpts.b;
+                    if (inlineOpts.c) current.opsi_c = inlineOpts.c;
+                    if (inlineOpts.d) current.opsi_d = inlineOpts.d;
+                    if (inlineOpts.e) current.opsi_e = inlineOpts.e;
                     return;
                 }
 
-                // 4. Deteksi Opsi A - E per baris satuan (A. ... atau A) ...)
+                // 4. Deteksi Opsi Terpisah per Baris (A. ... / B. ...)
                 const singleOptMatch = rawText.match(/^([A-Ea-e])[\.\)]\s*(.*)/i);
                 if (singleOptMatch) {
                     const char = singleOptMatch[1].toUpperCase();
@@ -302,28 +317,28 @@ function WordImporterSection({
                     return;
                 }
 
-                // 5. Deteksi Kunci Jawaban (Kunci: B / Jawaban: B / Kunci Jawaban = B)
+                // 5. Deteksi Kunci Jawaban
                 const keyMatch = rawText.match(/(?:KUNCI(?:\s*JAWABAN)?|JAWABAN)\s*[:=]\s*([A-Ea-e])/i);
                 if (keyMatch) {
                     current.kunci = keyMatch[1].toUpperCase();
                     return;
                 }
 
-                // 6. Deteksi Pembahasan (Pembahasan: ...)
+                // 6. Deteksi Pembahasan
                 const pbhMatch = rawText.match(/^PEMBAHASAN(?:\s+SOAL\s+NOMOR\s*\d+)?\s*[:=]\s*(.*)/i);
                 if (pbhMatch) {
                     current.pembahasan = pbhMatch[1].trim();
                     return;
                 }
 
-                // 7. Deteksi Wacana / Stimulus
+                // 7. Deteksi Wacana
                 if (/^Wacana:\s*/i.test(rawText)) {
                     current.stimulus = rawText.replace(/^Wacana:\s*/i, "").trim();
                     return;
                 }
 
-                // 8. Teks pelengkap (kelanjutan pertanyaan atau kelanjutan pembahasan)
-                if (current.pembahasan !== undefined) {
+                // 8. Teks pelengkap
+                if (current.pembahasan !== undefined && current.pembahasan !== null) {
                     current.pembahasan += "\n" + rawText;
                 } else if (!current.opsi_a) {
                     if (!current.pertanyaan) {
@@ -355,10 +370,10 @@ function WordImporterSection({
             <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                        Import Dokumen Word (.docx) &bull; Format Guru Alami
+                        Import Dokumen Word (.docx) &bull; Auto-Split Opsi A-E (Sejajar / Ke Bawah)
                     </h2>
                     <p className="text-xs text-slate-500">
-                        Cukup tulis soal seperti naskah ujian biasa. Opsi A–E bisa disusun ke bawah atau sejajar ke samping tanpa perlu kode khusus.
+                        Unggah naskah Word Anda. Sistem otomatis memecah opsi A, B, C, D, E secara presisi meskipun diketik menyamping dalam satu baris.
                     </p>
                 </div>
             </div>
@@ -381,7 +396,7 @@ function WordImporterSection({
                     </div>
                     <div>
                         <p className="text-sm font-bold text-slate-800">
-                            {isParsing ? "Sedang Mengekstrak Soal & Gambar..." : "Klik untuk Memilih Dokumen Word (.docx)"}
+                            {isParsing ? "Sedang Mengekstrak Soal & Opsi..." : "Klik untuk Memilih Dokumen Word (.docx)"}
                         </p>
                         <p className="text-xs text-slate-400 mt-0.5">
                             Target Paket: <strong>{selectedPaket.replace("_", " ")}</strong> &bull; Subtes Default: <strong>{selectedSubtest}</strong>
@@ -400,7 +415,7 @@ function WordImporterSection({
                             <span className="text-xs text-slate-300">Siap disimpan ke {selectedPaket.replace("_", " ")}</span>
                         </div>
                         <p className="text-[11px] text-slate-400">
-                            Opsi A, B, C, D, E sudah otomatis terpisah ke kotaknya masing-masing.
+                            Periksa hasil pemisahan opsi di bawah ini. Semua opsi A, B, C, D, E sudah terisi mandiri.
                         </p>
                     </div>
 
@@ -592,8 +607,8 @@ function WordImporterSection({
                                         <div
                                             key={opt.label}
                                             className={`p-2 rounded-xl border text-xs flex items-center gap-2 ${q.kunci === opt.label
-                                                ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
-                                                : "bg-white border-slate-200 text-slate-700"
+                                                    ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
+                                                    : "bg-white border-slate-200 text-slate-700"
                                                 }`}
                                         >
                                             <span className="font-mono font-bold">{opt.label}.</span>
