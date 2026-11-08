@@ -13,8 +13,6 @@ import {
     FileText,
     UploadCloud,
     Download,
-    HelpCircle,
-    Sparkles,
     CheckCircle2,
     AlertCircle,
     Eye,
@@ -28,16 +26,16 @@ import {
     Clock,
     Save
 } from "lucide-react";
+import WordDocxImporter, { StagedWordQuestion } from "@/components/WordDocxImporter";
 
 // URL BACKEND GOOGLE APPS SCRIPT MASTER RESMI
 const GOOGLE_SCRIPT_API_URL =
     "https://script.google.com/macros/s/AKfycbxXeMuz-VXgbdUOESiOOLL5NlLrSMVfrdvOCwhgBbjLWwOy3ASkTjnWJSAIONFDrdY7hg/exec";
 
-// HELPER RENDER FORMULA LATEX / KATEX (OTOMATIS DETEKSI RUMUS MESKIPUN TANPA TANDA $)
+// HELPER RENDER FORMULA LATEX / KATEX
 export const MathRenderer = ({ content }: { content: any }) => {
     const [katexReady, setKatexReady] = useState(false);
 
-    // Pastikan KaTeX benar-benar sudah siap sebelum merender
     useEffect(() => {
         if (typeof window === "undefined") return;
         if ((window as any).katex) {
@@ -57,9 +55,7 @@ export const MathRenderer = ({ content }: { content: any }) => {
     let text = String(content).replace(/\\n/g, "\n");
     if (!text.trim()) return null;
 
-    // AUTO-WRAP: Jika teks memuat rumus (ada \log, \cdot, \frac, ^, dll) tapi lupa diberi tanda $, otomatis bungkus!
     if (!text.includes("$") && /(\\log|\b\^|\\cdot|\\frac|\\sqrt|\\alpha|\\beta|\\times)/.test(text)) {
-        // Jika ada pengantar kalimat seperti "Nilai dari ...:\n", pisahkan teks pengantar dan rumusnya
         const newlineIdx = text.indexOf("\n");
         if (newlineIdx !== -1) {
             const pre = text.slice(0, newlineIdx + 1);
@@ -79,7 +75,6 @@ export const MathRenderer = ({ content }: { content: any }) => {
                     const isDisplay = part.startsWith("$$");
                     let formula = isDisplay ? part.slice(2, -2).trim() : part.slice(1, -1).trim();
 
-                    // Perbaiki basis logaritma depan ala Indonesia: ^3\log menjadi {}^3\log
                     formula = formula.replace(/(^|[\s\+\-\*\(\=\/])\^([0-9a-zA-Z]+)(\\log|\blog)/g, "$1{}^$2$3");
 
                     if (katexReady && typeof window !== "undefined" && (window as any).katex) {
@@ -110,14 +105,12 @@ export function convertToDirectImageUrl(rawUrl: string): string {
     if (!rawUrl) return "";
     const clean = String(rawUrl).trim();
 
-    // Deteksi ID Google Drive dari berbagai variasi URL
     const driveRegex = /(?:drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)|id=)([a-zA-Z0-9_-]{20,})/;
     const driveMatch = clean.match(driveRegex);
     if (driveMatch && driveMatch[1]) {
         return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
     }
 
-    // Jika sudah format lh3 Google CDN, langsung gunakan
     if (clean.includes("lh3.googleusercontent.com")) {
         return clean;
     }
@@ -162,7 +155,6 @@ interface SubtestDurationItem {
 export default function AdminBankSoalPage() {
     const router = useRouter();
 
-    const [isAiFormatting, setIsAiFormatting] = useState(false);
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [loggedTeacher, setLoggedTeacher] = useState<{ nama: string; mapel?: string }>({
         nama: "Fadhillah Umar, S.Pd.",
@@ -203,7 +195,9 @@ export default function AdminBankSoalPage() {
     }, [router]);
 
     const [selectedPaket, setSelectedPaket] = useState<"PAKET_1" | "PAKET_2" | "PAKET_3">("PAKET_1");
-    const [inputMode, setInputMode] = useState<"list" | "text_parse" | "csv" | "manual">("list");
+
+    // TAB MODE: "list" | "docx_upload" | "csv" | "manual"
+    const [inputMode, setInputMode] = useState<"list" | "docx_upload" | "csv" | "manual">("list");
 
     const [serverQuestions, setServerQuestions] = useState<ParsedQuestion[]>([]);
     const [isLoadingServerQuestions, setIsLoadingServerQuestions] = useState(false);
@@ -221,24 +215,21 @@ export default function AdminBankSoalPage() {
     ]);
     const [isSavingDurations, setIsSavingDurations] = useState(false);
 
-    // STATE BUKA / TUTUP PREVIEW IMPORT CSV
+    // STATE CSV IMPORT
     const [showCsvPreview, setShowCsvPreview] = useState(true);
-
     const [testInputUrl, setTestInputUrl] = useState("");
     const [testedDirectUrl, setTestedDirectUrl] = useState("");
     const [isCopied, setIsCopied] = useState(false);
-
     const [batchQuestions, setBatchQuestions] = useState<ParsedQuestion[]>([]);
-    const [rawText, setRawText] = useState("");
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+    // STATE FORM MANUAL
     const [selectedSubtest, setSelectedSubtest] = useState("PU");
     const [noSoal, setNoSoal] = useState("1");
     const [stimulus, setStimulus] = useState("");
     const [imageUrl, setImageUrl] = useState("");
     const [imagePosition, setImagePosition] = useState<"above" | "below">("below");
     const [pertanyaan, setPertanyaan] = useState("");
-
     const [opsiA, setOpsiA] = useState("");
     const [opsiB, setOpsiB] = useState("");
     const [opsiC, setOpsiC] = useState("");
@@ -249,102 +240,13 @@ export default function AdminBankSoalPage() {
     const [opsiCImg, setOpsiCImg] = useState("");
     const [opsiDImg, setOpsiDImg] = useState("");
     const [opsiEImg, setOpsiEImg] = useState("");
-
     const [kunci, setKunci] = useState("A");
     const [kesukaran, setKesukaran] = useState("Sedang");
     const [pembahasan, setPembahasan] = useState("");
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
-
     const [isEditingMode, setIsEditingMode] = useState(false);
-
-    // ========================================================
-    // FORMAT SOAL DENGAN GEMINI AI + PENGAMAN REGEX
-    // ========================================================
-    const handleAutoFormatWordToLatex = () => {
-        if (!rawText.trim()) {
-            alert("Harap tempelkan naskah soal terlebih dahulu di kotak teks.");
-            return;
-        }
-
-        setIsAiFormatting(true);
-
-        try {
-            let res = rawText;
-
-            res = res.replace(/[\u2010\u2013\u2014\u2212]/g, "-");
-
-            const supMap: Record<string, string> = {
-                '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
-                '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
-                '⁻': '-', '⁺': '+'
-            };
-
-            res = res.replace(/10\s*([⁻\-]?)\s*([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_, sign, exps) => {
-                const s = sign ? "-" : "";
-                const e = exps.split("").map((c: string) => supMap[c] || c).join("");
-                return `$10^{${s}${e}}$`;
-            });
-            res = res.replace(/10\s*\^\s*(-?\d+)/g, "$10^{$1}$");
-
-            res = res.replace(/\bW\s*\/\s*m[²2]/gi, "\\text{W/m}^2");
-            res = res.replace(/\bm\s*\/\s*s[²2]/gi, "\\text{m/s}^2");
-            res = res.replace(/\bm\s*\/\s*s\b/gi, "\\text{m/s}");
-            res = res.replace(/\bkg\s*\/\s*m[³3]/gi, "\\text{kg/m}^3");
-
-            res = res.replace(/(\$10\^\{[^\}]+\}\$)\s*(\\text\{[^\}]+\})/g, (_, exp, unit) => {
-                const cleanExp = exp.replace(/\$/g, "");
-                return `${cleanExp} ${unit}`;
-            });
-            res = res.replace(/(\b\d+(\.\d+)?)\s*(\\text\{[^\}]+\})/g, "$1 $3");
-
-            res = res.replace(/\bI\s*[₀0]\b/g, "$I_0$");
-            res = res.replace(/\bv\s*[₀0]\b/g, "$v_0$");
-            res = res.replace(/\b([a-zA-Z])_([0-9a-zA-Z]+)\b/g, "$$1_{$2}$");
-
-            res = res.replace(/θ/g, "$\\theta$");
-            res = res.replace(/(\d+)\s*°/g, "$$1^\\circ$");
-            res = res.replace(/λ/g, "$\\lambda$");
-            res = res.replace(/μ/g, "$\\mu$");
-            res = res.replace(/Δ/g, "$\\Delta$");
-
-            const lines = res.split("\n");
-            const sanitizedLines = lines.map((line: string) => {
-                const matchOpt = line.match(/^([A-E][\.\)])\s*(.*)$/i);
-                if (matchOpt) {
-                    const label = matchOpt[1];
-                    let content = matchOpt[2].trim();
-
-                    if (content.startsWith("$") && content.endsWith("$")) {
-                        return `${label} ${content}`;
-                    }
-
-                    if (/(\\text|\^|_|[⁰¹²³⁴⁵⁶⁷⁸⁹])/.test(content)) {
-                        const cleanContent = content.replace(/\$/g, "").trim();
-                        return `${label} $${cleanContent}$`;
-                    }
-                }
-                return line;
-            });
-
-            let finalClean = sanitizedLines.join("\n");
-            finalClean = finalClean.replace(/\$\s*\$/g, " ");
-
-            setRawText(finalClean);
-            setStatusMsg({
-                type: "success",
-                text: "✨ Berhasil! Notasi fisika, pangkat, dan opsi telah dirapikan secara instan."
-            });
-        } catch (err: any) {
-            setStatusMsg({
-                type: "error",
-                text: `Gagal memproses: ${err.message}`
-            });
-        } finally {
-            setIsAiFormatting(false);
-        }
-    };
 
     const fetchSubtestDurations = async (pkg = selectedPaket) => {
         try {
@@ -446,7 +348,7 @@ export default function AdminBankSoalPage() {
     };
 
     const handleEditQuestion = (item: any) => {
-        setIsEditingMode(true); // TANDAI SEDANG MODE EDIT
+        setIsEditingMode(true);
         setNoSoal(String(item.no_soal || item.no || "1"));
         if (item.subtes_code || item.subtes) {
             setSelectedSubtest(item.subtes_code || item.subtes);
@@ -466,7 +368,6 @@ export default function AdminBankSoalPage() {
         if (item.kesukaran || item.tingkat_kesukaran) setKesukaran(item.kesukaran || item.tingkat_kesukaran);
         if (item.pembahasan) setPembahasan(item.pembahasan);
 
-        // Buka tab form manual agar guru langsung melihat formnya
         setInputMode("manual");
 
         setStatusMsg({
@@ -491,104 +392,6 @@ export default function AdminBankSoalPage() {
         return { text, img };
     };
 
-    // ========================================================
-    // PARSER SMART PASTE: MEMBEDAH SOAL & OPSI
-    // ========================================================
-    const handleParseRawText = () => {
-        if (!rawText.trim()) return;
-
-        try {
-            const cleanSource = rawText.replace(/\r\n/g, "\n");
-            let blocks = cleanSource.split(/\n(?=\s*\d+[\.\)])/).filter((b) => b.trim() !== "");
-            if (blocks.length === 0 || (blocks.length === 1 && !/^\s*\d+[\.\)]/.test(blocks[0]))) {
-                blocks = [cleanSource.trim()];
-            }
-
-            const parsed: ParsedQuestion[] = [];
-
-            blocks.forEach((block, idx) => {
-                const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
-
-                let questionLines: string[] = [];
-                let a = "", b = "", c = "", d = "", e = "";
-                let aImg = "", bImg = "", cImg = "", dImg = "", eImg = "";
-                let kunciJawaban = "A", stimulusText = "", imgUrl = "";
-                let imgPos: "above" | "below" = "below";
-
-                lines.forEach((line) => {
-                    if (/^Wacana:\s*/i.test(line)) {
-                        stimulusText = line.replace(/^Wacana:\s*/i, "").trim();
-                    } else if (/^Gambar:\s*/i.test(line)) {
-                        imgUrl = convertToDirectImageUrl(line.replace(/^Gambar:\s*/i, "").trim());
-                    } else if (/^Posisi:\s*(atas|above)/i.test(line)) {
-                        imgPos = "above";
-                    } else if (/^Posisi:\s*(bawah|below)/i.test(line)) {
-                        imgPos = "below";
-                    } else if (/^Kunci:\s*/i.test(line)) {
-                        kunciJawaban = line.replace(/^Kunci:\s*/i, "").trim().toUpperCase().charAt(0);
-                    } else if (/^[A-E][\.\)]/i.test(line)) {
-                        const optMatch = line.match(/([A-E])[\.\)]\s*(.*?)(?=(?:[A-E][\.\)]|$))/gi);
-                        if (optMatch && optMatch.length > 1) {
-                            optMatch.forEach((m) => {
-                                const tag = m.charAt(0).toUpperCase();
-                                const val = m.replace(/^[A-E][\.\)]\s*/i, "").trim();
-                                const optParsed = extractOptionAndImg(val);
-                                if (tag === "A") { a = optParsed.text; aImg = optParsed.img; }
-                                if (tag === "B") { b = optParsed.text; bImg = optParsed.img; }
-                                if (tag === "C") { c = optParsed.text; cImg = optParsed.img; }
-                                if (tag === "D") { d = optParsed.text; dImg = optParsed.img; }
-                                if (tag === "E") { e = optParsed.text; eImg = optParsed.img; }
-                            });
-                        } else {
-                            const tag = line.charAt(0).toUpperCase();
-                            const val = line.replace(/^[A-E][\.\)]\s*/i, "").trim();
-                            const optParsed = extractOptionAndImg(val);
-                            if (tag === "A") { a = optParsed.text; aImg = optParsed.img; }
-                            if (tag === "B") { b = optParsed.text; bImg = optParsed.img; }
-                            if (tag === "C") { c = optParsed.text; cImg = optParsed.img; }
-                            if (tag === "D") { d = optParsed.text; dImg = optParsed.img; }
-                            if (tag === "E") { e = optParsed.text; eImg = optParsed.img; }
-                        }
-                    } else {
-                        const cleanedLine = line.replace(/^\d+[\.\)]\s*/, "").trim();
-                        if (cleanedLine && !a) {
-                            questionLines.push(cleanedLine);
-                        }
-                    }
-                });
-
-                parsed.push({
-                    subtes_code: selectedSubtest,
-                    no_soal: serverQuestions.length + idx + 1,
-                    stimulus: stimulusText,
-                    image_url: imgUrl,
-                    image_position: imgPos,
-                    pertanyaan: questionLines.join(" "),
-                    opsi_a: a, opsi_b: b, opsi_c: c, opsi_d: d, opsi_e: e,
-                    opsi_a_img: aImg, opsi_b_img: bImg, opsi_c_img: cImg, opsi_d_img: dImg, opsi_e_img: eImg,
-                    kunci: kunciJawaban || "A",
-                    tingkat_kesukaran: "Sedang",
-                    pembahasan: "",
-                    author_guru: `${loggedTeacher.nama} (${loggedTeacher.mapel || "Guru Mapel"})`
-                });
-            });
-
-            setBatchQuestions(parsed);
-            setStatusMsg({
-                type: "success",
-                text: `Sempurna! Berhasil membedah ${parsed.length} butir soal.`
-            });
-        } catch {
-            setStatusMsg({
-                type: "error",
-                text: "Format teks belum rapi. Pastikan ada penomoran dan opsi A. B. C. D. E."
-            });
-        }
-    };
-
-    // ========================================================
-    // DOWNLOAD TEMPLATE EXCEL RESMI (.XLSX)
-    // ========================================================
     const handleDownloadExcelTemplate = () => {
         const data = [
             {
@@ -606,57 +409,14 @@ export default function AdminBankSoalPage() {
                 "Kunci Jawaban": "B",
                 "Tingkat Kesukaran": "Sedang",
                 "Pembahasan": "Turunan pertama $a(t) = 6t + 4$. Saat $t = 2\\text{ s}$, $a(2) = 16\\text{ m/s}^2$."
-            },
-            {
-                "No": 2,
-                "Subtes": "PM",
-                "Wacana / Stimulus": "Taraf intensitas bunyi mesin rata-rata dinyatakan dalam desibel (dB) dengan rumus $TI = 10 \\log(I/I_0)$.",
-                "Link Gambar (Opsional)": "",
-                "Posisi Gambar": "above",
-                "Pertanyaan": "Jika $I = 10^{-6}\\text{ W/m}^2$ dan $I_0 = 10^{-12}\\text{ W/m}^2$, hitung besar taraf intensitas bunyinya!",
-                "Opsi A": "$40\\text{ dB}$",
-                "Opsi B": "$50\\text{ dB}$",
-                "Opsi C": "$60\\text{ dB}$",
-                "Opsi D": "$70\\text{ dB}$",
-                "Opsi E": "$80\\text{ dB}$",
-                "Kunci Jawaban": "C",
-                "Tingkat Kesukaran": "Sedang",
-                "Pembahasan": "$TI = 10 \\log(10^6) = 60\\text{ dB}$."
-            },
-            {
-                "No": 3,
-                "Subtes": "PU",
-                "Wacana / Stimulus": "Semua atlet binaan sekolah wajib mengikuti program kebugaran secara teratur.",
-                "Link Gambar (Opsional)": "",
-                "Posisi Gambar": "above",
-                "Pertanyaan": "Berdasarkan premis di atas, simpulan yang paling tepat adalah ...",
-                "Opsi A": "Tidak ada atlet binaan sekolah yang tidak mengikuti latihan kebugaran.",
-                "Opsi B": "Sebagian atlet binaan sekolah tidak mengikuti latihan kebugaran.",
-                "Opsi C": "Semua siswa sekolah merupakan atlet binaan.",
-                "Opsi D": "Latihan kebugaran hanya untuk atlet cabang atletik.",
-                "Opsi E": "Atlet yang tidak berlatih tetap berprestasi.",
-                "Kunci Jawaban": "A",
-                "Tingkat Kesukaran": "Sedang",
-                "Pembahasan": "Pernyataan 'Semua A adalah B' setara dengan 'Tidak ada A yang bukan B'."
             }
         ];
 
         const worksheet = XLSX.utils.json_to_sheet(data);
         worksheet["!cols"] = [
-            { wch: 6 },
-            { wch: 10 },
-            { wch: 35 },
-            { wch: 30 },
-            { wch: 14 },
-            { wch: 45 },
-            { wch: 18 },
-            { wch: 18 },
-            { wch: 18 },
-            { wch: 18 },
-            { wch: 18 },
-            { wch: 14 },
-            { wch: 16 },
-            { wch: 40 }
+            { wch: 6 }, { wch: 10 }, { wch: 35 }, { wch: 30 }, { wch: 14 },
+            { wch: 45 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 },
+            { wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 40 }
         ];
 
         const workbook = XLSX.utils.book_new();
@@ -664,9 +424,6 @@ export default function AdminBankSoalPage() {
         XLSX.writeFile(workbook, "Template_Bank_Soal_CBT_SMA_M18.xlsx");
     };
 
-    // ========================================================
-    // IMPORT FILE CSV / XLSX KE ANTRIAN BATCH
-    // ========================================================
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -680,7 +437,6 @@ export default function AdminBankSoalPage() {
                 const workbook = XLSX.read(dataBuffer, { type: "binary" });
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
-
                 const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
 
                 if (!rows || rows.length < 2) {
@@ -781,8 +537,8 @@ export default function AdminBankSoalPage() {
         reader.readAsBinaryString(file);
     };
 
-    const handleBulkSubmit = async () => {
-        if (batchQuestions.length === 0) return;
+    const handleBulkSubmit = async (questionsToSubmit = batchQuestions) => {
+        if (questionsToSubmit.length === 0) return;
 
         setIsSubmitting(true);
         setStatusMsg(null);
@@ -791,7 +547,7 @@ export default function AdminBankSoalPage() {
             action: "bulk_upload_questions",
             paket: selectedPaket,
             package: selectedPaket,
-            questions: batchQuestions
+            questions: questionsToSubmit
         };
 
         try {
@@ -804,14 +560,13 @@ export default function AdminBankSoalPage() {
 
             setStatusMsg({
                 type: "success",
-                text: `Sukses! Sebanyak ${batchQuestions.length} butir soal telah berhasil disimpan ke ${selectedPaket}!`
+                text: `Sukses! Sebanyak ${questionsToSubmit.length} butir soal telah berhasil disimpan ke ${selectedPaket}!`
             });
             setBatchQuestions([]);
-            setRawText("");
             setTimeout(() => {
                 fetchServerQuestions(selectedPaket);
                 setInputMode("list");
-            }, 3000);
+            }, 2500);
         } catch (err: any) {
             setStatusMsg({ type: "error", text: "Gagal menyimpan: " + (err?.message || "Kesalahan jaringan") });
         } finally {
@@ -1081,12 +836,12 @@ export default function AdminBankSoalPage() {
 
                     <button
                         type="button"
-                        onClick={() => setInputMode("text_parse")}
-                        className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${inputMode === "text_parse" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"
+                        onClick={() => setInputMode("docx_upload")}
+                        className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${inputMode === "docx_upload" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"
                             }`}
                     >
-                        <Sparkles className="w-4 h-4 text-amber-500" />
-                        <span>Smart Paste (Word / LaTeX)</span>
+                        <FileText className="w-4 h-4 text-indigo-600" />
+                        <span>Import Dokumen Word (.docx)</span>
                     </button>
 
                     <button
@@ -1126,7 +881,7 @@ export default function AdminBankSoalPage() {
                     </div>
                 )}
 
-                {/* TAB 0: DAFTAR SOAL YANG TERSIMPAN DI GOOGLE SHEETS */}
+                {/* TAB 0: DAFTAR SOAL SERVER */}
                 {inputMode === "list" && (
                     <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-5 shadow-sm">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-3">
@@ -1165,7 +920,7 @@ export default function AdminBankSoalPage() {
                         ) : filteredServerQuestions.length === 0 ? (
                             <div className="text-center py-12 text-slate-400 space-y-2">
                                 <p className="text-sm font-medium">Belum ada butir soal di {selectedPaket.replace("_", " ")}.</p>
-                                <p className="text-xs">Gunakan tab <strong>Smart Paste</strong>, <strong>Import Massal CSV</strong>, atau <strong>Input Satuan</strong> untuk menambahkan soal.</p>
+                                <p className="text-xs">Gunakan tab <strong>Import Dokumen Word</strong>, <strong>Import Massal CSV</strong>, atau <strong>Input Satuan</strong> untuk menambahkan soal.</p>
                             </div>
                         ) : (
                             <div className="space-y-4 max-h-[600px] overflow-y-auto pr-1">
@@ -1188,7 +943,7 @@ export default function AdminBankSoalPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => handleEditQuestion(q)}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-800 border border-amber-300 rounded-lg transition-all shadow-sm active:scale-95"
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg transition-all shadow-sm active:scale-95"
                                                     title="Edit soal ini"
                                                 >
                                                     <svg
@@ -1274,194 +1029,37 @@ export default function AdminBankSoalPage() {
                     </div>
                 )}
 
-                {/* TAB 1: SMART TEXT PARSER */}
-                {inputMode === "text_parse" && (
-                    <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-5 shadow-sm">
-                        <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <div>
-                                <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                                    Smart Text Parser &bull; Ekstraksi Naskah Soal &amp; KaTeX
-                                </h2>
-                                <p className="text-xs text-slate-500">
-                                    Tempelkan naskah soal langsung dari Word. Klik tombol Auto-Format untuk membersihkan simbol sebelum dibedah.
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    disabled={isAiFormatting}
-                                    onClick={handleAutoFormatWordToLatex}
-                                    className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-all shrink-0 disabled:opacity-50"
-                                >
-                                    {isAiFormatting ? (
-                                        <>
-                                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                            <span>AI Sedang Merapikan Rumus...</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Sparkles className="w-3.5 h-3.5" />
-                                            <span>✨ AI Auto-Format Word ke LaTeX</span>
-                                        </>
-                                    )}
-                                </button>
-                                <span className="px-2.5 py-1 rounded-xl bg-blue-50 text-blue-800 border border-blue-200 text-xs font-mono font-bold shrink-0">
-                                    LaTeX Enabled
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1.5">
-                            <div className="font-bold flex items-center gap-1.5 text-amber-800">
-                                <HelpCircle className="w-4 h-4" />
-                                <span>Contoh Format Bebas yang Otomatis Dikenali:</span>
-                            </div>
-                            <pre className="font-mono text-[11px] bg-white/90 p-3 rounded-xl border border-amber-200 text-slate-700 leading-relaxed overflow-x-auto">
-                                {`1. Wacana: Sebuah balok bermassa m = 2 kg ditarik dengan gaya F = 10 N membentuk sudut θ = 60°.
-Gambar: https://drive.google.com/file/d/...
-Berapakah percepatan benda jika bidang licin?
-A. 2.5 m/s²
-B. 5 m/s²
-C. 7.5 m/s²
-D. 10 m/s²
-E. 12.5 m/s²
-Kunci: A`}
-                            </pre>
-                        </div>
-
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-slate-700 font-mono">PILIH SUBTES TUJUAN:</label>
-                            <select
-                                value={selectedSubtest}
-                                onChange={(e) => setSelectedSubtest(e.target.value)}
-                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:border-blue-600 outline-none bg-white cursor-pointer"
-                            >
-                                <option value="PU">Penalaran Umum (PU)</option>
-                                <option value="PPU">Pengetahuan &amp; Pemahaman Umum (PPU)</option>
-                                <option value="PBM">Pemahaman Bacaan &amp; Menulis (PBM)</option>
-                                <option value="PK">Pengetahuan Kuantitatif (PK)</option>
-                                <option value="LIT_INDO">Literasi Bahasa Indonesia</option>
-                                <option value="LIT_ENG">Literasi Bahasa Inggris</option>
-                                <option value="PM">Penalaran Matematika (PM)</option>
-                            </select>
-                        </div>
-
-                        <textarea
-                            rows={8}
-                            value={rawText}
-                            onChange={(e) => setRawText(e.target.value)}
-                            placeholder="Tempelkan naskah soal Word Anda di sini (Nomor 1, 2, 3 dst)..."
-                            className="w-full px-4 py-3 rounded-2xl border border-slate-200 text-xs font-mono leading-relaxed focus:border-blue-600 outline-none"
-                        />
-
-                        <div className="flex items-center gap-3">
-                            <button
-                                type="button"
-                                onClick={handleParseRawText}
-                                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-sm"
-                            >
-                                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                                <span>Bedah Soal &amp; Buat Pratinjau KaTeX</span>
-                            </button>
-
-                            {batchQuestions.length > 0 && (
-                                <button
-                                    type="button"
-                                    disabled={isSubmitting}
-                                    onClick={handleBulkSubmit}
-                                    className="px-5 py-2.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-blue-900/20 cursor-pointer disabled:opacity-50"
-                                >
-                                    <Send className="w-3.5 h-3.5" />
-                                    <span>{isSubmitting ? "Menyimpan..." : `Simpan ${batchQuestions.length} Soal ke ${selectedPaket}`}</span>
-                                </button>
-                            )}
-                        </div>
-
-                        {batchQuestions.length > 0 && (
-                            <div className="space-y-4 pt-4 border-t border-slate-200">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2 text-xs font-bold text-blue-900">
-                                        <Eye className="w-4 h-4 text-blue-700" />
-                                        <span>Pratinjau Layar Siswa ({batchQuestions.length} Butir Soal Terdeteksi)</span>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setBatchQuestions([])}
-                                        className="text-xs text-rose-600 font-bold hover:underline inline-flex items-center gap-1 cursor-pointer"
-                                    >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                        <span>Bersihkan Pratinjau</span>
-                                    </button>
-                                </div>
-
-                                <div className="space-y-4 max-h-[550px] overflow-y-auto pr-1">
-                                    {batchQuestions.map((q, qIdx) => (
-                                        <div key={qIdx} className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 text-left">
-                                            <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="px-2 py-0.5 rounded bg-[#1e3a8a] text-white font-mono font-bold text-[10px]">
-                                                        SOAL NO. {q.no_soal}
-                                                    </span>
-                                                    <span className="font-semibold text-slate-700 text-[11px] font-mono">
-                                                        Subtes: {q.subtes_code}
-                                                    </span>
-                                                </div>
-                                                <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-300 font-mono text-[10px] font-black">
-                                                    KUNCI: {q.kunci}
-                                                </span>
-                                            </div>
-
-                                            {q.stimulus && (
-                                                <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed italic">
-                                                    <MathRenderer content={q.stimulus} />
-                                                </div>
-                                            )}
-
-                                            {q.image_url && (
-                                                <div className="p-2 bg-white rounded-xl border border-slate-200 flex justify-center">
-                                                    <img
-                                                        src={q.image_url}
-                                                        alt="Stimulus Soal"
-                                                        referrerPolicy="no-referrer"
-                                                        className="max-h-52 rounded object-contain"
-                                                        onError={(e) => { (e.target as any).style.display = "none"; }}
-                                                    />
-                                                </div>
-                                            )}
-
-                                            <div className="text-xs font-semibold text-slate-900 leading-relaxed">
-                                                <MathRenderer content={q.pertanyaan} />
-                                            </div>
-
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                                                {[
-                                                    { label: "A", text: q.opsi_a },
-                                                    { label: "B", text: q.opsi_b },
-                                                    { label: "C", text: q.opsi_c },
-                                                    { label: "D", text: q.opsi_d },
-                                                    { label: "E", text: q.opsi_e }
-                                                ].map((opt) => (
-                                                    <div
-                                                        key={opt.label}
-                                                        className={`p-2 rounded-xl border text-xs flex items-center gap-2 ${q.kunci === opt.label
-                                                            ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
-                                                            : "bg-white border-slate-200 text-slate-700"
-                                                            }`}
-                                                    >
-                                                        <span className="font-mono font-bold">{opt.label}.</span>
-                                                        <span><MathRenderer content={opt.text || "-"} /></span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                {/* TAB 1: IMPORT DOKUMEN WORD (.DOCX) DENGAN PRATINJAU INTERAKTIF */}
+                {inputMode === "docx_upload" && (
+                    <WordDocxImporter
+                        selectedSubtest={selectedSubtest}
+                        selectedPaket={selectedPaket}
+                        currentCount={serverQuestions.length}
+                        onBulkSubmitQuestions={async (staged) => {
+                            const readyQuestions: ParsedQuestion[] = staged.map((sq) => ({
+                                subtes_code: sq.subtes_code || selectedSubtest,
+                                no_soal: sq.no_soal,
+                                stimulus: sq.stimulus,
+                                image_url: sq.image_url,
+                                image_position: sq.image_position,
+                                pertanyaan: sq.pertanyaan,
+                                opsi_a: sq.opsi_a,
+                                opsi_b: sq.opsi_b,
+                                opsi_c: sq.opsi_c,
+                                opsi_d: sq.opsi_d,
+                                opsi_e: sq.opsi_e,
+                                kunci: sq.kunci,
+                                tingkat_kesukaran: sq.tingkat_kesukaran,
+                                pembahasan: sq.pembahasan,
+                                author_guru: `${loggedTeacher.nama} (${loggedTeacher.mapel || "Guru Mapel"})`
+                            }));
+                            await handleBulkSubmit(readyQuestions);
+                        }}
+                        isSubmittingServer={isSubmitting}
+                    />
                 )}
 
-                {/* TAB 2: UPLOAD MASSAL FILE CSV / EXCEL DENGAN PREVIEW INTERAKTIF */}
+                {/* TAB 2: UPLOAD MASSAL FILE CSV / EXCEL */}
                 {inputMode === "csv" && (
                     <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-6 shadow-sm">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
@@ -1479,19 +1077,7 @@ Kunci: A`}
                                 onClick={handleDownloadExcelTemplate}
                                 className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-400 rounded-full transition-all duration-200 shadow-sm hover:shadow active:scale-95"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="w-4 h-4 text-emerald-700 stroke-[2.2]"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                >
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                    <polyline points="7 10 12 15 17 10" />
-                                    <line x1="12" y1="15" x2="12" y2="3" />
-                                </svg>
+                                <Download className="w-4 h-4 text-emerald-700" />
                                 <span>Unduh Template Lengkap (Excel .xlsx)</span>
                             </button>
                         </div>
@@ -1516,7 +1102,6 @@ Kunci: A`}
                             </div>
                         </div>
 
-                        {/* HASIL PREVIEW INTERAKTIF IMPORT CSV */}
                         {batchQuestions.length > 0 && (
                             <div className="space-y-4 pt-4 border-t border-slate-200">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1545,7 +1130,7 @@ Kunci: A`}
                                         <button
                                             type="button"
                                             disabled={isSubmitting}
-                                            onClick={handleBulkSubmit}
+                                            onClick={() => handleBulkSubmit(batchQuestions)}
                                             className="px-5 py-2.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-blue-900/20 cursor-pointer disabled:opacity-50"
                                         >
                                             <Send className="w-3.5 h-3.5" />
@@ -1553,108 +1138,6 @@ Kunci: A`}
                                         </button>
                                     </div>
                                 </div>
-
-                                {showCsvPreview && (
-                                    <div className="space-y-4 max-h-[580px] overflow-y-auto pr-1 animate-in fade-in duration-200">
-                                        {batchQuestions.map((q, qIdx) => (
-                                            <div key={qIdx} className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 text-left">
-                                                <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="px-2 py-0.5 rounded bg-[#1e3a8a] text-white font-mono font-bold text-[10px]">
-                                                            SOAL NO. {q.no_soal}
-                                                        </span>
-                                                        <span className="font-semibold text-slate-700 text-[11px] font-mono">
-                                                            Subtes: {q.subtes_code}
-                                                        </span>
-                                                        <span className="text-[11px] text-slate-500 font-medium">
-                                                            Tingkat: {q.tingkat_kesukaran || "Sedang"}
-                                                        </span>
-                                                    </div>
-                                                    <span className="px-2.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-300 font-mono text-[11px] font-black">
-                                                        KUNCI: {q.kunci}
-                                                    </span>
-                                                </div>
-
-                                                {q.stimulus && (
-                                                    <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed italic">
-                                                        <MathRenderer content={q.stimulus} />
-                                                    </div>
-                                                )}
-
-                                                {q.image_url && q.image_position === "above" && (
-                                                    <div className="p-2 bg-white rounded-xl border border-slate-200 flex justify-center">
-                                                        <img
-                                                            src={q.image_url}
-                                                            alt={`Gambar Soal No. ${q.no_soal}`}
-                                                            referrerPolicy="no-referrer"
-                                                            className="max-h-52 rounded object-contain"
-                                                            onError={(e) => { (e.target as any).style.display = "none"; }}
-                                                        />
-                                                    </div>
-                                                )}
-
-                                                <div className="text-xs font-semibold text-slate-900 leading-relaxed">
-                                                    <MathRenderer content={q.pertanyaan} />
-                                                </div>
-
-                                                {q.image_url && q.image_position !== "above" && (
-                                                    <div className="p-2 bg-white rounded-xl border border-slate-200 flex justify-center">
-                                                        <img
-                                                            src={q.image_url}
-                                                            alt={`Gambar Soal No. ${q.no_soal}`}
-                                                            referrerPolicy="no-referrer"
-                                                            className="max-h-52 rounded object-contain"
-                                                            onError={(e) => { (e.target as any).style.display = "none"; }}
-                                                        />
-                                                    </div>
-                                                )}
-
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                                                    {[
-                                                        { label: "A", text: q.opsi_a, img: q.opsi_a_img },
-                                                        { label: "B", text: q.opsi_b, img: q.opsi_b_img },
-                                                        { label: "C", text: q.opsi_c, img: q.opsi_c_img },
-                                                        { label: "D", text: q.opsi_d, img: q.opsi_d_img },
-                                                        { label: "E", text: q.opsi_e, img: q.opsi_e_img }
-                                                    ].map((opt) => (
-                                                        <div
-                                                            key={opt.label}
-                                                            className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 ${String(q.kunci).trim().toUpperCase() === opt.label
-                                                                ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
-                                                                : "bg-white border-slate-200 text-slate-700"
-                                                                }`}
-                                                        >
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="w-5 h-5 rounded bg-slate-100 flex items-center justify-center font-mono font-bold text-[10px] shrink-0 border border-slate-200">
-                                                                    {opt.label}
-                                                                </span>
-                                                                <span className="text-[11px] leading-tight">
-                                                                    <MathRenderer content={opt.text || "-"} />
-                                                                </span>
-                                                            </div>
-                                                            {opt.img && (
-                                                                <img
-                                                                    src={opt.img}
-                                                                    alt={`Gambar ${opt.label}`}
-                                                                    referrerPolicy="no-referrer"
-                                                                    className="h-8 max-w-[70px] object-contain rounded border bg-white p-0.5"
-                                                                    onError={(e) => { (e.target as any).style.display = "none"; }}
-                                                                />
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-
-                                                {q.pembahasan && (
-                                                    <div className="p-2.5 bg-blue-50/60 rounded-xl border border-blue-100 text-[11px] text-blue-900">
-                                                        <strong>Pembahasan: </strong>
-                                                        <MathRenderer content={q.pembahasan} />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
                             </div>
                         )}
                     </div>
@@ -1835,16 +1318,6 @@ Kunci: A`}
                                                 className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white focus:border-blue-600 outline-none"
                                             />
                                         </div>
-                                        <div className="flex items-center gap-1.5 pl-8">
-                                            <ImageIcon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                            <input
-                                                type="text"
-                                                value={opt.imgVal}
-                                                onChange={(e) => opt.setImgVal(convertToDirectImageUrl(e.target.value))}
-                                                placeholder={`URL Gambar Opsi ${opt.label} (Google Drive / web)...`}
-                                                className="w-full px-2.5 py-1 rounded-md border border-slate-200 text-[11px] font-mono bg-white text-slate-600 outline-none"
-                                            />
-                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -1968,16 +1441,6 @@ Kunci: A`}
                                                     <MathRenderer content={opt.text || `(Pilihan ${opt.label})`} />
                                                 </span>
                                             </div>
-
-                                            {opt.img && (
-                                                <img
-                                                    src={opt.img}
-                                                    alt={`Gambar ${opt.label}`}
-                                                    referrerPolicy="no-referrer"
-                                                    className="h-8 max-w-[70px] object-contain rounded border bg-white p-0.5"
-                                                    onError={(e) => { (e.target as any).style.display = "none"; }}
-                                                />
-                                            )}
                                         </div>
                                     ))}
                                 </div>
