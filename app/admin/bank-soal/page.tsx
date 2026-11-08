@@ -156,7 +156,7 @@ interface SubtestDurationItem {
 }
 
 // ========================================================
-// MESIN IMPORT WORD DENGAN PARSER DETEKSI UNIVERSAL
+// MESIN IMPORT WORD UNIVERSAL (MENDUKUNG SEGALA MODEL WORD)
 // ========================================================
 function WordImporterSection({
     selectedSubtest,
@@ -176,22 +176,6 @@ function WordImporterSection({
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editForm, setEditForm] = useState<ParsedQuestion | null>(null);
 
-    // Fungsi pemecah jika opsi A-E diketik sejajar di 1 baris
-    const parseMultipleOptionsInOneLine = (line: string) => {
-        const matches = Array.from(line.matchAll(/(?:^|\s+)([A-Ea-e])[\.\)\uff0e]\s+/g));
-        if (matches.length >= 2) {
-            const result: { [key: string]: string } = {};
-            for (let i = 0; i < matches.length; i++) {
-                const letter = matches[i][1].toUpperCase();
-                const start = matches[i].index! + matches[i][0].length;
-                const end = (i + 1 < matches.length) ? matches[i + 1].index! : line.length;
-                result[letter] = line.substring(start, end).trim();
-            }
-            return result;
-        }
-        return null;
-    };
-
     const handleDocxUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -202,6 +186,7 @@ function WordImporterSection({
             const mammoth = mammothModule.default || mammothModule;
             const arrayBuffer = await file.arrayBuffer();
 
+            // Ekstrak dokumen dan ubah gambar yang di-paste di Word menjadi Base64
             const result = await mammoth.convertToHtml(
                 { arrayBuffer },
                 {
@@ -218,7 +203,7 @@ function WordImporterSection({
             const parser = new DOMParser();
             const doc = parser.parseFromString(result.value, "text/html");
 
-            // Rata-kan semua baris (paragraf, sel tabel, list)
+            // Ratakan seluruh teks (paragraf, sel tabel, list)
             const blocks: { text: string; imgUrl: string }[] = [];
             const leafNodes = doc.body.querySelectorAll("p, td, li, h1, h2, h3, h4");
             leafNodes.forEach((node) => {
@@ -242,10 +227,10 @@ function WordImporterSection({
             };
 
             let counter = 1;
-            let isReadingPembahasan = false;
 
             const commitCurrent = () => {
-                if (current.pertanyaan || current.opsi_a) {
+                // Syarat sah butir soal: minimal memiliki pertanyaan dan opsi A
+                if (current.pertanyaan && current.opsi_a) {
                     questions.push({
                         no_soal: currentCount + counter,
                         subtes_code: current.subtes_code || selectedSubtest || "PU",
@@ -269,12 +254,11 @@ function WordImporterSection({
                         tingkat_kesukaran: "Sedang",
                         kunci: "A",
                     };
-                    isReadingPembahasan = false;
                 }
             };
 
             blocks.forEach((block) => {
-                let { text, imgUrl } = block;
+                const { text, imgUrl } = block;
 
                 if (imgUrl && !current.image_url) {
                     current.image_url = imgUrl;
@@ -282,89 +266,102 @@ function WordImporterSection({
 
                 if (!text) return;
 
-                // Abaikan teks judul pengantar ujian yang bukan soal
-                if (/^(?:SMA\s+MUHAMMADIYAH|PAKET\s+LATIHAN|PETUNJUK|Gambar\s+\d+:)/i.test(text)) {
+                // Abaikan judul dokumen pembuka, petunjuk, atau caption gambar
+                if (/^(?:paket\s+[a-z]|bagian\s+[ivx]+|petunjuk|gambar\s+\d+:)/i.test(text)) {
                     return;
                 }
 
-                // 1. Deteksi Nomor Soal Baru:
-                // Mendukung: "1.", "1)", "Soal 1", "Soal 1.", "No. 1", "No 1:"
-                // Sekaligus memotong jika ada header di depannya: misal "Paket B ... Soal 1 Seorang praktikan..."
-                const inlineSoalMatch = text.match(/(?:^|.*?)(?:(?:soal|nomor|no\.?)\s*(\d+)[\.\:\)]?|(?<!\w)(\d+)[\.\)\uff0e])\s+(.*)/i);
+                // 1. Deteksi Penomoran Soal Baru Secara Fleksibel
+                // Pola A: "Soal 1", "Soal 1.", "No. 1", "Nomor 1:" (baik berdiri sendiri atau sejajar teks)
+                const explicitQ = text.match(/^(?:soal|nomor|no\.?)\s*(\d+)[\.\:\)]?\s*(.*)$/i);
 
-                // Pastikan bukan bagian dari opsi A-E atau bukan bagian wacana
-                if (inlineSoalMatch && !/^[A-Ea-e][\.\)\uff0e]/i.test(text) && !/^(?:KUNCI|JAWABAN|PEMBAHASAN)/i.test(text)) {
-                    // Simpan soal sebelumnya
+                // Pola B: "1.", "1)", "1．" (baik berdiri sendiri di baris atas atau ada teks setelahnya)
+                const numericQ = text.match(/^(\d+)[\.\)\uff0e]\s*(.*)$/i);
+
+                let isNewQuestionTrigger = false;
+                let trailingQuestionText = "";
+
+                if (explicitQ && !/^[a-e][\.\)\uff0e]/i.test(text) && !/^(?:kunci|jawaban|pembahasan)/i.test(text)) {
+                    isNewQuestionTrigger = true;
+                    trailingQuestionText = explicitQ[2].trim();
+                } else if (numericQ && !/^[a-e][\.\)\uff0e]/i.test(text) && !/^(?:kunci|jawaban|pembahasan)/i.test(text)) {
+                    // Jika hanya berupa angka biasa ("1."), pastikan:
+                    // - Soal sebelumnya sudah selesai pilihan gandanya (current.opsi_a sudah ada), ATAU
+                    // - Soal saat ini masih benar-benar kosong belum ada pertanyaan.
+                    // Ini mencegah poin "1) Pernyataan satu" di dalam soal salah dikira sebagai soal baru.
+                    if (current.opsi_a || !current.pertanyaan) {
+                        isNewQuestionTrigger = true;
+                        trailingQuestionText = numericQ[2].trim();
+                    }
+                }
+
+                if (isNewQuestionTrigger) {
                     commitCurrent();
-
-                    // Teks pertanyaan setelah kata nomor
-                    current.pertanyaan = inlineSoalMatch[3] || "";
-                    isReadingPembahasan = false;
+                    if (trailingQuestionText) {
+                        current.pertanyaan = trailingQuestionText;
+                    }
                     return;
                 }
 
-                // 2. Deteksi Opsi Sejajar ke Samping (Inline A. ... B. ... C. ...)
-                const inlineMap = parseMultipleOptionsInOneLine(text);
-                if (inlineMap) {
-                    if (inlineMap["A"]) current.opsi_a = inlineMap["A"];
-                    if (inlineMap["B"]) current.opsi_b = inlineMap["B"];
-                    if (inlineMap["C"]) current.opsi_c = inlineMap["C"];
-                    if (inlineMap["D"]) current.opsi_d = inlineMap["D"];
-                    if (inlineMap["E"]) current.opsi_e = inlineMap["E"];
-                    return;
-                }
-
-                // 3. Deteksi Pilihan Ganda Tunggal per Baris/Kolom: "A. ...", "A) ...", "a. ..."
-                const singleOptMatch = text.match(/^([A-Ea-e])[\.\)\uff0e]\s*(.*)/i);
+                // 2. Deteksi Opsi Pilihan Ganda Tunggal per Baris/Kolom: "A. ...", "a) ..."
+                const singleOptMatch = text.match(/^([a-e])[\.\)\uff0e]\s*(.*)$/i);
                 if (singleOptMatch) {
-                    const char = singleOptMatch[1].toUpperCase();
+                    const letter = singleOptMatch[1].toLowerCase();
                     const val = singleOptMatch[2].trim();
-                    if (char === "A") current.opsi_a = val;
-                    if (char === "B") current.opsi_b = val;
-                    if (char === "C") current.opsi_c = val;
-                    if (char === "D") current.opsi_d = val;
-                    if (char === "E") current.opsi_e = val;
+                    (current as any)[`opsi_${letter}`] = val;
                     return;
                 }
 
-                // 4. Deteksi Kunci Jawaban: "Kunci: A", "Kunci Jawaban: B", "Jawaban = C"
-                const keyMatch = text.match(/(?:KUNCI(?:\s*JAWABAN)?|JAWABAN)\s*[:=]\s*([A-Ea-e])/i);
+                // 3. Deteksi Opsi Sejajar ke Samping (Inline: "A. ... B. ... C. ...")
+                const inlineMatches = Array.from(text.matchAll(/(?:^|\s+)([a-e])[\.\)\uff0e]\s+/gi));
+                if (inlineMatches.length >= 2) {
+                    for (let i = 0; i < inlineMatches.length; i++) {
+                        const letter = inlineMatches[i][1].toLowerCase();
+                        const start = inlineMatches[i].index! + inlineMatches[i][0].length;
+                        const end = (i + 1 < inlineMatches.length) ? inlineMatches[i + 1].index! : text.length;
+                        (current as any)[`opsi_${letter}`] = text.substring(start, end).trim();
+                    }
+                    return;
+                }
+
+                // 4. Deteksi Kunci Jawaban: "Kunci: A", "Kunci Jawaban = B", "Jawaban: C"
+                const keyMatch = text.match(/(?:kunci(?:\s*jawaban)?|jawaban)\s*[:=]\s*([a-e])/i);
                 if (keyMatch) {
                     current.kunci = keyMatch[1].toUpperCase();
                     return;
                 }
 
-                // 5. Deteksi Judul Pembahasan: "Pembahasan: ..."
-                const pbhMatch = text.match(/^PEMBAHASAN(?:\s+SOAL\s+NOMOR\s*\d+)?\s*[:=]?\s*(.*)/i);
+                // 5. Deteksi Pembahasan: "Pembahasan: ..."
+                const pbhMatch = text.match(/^pembahasan(?:\s*soal)?\s*[:=]?\s*(.*)$/i);
                 if (pbhMatch) {
                     current.pembahasan = pbhMatch[1] ? pbhMatch[1].trim() : "";
-                    isReadingPembahasan = true;
                     return;
                 }
 
-                // 6. Deteksi Wacana / Stimulus
-                if (/^Wacana:\s*/i.test(text)) {
-                    current.stimulus = text.replace(/^Wacana:\s*/i, "").trim();
+                // 6. Deteksi Wacana / Stimulus: "Wacana: ..."
+                if (/^wacana:\s*/i.test(text)) {
+                    current.stimulus = text.replace(/^wacana:\s*/i, "").trim();
                     return;
                 }
 
-                // 7. Penggabungan Teks Tambahan
-                if (isReadingPembahasan) {
-                    current.pembahasan = current.pembahasan ? current.pembahasan + "\n" + text : text;
-                } else if (!current.opsi_a) {
+                // 7. Penggabungan Teks Tambahan:
+                // Jika belum masuk ke pilihan A, teks ini adalah isi pertanyaan (termasuk jika nomor soal terpisah di baris atasnya)
+                if (!current.opsi_a) {
                     if (!current.pertanyaan) {
                         current.pertanyaan = text;
                     } else {
                         current.pertanyaan += "\n" + text;
                     }
+                } else if (current.pembahasan) {
+                    current.pembahasan += "\n" + text;
                 }
             });
 
-            // Simpan soal terakhir
+            // Simpan soal terakhir di dokumen
             commitCurrent();
 
             if (questions.length === 0) {
-                alert("Tidak ada butir soal yang terbaca. Pastikan terdapat format penomoran (1., Soal 1, atau No. 1) serta pilihan opsi (A., B., C., D., E.).");
+                alert("Tidak ada butir soal yang terbaca. Pastikan terdapat format penomoran ('1.' atau 'Soal 1') dan opsi pilihan (A-E).");
             } else {
                 setStagedList(questions);
             }
@@ -382,10 +379,10 @@ function WordImporterSection({
             <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                        Import Naskah Word Biasa (.docx) &bull; Format Alami Guru
+                        Import Naskah Word (.docx) &bull; Format Universal
                     </h2>
                     <p className="text-xs text-slate-500">
-                        Mendukung penomoran standar ("1.", "Soal 1", "No. 1"), opsi A-E di tabel/baris, gambar grafik, kunci, dan pembahasan tanpa perlu kode khusus.
+                        Mendukung semua gaya penulisan guru: nomor sejajar/terpisah baris, opsi di tabel/teks biasa, gambar grafik, kunci, dan pembahasan.
                     </p>
                 </div>
             </div>
@@ -408,7 +405,7 @@ function WordImporterSection({
                     </div>
                     <div>
                         <p className="text-sm font-bold text-slate-800">
-                            {isParsing ? "Sedang Membaca Soal, Gambar & Opsi..." : "Klik untuk Memilih File Dokumen Word (.docx)"}
+                            {isParsing ? "Sedang Mengekstrak Seluruh Butir Soal..." : "Klik untuk Memilih File Dokumen Word (.docx)"}
                         </p>
                         <p className="text-xs text-slate-400 mt-0.5">
                             Paket Target: <strong>{selectedPaket.replace("_", " ")}</strong> &bull; Subtes Default: <strong>{selectedSubtest}</strong>
@@ -427,7 +424,7 @@ function WordImporterSection({
                             <span className="text-xs text-slate-300">Siap disimpan ke {selectedPaket.replace("_", " ")}</span>
                         </div>
                         <p className="text-[11px] text-slate-400">
-                            Semua butir soal, opsi A–E, dan kunci jawaban telah dipisahkan secara akurat.
+                            Seluruh nomor soal, opsi A–E, dan kunci jawaban telah dipisahkan secara akurat.
                         </p>
                     </div>
 
