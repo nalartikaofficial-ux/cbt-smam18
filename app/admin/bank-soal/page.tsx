@@ -31,10 +31,6 @@ import {
     Edit3
 } from "lucide-react";
 
-// URL BACKEND GOOGLE APPS SCRIPT MASTER RESMI
-const GOOGLE_SCRIPT_API_URL =
-    "https://script.google.com/macros/s/AKfycbxXeMuz-VXgbdUOESiOOLL5NlLrSMVfrdvOCwhgBbjLWwOy3ASkTjnWJSAIONFDrdY7hg/exec";
-
 // HELPER RENDER MATEMATIKA: MENDUKUNG FORMULA LATEX MAUPUN NASKAH POLOS
 export const MathRenderer = ({ content }: { content: any }) => {
     const [katexReady, setKatexReady] = useState(false);
@@ -186,7 +182,6 @@ function WordImporterSection({
             const mammoth = mammothModule.default || mammothModule;
             const arrayBuffer = await file.arrayBuffer();
 
-            // Ekstrak dokumen dan ubah gambar yang di-paste di Word menjadi Base64
             const result = await mammoth.convertToHtml(
                 { arrayBuffer },
                 {
@@ -203,7 +198,6 @@ function WordImporterSection({
             const parser = new DOMParser();
             const doc = parser.parseFromString(result.value, "text/html");
 
-            // Ratakan seluruh teks (paragraf, sel tabel, list)
             const blocks: { text: string; imgUrl: string }[] = [];
             const leafNodes = doc.body.querySelectorAll("p, td, li, h1, h2, h3, h4");
             leafNodes.forEach((node) => {
@@ -229,7 +223,6 @@ function WordImporterSection({
             let counter = 1;
 
             const commitCurrent = () => {
-                // Syarat sah butir soal: minimal memiliki pertanyaan dan opsi A
                 if (current.pertanyaan && current.opsi_a) {
                     questions.push({
                         no_soal: currentCount + counter,
@@ -266,16 +259,11 @@ function WordImporterSection({
 
                 if (!text) return;
 
-                // Abaikan judul dokumen pembuka, petunjuk, atau caption gambar
                 if (/^(?:paket\s+[a-z]|bagian\s+[ivx]+|petunjuk|gambar\s+\d+:)/i.test(text)) {
                     return;
                 }
 
-                // 1. Deteksi Penomoran Soal Baru Secara Fleksibel
-                // Pola A: "Soal 1", "Soal 1.", "No. 1", "Nomor 1:" (baik berdiri sendiri atau sejajar teks)
                 const explicitQ = text.match(/^(?:soal|nomor|no\.?)\s*(\d+)[\.\:\)]?\s*(.*)$/i);
-
-                // Pola B: "1.", "1)", "1．" (baik berdiri sendiri di baris atas atau ada teks setelahnya)
                 const numericQ = text.match(/^(\d+)[\.\)\uff0e]\s*(.*)$/i);
 
                 let isNewQuestionTrigger = false;
@@ -285,10 +273,6 @@ function WordImporterSection({
                     isNewQuestionTrigger = true;
                     trailingQuestionText = explicitQ[2].trim();
                 } else if (numericQ && !/^[a-e][\.\)\uff0e]/i.test(text) && !/^(?:kunci|jawaban|pembahasan)/i.test(text)) {
-                    // Jika hanya berupa angka biasa ("1."), pastikan:
-                    // - Soal sebelumnya sudah selesai pilihan gandanya (current.opsi_a sudah ada), ATAU
-                    // - Soal saat ini masih benar-benar kosong belum ada pertanyaan.
-                    // Ini mencegah poin "1) Pernyataan satu" di dalam soal salah dikira sebagai soal baru.
                     if (current.opsi_a || !current.pertanyaan) {
                         isNewQuestionTrigger = true;
                         trailingQuestionText = numericQ[2].trim();
@@ -303,7 +287,6 @@ function WordImporterSection({
                     return;
                 }
 
-                // 2. Deteksi Opsi Pilihan Ganda Tunggal per Baris/Kolom: "A. ...", "a) ..."
                 const singleOptMatch = text.match(/^([a-e])[\.\)\uff0e]\s*(.*)$/i);
                 if (singleOptMatch) {
                     const letter = singleOptMatch[1].toLowerCase();
@@ -312,7 +295,6 @@ function WordImporterSection({
                     return;
                 }
 
-                // 3. Deteksi Opsi Sejajar ke Samping (Inline: "A. ... B. ... C. ...")
                 const inlineMatches = Array.from(text.matchAll(/(?:^|\s+)([a-e])[\.\)\uff0e]\s+/gi));
                 if (inlineMatches.length >= 2) {
                     for (let i = 0; i < inlineMatches.length; i++) {
@@ -324,28 +306,23 @@ function WordImporterSection({
                     return;
                 }
 
-                // 4. Deteksi Kunci Jawaban: "Kunci: A", "Kunci Jawaban = B", "Jawaban: C"
                 const keyMatch = text.match(/(?:kunci(?:\s*jawaban)?|jawaban)\s*[:=]\s*([a-e])/i);
                 if (keyMatch) {
                     current.kunci = keyMatch[1].toUpperCase();
                     return;
                 }
 
-                // 5. Deteksi Pembahasan: "Pembahasan: ..."
                 const pbhMatch = text.match(/^pembahasan(?:\s*soal)?\s*[:=]?\s*(.*)$/i);
                 if (pbhMatch) {
                     current.pembahasan = pbhMatch[1] ? pbhMatch[1].trim() : "";
                     return;
                 }
 
-                // 6. Deteksi Wacana / Stimulus: "Wacana: ..."
                 if (/^wacana:\s*/i.test(text)) {
                     current.stimulus = text.replace(/^wacana:\s*/i, "").trim();
                     return;
                 }
 
-                // 7. Penggabungan Teks Tambahan:
-                // Jika belum masuk ke pilihan A, teks ini adalah isi pertanyaan (termasuk jika nomor soal terpisah di baris atasnya)
                 if (!current.opsi_a) {
                     if (!current.pertanyaan) {
                         current.pertanyaan = text;
@@ -357,7 +334,6 @@ function WordImporterSection({
                 }
             });
 
-            // Simpan soal terakhir di dokumen
             commitCurrent();
 
             if (questions.length === 0) {
@@ -382,7 +358,7 @@ function WordImporterSection({
                         Import Naskah Word (.docx) &bull; Format Universal
                     </h2>
                     <p className="text-xs text-slate-500">
-                        Mendukung semua gaya penulisan guru: nomor sejajar/terpisah baris, opsi di tabel/teks biasa, gambar grafik, kunci, dan pembahasan.
+                        Mendukung semua gaya penulisan: nomor sejajar/terpisah baris, opsi di tabel/teks biasa, gambar grafik, kunci, dan pembahasan.
                     </p>
                 </div>
             </div>
@@ -446,7 +422,7 @@ function WordImporterSection({
                             {isSubmittingServer ? (
                                 <>
                                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                    <span>Menyimpan ke Server...</span>
+                                    <span>Menyimpan ke File Lokal...</span>
                                 </>
                             ) : (
                                 <>
@@ -616,8 +592,8 @@ function WordImporterSection({
                                         <div
                                             key={opt.label}
                                             className={`p-2 rounded-xl border text-xs flex items-center gap-2 ${q.kunci === opt.label
-                                                ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
-                                                : "bg-white border-slate-200 text-slate-700"
+                                                    ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
+                                                    : "bg-white border-slate-200 text-slate-700"
                                                 }`}
                                         >
                                             <span className="font-mono font-bold">{opt.label}.</span>
@@ -698,9 +674,9 @@ export default function AdminBankSoalPage() {
         { code: "PPU", name: "Pengetahuan & Pemahaman", defaultDurationMinutes: 15 },
         { code: "PBM", name: "Pemahaman Bacaan & Menulis", defaultDurationMinutes: 25 },
         { code: "PK", name: "Pengetahuan Kuantitatif", defaultDurationMinutes: 20 },
-        { code: "LIT_INDO", name: "Literasi B. Indonesia", defaultDurationMinutes: 45 },
-        { code: "LIT_ENG", name: "Literasi Bahasa Inggris", defaultDurationMinutes: 30 },
-        { code: "PM", name: "Penalaran Matematika", defaultDurationMinutes: 30 }
+        { code: "LIT_INDO", name: "Literasi B. Indonesia", defaultDurationMinutes: 42.5 },
+        { code: "LIT_ENG", name: "Literasi Bahasa Inggris", defaultDurationMinutes: 20 },
+        { code: "PM", name: "Penalaran Matematika", defaultDurationMinutes: 42.5 }
     ]);
     const [isSavingDurations, setIsSavingDurations] = useState(false);
 
@@ -735,14 +711,15 @@ export default function AdminBankSoalPage() {
     const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
     const [isEditingMode, setIsEditingMode] = useState(false);
 
+    // Ambil durasi per subtes dari penyimpanan lokal
     const fetchSubtestDurations = async (pkg = selectedPaket) => {
         try {
-            const res = await fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_subtests&package=${pkg}&paket=${pkg}&_t=${Date.now()}`, {
-                cache: "no-store"
-            });
-            const json = await res.json();
-            if (json.status === "success" && Array.isArray(json.data) && json.data.length > 0) {
-                setSubtestsConfig(json.data);
+            const raw = localStorage.getItem(`durasi_${pkg}`);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    setSubtestsConfig(parsed);
+                }
             }
         } catch { }
     };
@@ -751,52 +728,39 @@ export default function AdminBankSoalPage() {
         setIsSavingDurations(true);
         setStatusMsg(null);
         try {
-            await fetch(GOOGLE_SCRIPT_API_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({
-                    action: "save_subtests",
-                    paket: selectedPaket,
-                    package: selectedPaket,
-                    subtests: subtestsConfig
-                })
-            });
-
+            localStorage.setItem(`durasi_${selectedPaket}`, JSON.stringify(subtestsConfig));
             setStatusMsg({
                 type: "success",
-                text: `Alokasi durasi 7 subtes untuk ${selectedPaket.replace("_", " ")} berhasil disimpan ke server!`
+                text: `Alokasi durasi 7 subtes untuk ${selectedPaket.replace("_", " ")} berhasil disimpan!`
             });
         } catch {
             setStatusMsg({
                 type: "error",
-                text: "Gagal menyimpan durasi subtes. Pastikan koneksi internet stabil."
+                text: "Gagal menyimpan durasi subtes."
             });
         } finally {
             setIsSavingDurations(false);
         }
     };
 
+    // 1. Ambil data soal langsung dari API endpoint lokal JSON (/api/questions)
     const fetchServerQuestions = async (pkg = selectedPaket) => {
         setIsLoadingServerQuestions(true);
         try {
-            const res = await fetch(
-                `${GOOGLE_SCRIPT_API_URL}?action=get_questions&package=${pkg}&paket=${pkg}&_t=${Date.now()}`,
-                { cache: "no-store" }
-            );
-            const text = await res.text();
-            if (!text.trim().startsWith("<")) {
-                const json = JSON.parse(text);
-                if (json.status === "success" && Array.isArray(json.data)) {
-                    setServerQuestions(json.data);
-                    setNoSoal(String(json.data.length + 1));
-                } else {
-                    setServerQuestions([]);
-                    setNoSoal("1");
-                }
+            const res = await fetch(`/api/questions?paket=${pkg}&_t=${Date.now()}`, {
+                cache: "no-store"
+            });
+            const json = await res.json();
+            if (json.status === "success" && Array.isArray(json.data)) {
+                setServerQuestions(json.data);
+                setNoSoal(String(json.data.length + 1));
+            } else {
+                setServerQuestions([]);
+                setNoSoal("1");
             }
         } catch (err) {
-            console.error("Gagal memuat soal dari spreadsheet:", err);
+            console.error("Gagal memuat soal dari file JSON lokal:", err);
+            setServerQuestions([]);
         } finally {
             setIsLoadingServerQuestions(false);
         }
@@ -809,28 +773,30 @@ export default function AdminBankSoalPage() {
         }
     }, [selectedPaket, isAuthorized]);
 
+    // 2. Hapus butir soal dari file JSON lokal
     const handleDeleteServerQuestion = async (no: number, sub: string) => {
         if (!confirm(`Hapus soal No. ${no} (${sub}) dari ${selectedPaket}?`)) return;
 
         try {
-            await fetch(GOOGLE_SCRIPT_API_URL, {
+            const res = await fetch("/api/questions", {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: "delete_question",
                     paket: selectedPaket,
-                    package: selectedPaket,
-                    no_soal: no,
-                    subtes_code: sub
+                    no_soal: no
                 })
             });
+            const json = await res.json();
 
-            setServerQuestions((prev) => prev.filter((q) => !(Number(q.no_soal) === no && q.subtes_code === sub)));
-            setStatusMsg({ type: "success", text: `Soal No. ${no} berhasil dihapus dari ${selectedPaket}!` });
-            setTimeout(() => fetchServerQuestions(selectedPaket), 2500);
-        } catch {
-            setStatusMsg({ type: "error", text: "Gagal menghapus soal dari spreadsheet." });
+            if (json.status === "success") {
+                setServerQuestions((prev) => prev.filter((q) => Number(q.no_soal) !== no));
+                setStatusMsg({ type: "success", text: `Soal No. ${no} berhasil dihapus dari ${selectedPaket}!` });
+            } else {
+                throw new Error(json.message);
+            }
+        } catch (err: any) {
+            setStatusMsg({ type: "error", text: "Gagal menghapus soal: " + err.message });
         }
     };
 
@@ -1019,6 +985,7 @@ export default function AdminBankSoalPage() {
         reader.readAsBinaryString(file);
     };
 
+    // 3. Simpan massal ke file JSON lokal (/api/questions)
     const handleBulkSubmit = async (questionsToSubmit = batchQuestions) => {
         if (questionsToSubmit.length === 0) return;
 
@@ -1028,29 +995,32 @@ export default function AdminBankSoalPage() {
         const payload = {
             action: "bulk_upload_questions",
             paket: selectedPaket,
-            package: selectedPaket,
             questions: questionsToSubmit
         };
 
         try {
-            await fetch(GOOGLE_SCRIPT_API_URL, {
+            const res = await fetch("/api/questions", {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
+            const json = await res.json();
 
-            setStatusMsg({
-                type: "success",
-                text: `Sukses! Sebanyak ${questionsToSubmit.length} butir soal telah berhasil disimpan ke ${selectedPaket}!`
-            });
-            setBatchQuestions([]);
-            setTimeout(() => {
-                fetchServerQuestions(selectedPaket);
-                setInputMode("list");
-            }, 2500);
+            if (json.status === "success") {
+                setStatusMsg({
+                    type: "success",
+                    text: `Sukses! Sebanyak ${questionsToSubmit.length} butir soal telah berhasil disimpan ke file JSON lokal (${selectedPaket})!`
+                });
+                setBatchQuestions([]);
+                setTimeout(() => {
+                    fetchServerQuestions(selectedPaket);
+                    setInputMode("list");
+                }, 800);
+            } else {
+                throw new Error(json.message);
+            }
         } catch (err: any) {
-            setStatusMsg({ type: "error", text: "Gagal menyimpan: " + (err?.message || "Kesalahan jaringan") });
+            setStatusMsg({ type: "error", text: "Gagal menyimpan ke file JSON: " + (err?.message || "Kesalahan jaringan") });
         } finally {
             setIsSubmitting(false);
         }
@@ -1124,18 +1094,18 @@ export default function AdminBankSoalPage() {
                 {/* Banner Status Database & Pemilihan Paket */}
                 <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 shrink-0">
+                        <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
                             <Database className="w-5 h-5" />
                         </div>
                         <div>
                             <div className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2">
-                                <span>Database Cloud Spreadsheet</span>
+                                <span>Penyimpanan Lokal Edge JSON</span>
                                 <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono text-[10px]">
-                                    Online &bull; {serverQuestions.length} Butir Soal
+                                    Aktif &bull; {serverQuestions.length} Butir Soal
                                 </span>
                             </div>
                             <div className="text-[11px] text-slate-500 mt-0.5">
-                                Target Aktif: <strong className="text-blue-700 font-bold">{selectedPaket.replace("_", " ")}</strong> &bull; SMA Muhammadiyah 18 Jakarta
+                                Target Aktif: <strong className="text-blue-700 font-bold">{selectedPaket.replace("_", " ")}</strong> &bull; Respon Cepat (&lt;50ms)
                             </div>
                         </div>
                     </div>
@@ -1252,7 +1222,7 @@ export default function AdminBankSoalPage() {
                                 <span>Alokasi Waktu Pengerjaan per Subtes ({selectedPaket.replace("_", " ")})</span>
                             </h3>
                             <p className="text-xs text-slate-500">
-                                Tentukan durasi menit pengerjaan untuk masing-masing 7 subtes. Mendukung desimal seperti <strong>0.5</strong> menit atau <strong>22.5</strong> menit.
+                                Tentukan durasi menit pengerjaan untuk masing-masing 7 subtes. Mendukung desimal seperti <strong>42.5</strong> menit.
                             </p>
                         </div>
                         <button
@@ -1262,7 +1232,7 @@ export default function AdminBankSoalPage() {
                             className="px-5 py-2.5 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer transition-all disabled:opacity-50 shrink-0"
                         >
                             <Save className="w-4 h-4" />
-                            <span>{isSavingDurations ? "Menyimpan ke Server..." : "Simpan Durasi Subtes"}</span>
+                            <span>{isSavingDurations ? "Menyimpan..." : "Simpan Durasi Subtes"}</span>
                         </button>
                     </div>
 
@@ -1295,7 +1265,7 @@ export default function AdminBankSoalPage() {
                                             });
                                         }}
                                         className="w-18 px-2 py-1 text-center font-mono font-bold text-xs rounded-lg border border-slate-300 focus:border-indigo-600 outline-none bg-white"
-                                        placeholder="0.5"
+                                        placeholder="30"
                                     />
                                     <span className="text-[10px] text-slate-500 font-medium">mnt</span>
                                 </div>
@@ -1313,7 +1283,7 @@ export default function AdminBankSoalPage() {
                             }`}
                     >
                         <ListFilter className="w-4 h-4 text-indigo-600" />
-                        <span>Daftar Soal di Server ({serverQuestions.length})</span>
+                        <span>Daftar Soal di Berkas ({serverQuestions.length})</span>
                     </button>
 
                     <button
@@ -1363,7 +1333,7 @@ export default function AdminBankSoalPage() {
                     </div>
                 )}
 
-                {/* TAB 0: DAFTAR SOAL SERVER */}
+                {/* TAB 0: DAFTAR SOAL BERKAS */}
                 {inputMode === "list" && (
                     <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-5 shadow-sm">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-3">
@@ -1372,7 +1342,7 @@ export default function AdminBankSoalPage() {
                                     Koleksi Soal {selectedPaket.replace("_", " ")} Terdaftar
                                 </h2>
                                 <p className="text-xs text-slate-500">
-                                    Daftar butir soal yang saat ini aktif di spreadsheet dan akan diujikan kepada siswa.
+                                    Daftar butir soal yang saat ini tersimpan di berkas JSON lokal dan akan diujikan kepada siswa.
                                 </p>
                             </div>
 
@@ -1397,7 +1367,7 @@ export default function AdminBankSoalPage() {
                         {isLoadingServerQuestions ? (
                             <div className="text-center py-12 text-slate-400 space-y-2">
                                 <RefreshCw className="w-6 h-6 animate-spin mx-auto text-blue-600" />
-                                <p className="text-xs font-medium">Memuat butir soal dari spreadsheet...</p>
+                                <p className="text-xs font-medium">Memuat butir soal dari berkas lokal...</p>
                             </div>
                         ) : filteredServerQuestions.length === 0 ? (
                             <div className="text-center py-12 text-slate-400 space-y-2">
@@ -1591,7 +1561,7 @@ export default function AdminBankSoalPage() {
                                             className="px-5 py-2.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-blue-900/20 cursor-pointer disabled:opacity-50"
                                         >
                                             <Send className="w-3.5 h-3.5" />
-                                            <span>{isSubmitting ? "Mengunggah..." : `Simpan Semua ke ${selectedPaket}`}</span>
+                                            <span>{isSubmitting ? "Menyimpan ke File..." : `Simpan Semua ke ${selectedPaket}`}</span>
                                         </button>
                                     </div>
                                 </div>
@@ -1612,7 +1582,6 @@ export default function AdminBankSoalPage() {
                                 const payload = {
                                     action: isEditingMode ? "edit_question" : "add_question",
                                     paket: selectedPaket,
-                                    package: selectedPaket,
                                     subtes_code: selectedSubtest,
                                     no_soal: Number(noSoal),
                                     stimulus,
@@ -1636,28 +1605,32 @@ export default function AdminBankSoalPage() {
                                 };
 
                                 try {
-                                    await fetch(GOOGLE_SCRIPT_API_URL, {
+                                    const res = await fetch("/api/questions", {
                                         method: "POST",
-                                        mode: "no-cors",
-                                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                                        headers: { "Content-Type": "application/json" },
                                         body: JSON.stringify(payload)
                                     });
+                                    const json = await res.json();
 
-                                    setStatusMsg({
-                                        type: "success",
-                                        text: `Soal No. ${noSoal} (${selectedSubtest}) berhasil disimpan ke ${selectedPaket}!`
-                                    });
+                                    if (json.status === "success") {
+                                        setStatusMsg({
+                                            type: "success",
+                                            text: `Soal No. ${noSoal} (${selectedSubtest}) berhasil disimpan ke ${selectedPaket}!`
+                                        });
 
-                                    setNoSoal((prev) => String(Number(prev) + 1));
-                                    setPertanyaan("");
-                                    setImageUrl("");
-                                    setOpsiA(""); setOpsiAImg("");
-                                    setOpsiB(""); setOpsiBImg("");
-                                    setOpsiC(""); setOpsiCImg("");
-                                    setOpsiD(""); setOpsiDImg("");
-                                    setOpsiE(""); setOpsiEImg("");
-                                    setPembahasan("");
-                                    setTimeout(() => fetchServerQuestions(selectedPaket), 2500);
+                                        setNoSoal((prev) => String(Number(prev) + 1));
+                                        setPertanyaan("");
+                                        setImageUrl("");
+                                        setOpsiA(""); setOpsiAImg("");
+                                        setOpsiB(""); setOpsiBImg("");
+                                        setOpsiC(""); setOpsiCImg("");
+                                        setOpsiD(""); setOpsiDImg("");
+                                        setOpsiE(""); setOpsiEImg("");
+                                        setPembahasan("");
+                                        setTimeout(() => fetchServerQuestions(selectedPaket), 500);
+                                    } else {
+                                        throw new Error(json.message);
+                                    }
                                 } catch (err: any) {
                                     setStatusMsg({ type: "error", text: "Gagal menyimpan: " + (err?.message || "Kesalahan jaringan") });
                                 } finally {
@@ -1815,7 +1788,7 @@ export default function AdminBankSoalPage() {
                                 <Send className="w-4 h-4" />
                                 <span>
                                     {isSubmitting
-                                        ? "Menyimpan ke Server..."
+                                        ? "Menyimpan ke File..."
                                         : isEditingMode
                                             ? `Perbarui Soal No. ${noSoal} di ${selectedPaket}`
                                             : `Simpan Soal Baru ke ${selectedPaket}`}

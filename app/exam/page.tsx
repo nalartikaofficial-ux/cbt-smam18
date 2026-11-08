@@ -171,7 +171,7 @@ function OfficialExamChamberContent() {
     const [pilihanKampus1, setPilihanKampus1] = useState("");
     const [pilihanKampus2, setPilihanKampus2] = useState("");
 
-    // DATABASE PTN LANGSUNG DARI FILE JSON LOKAL (INSTAN & LENGKAP)
+    // DATABASE PTN LANGSUNG DARI FILE JSON LOKAL
     const [ptnBenchmarks, setPtnBenchmarks] = useState<PTNProdiBenchmark[]>(LOCAL_BENCHMARKS);
     const [isLoadingPTN, setIsLoadingPTN] = useState(false);
 
@@ -188,9 +188,9 @@ function OfficialExamChamberContent() {
         { code: "PPU", name: "Pengetahuan & Pemahaman", category: "Tes Potensi Skolastik", defaultDurationMinutes: 15 },
         { code: "PBM", name: "Pemahaman Bacaan & Menulis", category: "Tes Potensi Skolastik", defaultDurationMinutes: 25 },
         { code: "PK", name: "Pengetahuan Kuantitatif", category: "Tes Potensi Skolastik", defaultDurationMinutes: 20 },
-        { code: "LIT_INDO", name: "Literasi B. Indonesia", category: "Tes Literasi", defaultDurationMinutes: 45 },
-        { code: "LIT_ENG", name: "Literasi Bahasa Inggris", category: "Tes Literasi", defaultDurationMinutes: 30 },
-        { code: "PM", name: "Penalaran Matematika", category: "Penalaran Matematika", defaultDurationMinutes: 30 }
+        { code: "LIT_INDO", name: "Literasi B. Indonesia", category: "Tes Literasi", defaultDurationMinutes: 42.5 },
+        { code: "LIT_ENG", name: "Literasi Bahasa Inggris", category: "Tes Literasi", defaultDurationMinutes: 20 },
+        { code: "PM", name: "Penalaran Matematika", category: "Penalaran Matematika", defaultDurationMinutes: 42.5 }
     ]);
 
     const [sessionTitle, setSessionTitle] = useState("RUANG UJIAN RESMI");
@@ -235,7 +235,7 @@ function OfficialExamChamberContent() {
         } catch { }
     };
 
-    // 1. MEMUAT SESI, SOAL, DURASI SUBTES, DAN DATA PTN DENGAN CACHE CEPAT
+    // 1. MEMUAT SESI, SOAL DARI JSON LOKAL (/api/questions), DAN DURASI SUBTES
     useEffect(() => {
         if (typeof window === "undefined") return;
 
@@ -262,7 +262,7 @@ function OfficialExamChamberContent() {
         const activePkg = queryPkg || sessionData.packageId || "PAKET_1";
         setSessionTitle(`RUANG UJIAN RESMI • ${activePkg.replace("_", " ")}`);
 
-        // Sinkronisasi Sesi & Jadwal Server
+        // Sinkronisasi Sesi & Jadwal Server (Opsional bila ada jadwal pengawas)
         fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_active_session&_t=${Date.now()}`, { cache: "no-store" })
             .then((r) => r.json())
             .then((res) => {
@@ -273,26 +273,16 @@ function OfficialExamChamberContent() {
             })
             .catch(() => { });
 
-        // Cek Cache Subtes agar render instan
-        const cachedSubtests = localStorage.getItem(`cbt_subtests_${activePkg}`);
-        if (cachedSubtests) {
+        // Cek Cache Durasi Subtes lokal yang tersimpan
+        const localDuration = localStorage.getItem(`durasi_${activePkg}`);
+        if (localDuration) {
             try {
-                const parsed = JSON.parse(cachedSubtests);
-                if (Array.isArray(parsed) && parsed.length > 0) setSubtestsList(parsed);
+                const parsedDur = JSON.parse(localDuration);
+                if (Array.isArray(parsedDur) && parsedDur.length > 0) setSubtestsList(parsedDur);
             } catch { }
         }
 
-        fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_subtests&package=${activePkg}&_t=${Date.now()}`, { cache: "no-store" })
-            .then((r) => r.json())
-            .then((res) => {
-                if (res.status === "success" && Array.isArray(res.data) && res.data.length > 0) {
-                    setSubtestsList(res.data);
-                    localStorage.setItem(`cbt_subtests_${activePkg}`, JSON.stringify(res.data));
-                }
-            })
-            .catch(() => { });
-
-        // Pulihkan progres pengerjaan siswa
+        // Pulihkan progres pengerjaan siswa jika tersimpan sebelumnya
         const savedProgressKey = `cbt_progress_${sessionData.nisn}`;
         const savedProgress = localStorage.getItem(savedProgressKey);
         if (savedProgress) {
@@ -310,8 +300,9 @@ function OfficialExamChamberContent() {
             } catch { }
         }
 
+        // MEMUAT SOAL DARI ENDPOINT LOKAL EDGE JSON TANPA MELALUI GOOGLE APPS SCRIPT
         setIsLoading(true);
-        fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_questions&package=${activePkg}&_t=${Date.now()}`, {
+        fetch(`/api/questions?paket=${activePkg}&_t=${Date.now()}`, {
             cache: "no-store"
         })
             .then((res) => res.json())
@@ -340,11 +331,12 @@ function OfficialExamChamberContent() {
                     });
                     setAllQuestions(formatted);
                 } else {
-                    setLoadError("Naskah soal belum diunggah untuk paket ini. Silakan hubungi proktor ruang.");
+                    setLoadError("Naskah soal belum tersedia di berkas lokal untuk paket ini. Pastikan bank soal telah diimpor di menu admin.");
                 }
             })
-            .catch(() => {
-                setLoadError("Gagal mengambil naskah soal dari server ujian. Pastikan terhubung ke internet.");
+            .catch((err) => {
+                console.error(err);
+                setLoadError("Gagal mengambil naskah soal dari server lokal.");
             })
             .finally(() => {
                 setIsLoading(false);
@@ -375,7 +367,7 @@ function OfficialExamChamberContent() {
         return filtered.length > 0 ? filtered : allQuestions;
     }, [allQuestions, activeSubtestConfig]);
 
-    // HELPER PENCOCOKAN PRESISI STRING TARGET PILIHAN SISWA
+    // HELPER PENCOCOKAN STRING TARGET PILIHAN SISWA
     const parseTargetSelection = useCallback((val: string) => {
         if (!val || typeof val !== "string") return null;
         const trimmed = val.trim();
@@ -385,7 +377,6 @@ function OfficialExamChamberContent() {
         const rawKampus = parts[0] || "";
         const rawProdi = parts.slice(1).join(" - ") || "";
 
-        // Bersihkan singkatan kurung seperti (UI), (UNS), (S1), (D4)
         const cleanKampus = rawKampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
         const cleanProdi = rawProdi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
 
@@ -404,13 +395,11 @@ function OfficialExamChamberContent() {
             const bKampus = b.kampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
             const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
 
-            // Cocokkan nama kampus secara eksak atau saling inklusif
             const isKampusMatch =
                 bKampus === parsed.cleanKampus ||
                 bKampus.includes(parsed.cleanKampus) ||
                 parsed.cleanKampus.includes(bKampus);
 
-            // Cocokkan nama prodi secara eksak atau saling inklusif
             const isProdiMatch =
                 bProdi === parsed.cleanProdi ||
                 bProdi.includes(parsed.cleanProdi) ||
@@ -431,13 +420,11 @@ function OfficialExamChamberContent() {
             const bKampus = b.kampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
             const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
 
-            // Cocokkan nama kampus secara eksak atau saling inklusif
             const isKampusMatch =
                 bKampus === parsed.cleanKampus ||
                 bKampus.includes(parsed.cleanKampus) ||
                 parsed.cleanKampus.includes(bKampus);
 
-            // Cocokkan nama prodi secara eksak atau saling inklusif
             const isProdiMatch =
                 bProdi === parsed.cleanProdi ||
                 bProdi.includes(parsed.cleanProdi) ||
@@ -449,7 +436,6 @@ function OfficialExamChamberContent() {
         }) || null;
     }, [pilihanKampus2, ptnBenchmarks, parseTargetSelection]);
 
-    // FILTER MODAL PENCARIAN DENGAN PEMBATAS 50 TAMPILAN SUPAYA RINGAN
     const filteredModalBenchmarks = useMemo(() => {
         const q = modalSearchQuery.toLowerCase().trim();
         return ptnBenchmarks.filter((item) => {
@@ -635,9 +621,9 @@ function OfficialExamChamberContent() {
                     })
                 });
 
-                await new Promise((resolve) => setTimeout(resolve, 1000));
+                await new Promise((resolve) => setTimeout(resolve, 800));
             } catch (err) {
-                console.error("Gagal sinkron:", err);
+                console.error("Gagal sinkron status akhir:", err);
             }
         }
 
@@ -645,7 +631,7 @@ function OfficialExamChamberContent() {
         setIsExamCompleted(true);
     };
 
-    // TRACKING TIMER & BLOCKING TIME SUBTES EFISIEN
+    // TRACKING TIMER & SUBTES BLOCKING
     useEffect(() => {
         if (!isInExam || isSyncingServer || isExamCompleted || isExamLockedPermanently || isSessionLockedByProctor) return;
 
@@ -787,7 +773,6 @@ function OfficialExamChamberContent() {
         xlarge: { stimulus: "text-base sm:text-lg leading-relaxed", question: "text-lg sm:text-xl font-bold", option: "text-base sm:text-lg" }
     }[fontSizeMode];
 
-    // EVALUASI PELUANG PASSING GRADE
     const renderAdmissionProbabilityBadge = (targetMinScore: number, studentScore: number) => {
         const diff = studentScore - targetMinScore;
         if (diff >= 15) {
@@ -820,7 +805,6 @@ function OfficialExamChamberContent() {
         }
     };
 
-    // 10 REKOMENDASI PRODI DARI DATABASE PTN
     const recommendedAlternativePTNs = useMemo(() => {
         if (!ptnBenchmarks || ptnBenchmarks.length === 0) return [];
         return ptnBenchmarks.slice(0, 10).map((b) => {
@@ -991,7 +975,7 @@ function OfficialExamChamberContent() {
                             <span className="text-blue-700 font-black">{sessionTitle}</span>
                         </div>
                         <p className="text-slate-600 leading-relaxed text-[11px]">
-                            Ujian terdiri dari <strong>{subtestsList.length} subtes bertahap</strong>. Waktu per subtes dikendalikan langsung oleh guru pembuat soal.
+                            Ujian terdiri dari <strong>{subtestsList.length} subtes bertahap</strong>. Naskah soal disajikan secara instan via penyimpanan lokal sekolah.
                         </p>
                     </div>
 
@@ -1151,7 +1135,7 @@ function OfficialExamChamberContent() {
                             {isLoading ? (
                                 <>
                                     <Loader2 className="w-4 h-4 animate-spin" />
-                                    <span>Mengunduh Lembar Soal...</span>
+                                    <span>Menyiapkan Lembar Soal...</span>
                                 </>
                             ) : isSessionLockedByProctor ? (
                                 <>
@@ -1844,7 +1828,7 @@ function OfficialExamChamberContent() {
                         </button>
                     </div>
 
-                    {/* 13. TANDA TANGAN */}
+                    {/* 13. TANDA TANGAN RESMI SEKOLAH */}
                     <div className="pt-8 pb-4 grid grid-cols-2 gap-8 text-center text-xs font-serif text-slate-800">
                         <div className="space-y-16">
                             <div>
