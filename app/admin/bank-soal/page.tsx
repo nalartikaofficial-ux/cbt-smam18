@@ -984,41 +984,38 @@ export default function AdminBankSoalPage() {
     };
 
     // 3. Simpan massal ke file JSON lokal (/api/questions)
-    const handleBulkSubmit = async (questionsToSubmit = batchQuestions) => {
+    const handleBulkSubmit = async (questionsToSubmit = stagedList) => {
         if (questionsToSubmit.length === 0) return;
 
         setIsSubmitting(true);
         setStatusMsg(null);
 
-        const payload = {
-            action: "bulk_upload_questions",
-            paket: selectedPaket,
-            questions: questionsToSubmit
-        };
-
         try {
-            const res = await fetch("/api/questions", {
+            // 1. Simpan langsung ke cache browser seketika (Anti-Lag & Anti-Hilang)
+            localStorage.setItem(`cbt_questions_${selectedPaket}`, JSON.stringify(questionsToSubmit));
+
+            // 2. Kirim ke API internal (/tmp)
+            await fetch("/api/questions", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    paket: selectedPaket,
+                    questions: questionsToSubmit
+                })
             });
-            const json = await res.json();
 
-            if (json.status === "success") {
-                setStatusMsg({
-                    type: "success",
-                    text: `Sukses! Sebanyak ${questionsToSubmit.length} butir soal telah berhasil disimpan ke file JSON lokal (${selectedPaket})!`
-                });
-                setBatchQuestions([]);
-                setTimeout(() => {
-                    fetchServerQuestions(selectedPaket);
-                    setInputMode("list");
-                }, 800);
-            } else {
-                throw new Error(json.message);
-            }
+            setStatusMsg({
+                type: "success",
+                text: `Berhasil! Sebanyak ${questionsToSubmit.length} butir soal tersimpan aktif untuk ${selectedPaket.replace("_", " ")}!`
+            });
+
+            setStagedList([]);
+            setTimeout(() => {
+                fetchServerQuestions(selectedPaket);
+                setInputMode("list");
+            }, 800);
         } catch (err: any) {
-            setStatusMsg({ type: "error", text: "Gagal menyimpan ke file JSON: " + (err?.message || "Kesalahan jaringan") });
+            setStatusMsg({ type: "error", text: "Kendala menyimpan: " + err.message });
         } finally {
             setIsSubmitting(false);
         }

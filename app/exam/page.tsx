@@ -235,7 +235,32 @@ function OfficialExamChamberContent() {
         } catch { }
     };
 
-    // 1. MEMUAT SESI, SOAL DARI JSON LOKAL (/api/questions), DAN DURASI SUBTES
+    // Helper fungsi format data mentah ke objek QuestionItem
+    const mapRawToQuestionItems = (rawData: any[]): QuestionItem[] => {
+        return rawData.map((item: any, idx: number) => {
+            const subCode = (item.subtes_code || "PU").toUpperCase();
+            return {
+                id: `${subCode}_${Number(item.no_soal) || idx + 1}`,
+                subtest: subCode,
+                subtestCategory: item.subtes_code || "Tes Potensi Skolastik",
+                stimulus: item.stimulus || "",
+                imageUrl: getCleanImageUrl(item.image_url),
+                imagePosition: item.image_position === "above" ? "above" : "below",
+                question: item.pertanyaan ?? "",
+                options: [
+                    { id: "A", text: item.opsi_a ?? "", imageUrl: getCleanImageUrl(item.opsi_a_img) },
+                    { id: "B", text: item.opsi_b ?? "", imageUrl: getCleanImageUrl(item.opsi_b_img) },
+                    { id: "C", text: item.opsi_c ?? "", imageUrl: getCleanImageUrl(item.opsi_c_img) },
+                    { id: "D", text: item.opsi_d ?? "", imageUrl: getCleanImageUrl(item.opsi_d_img) },
+                    { id: "E", text: item.opsi_e ?? "", imageUrl: getCleanImageUrl(item.opsi_e_img) }
+                ],
+                correctAnswer: (item.kunci || "A").toUpperCase(),
+                explanation: item.pembahasan || ""
+            };
+        });
+    };
+
+    // 1. MEMUAT SESI, SOAL DARI CACHE LOKAL (INSTAN) & SINKRONISASI API
     useEffect(() => {
         if (typeof window === "undefined") return;
 
@@ -262,7 +287,7 @@ function OfficialExamChamberContent() {
         const activePkg = queryPkg || sessionData.packageId || "PAKET_1";
         setSessionTitle(`RUANG UJIAN RESMI • ${activePkg.replace("_", " ")}`);
 
-        // Sinkronisasi Sesi & Jadwal Server (Opsional bila ada jadwal pengawas)
+        // Sinkronisasi Sesi & Jadwal Server (Background Check)
         fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_active_session&_t=${Date.now()}`, { cache: "no-store" })
             .then((r) => r.json())
             .then((res) => {
@@ -300,43 +325,44 @@ function OfficialExamChamberContent() {
             } catch { }
         }
 
-        // MEMUAT SOAL DARI ENDPOINT LOKAL EDGE JSON TANPA MELALUI GOOGLE APPS SCRIPT
-        setIsLoading(true);
+        // STRATEGI INSTAN: Baca langsung dari localStorage terlebih dahulu (0 milidetik)
+        let hasLoadedFromCache = false;
+        const localCachedQuestions = localStorage.getItem(`cbt_questions_${activePkg}`);
+        if (localCachedQuestions) {
+            try {
+                const parsedQ = JSON.parse(localCachedQuestions);
+                if (Array.isArray(parsedQ) && parsedQ.length > 0) {
+                    setAllQuestions(mapRawToQuestionItems(parsedQ));
+                    setIsLoading(false);
+                    hasLoadedFromCache = true;
+                }
+            } catch { }
+        }
+
+        if (!hasLoadedFromCache) {
+            setIsLoading(true);
+        }
+
+        // Revalidasi / Sinkronisasi background dari endpoint lokal Edge JSON
         fetch(`/api/questions?paket=${activePkg}&_t=${Date.now()}`, {
             cache: "no-store"
         })
             .then((res) => res.json())
             .then((res) => {
                 if (res.status === "success" && Array.isArray(res.data) && res.data.length > 0) {
-                    const formatted: QuestionItem[] = res.data.map((item: any, idx: number) => {
-                        const subCode = (item.subtes_code || "PU").toUpperCase();
-                        return {
-                            id: `${subCode}_${Number(item.no_soal) || idx + 1}`,
-                            subtest: subCode,
-                            subtestCategory: item.subtes_code || "Tes Potensi Skolastik",
-                            stimulus: item.stimulus || "",
-                            imageUrl: getCleanImageUrl(item.image_url),
-                            imagePosition: item.image_position === "above" ? "above" : "below",
-                            question: item.pertanyaan ?? "",
-                            options: [
-                                { id: "A", text: item.opsi_a ?? "", imageUrl: getCleanImageUrl(item.opsi_a_img) },
-                                { id: "B", text: item.opsi_b ?? "", imageUrl: getCleanImageUrl(item.opsi_b_img) },
-                                { id: "C", text: item.opsi_c ?? "", imageUrl: getCleanImageUrl(item.opsi_c_img) },
-                                { id: "D", text: item.opsi_d ?? "", imageUrl: getCleanImageUrl(item.opsi_d_img) },
-                                { id: "E", text: item.opsi_e ?? "", imageUrl: getCleanImageUrl(item.opsi_e_img) }
-                            ],
-                            correctAnswer: (item.kunci || "A").toUpperCase(),
-                            explanation: item.pembahasan || ""
-                        };
-                    });
-                    setAllQuestions(formatted);
-                } else {
+                    setAllQuestions(mapRawToQuestionItems(res.data));
+                    setLoadError("");
+                    // Sinkronkan ke cache browser agar sesi berikutnya instan
+                    localStorage.setItem(`cbt_questions_${activePkg}`, JSON.stringify(res.data));
+                } else if (!hasLoadedFromCache) {
                     setLoadError("Naskah soal belum tersedia di berkas lokal untuk paket ini. Pastikan bank soal telah diimpor di menu admin.");
                 }
             })
             .catch((err) => {
                 console.error(err);
-                setLoadError("Gagal mengambil naskah soal dari server lokal.");
+                if (!hasLoadedFromCache) {
+                    setLoadError("Gagal mengambil naskah soal dari server lokal.");
+                }
             })
             .finally(() => {
                 setIsLoading(false);
