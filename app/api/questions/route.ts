@@ -2,30 +2,19 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-function getLocalQuestions(paket: string) {
-    const cleanPaket = (paket || "PAKET_1").toUpperCase().replace(/\s+/g, "_");
-    const validPaket = ["PAKET_1", "PAKET_2", "PAKET_3"].includes(cleanPaket) ? cleanPaket : "PAKET_1";
-    const filePath = path.join(process.cwd(), "data", `${validPaket.toLowerCase()}.json`);
-
-    if (fs.existsSync(filePath)) {
-        try {
-            const raw = fs.readFileSync(filePath, "utf-8");
-            return JSON.parse(raw || "[]");
-        } catch {
-            return [];
-        }
-    }
-    return [];
-}
-
-// GET: Ambil soal langsung dari berkas JSON proyek
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
-        const paket = searchParams.get("paket") || "PAKET_1";
+        const paket = (searchParams.get("paket") || "PAKET_1").toUpperCase();
         const subtes = searchParams.get("subtes");
 
-        let questions = getLocalQuestions(paket);
+        const filePath = path.join(process.cwd(), "data", `${paket.toLowerCase()}.json`);
+
+        let questions: any[] = [];
+        if (fs.existsSync(filePath)) {
+            const fileData = fs.readFileSync(filePath, "utf-8");
+            questions = JSON.parse(fileData || "[]");
+        }
 
         if (subtes && subtes !== "ALL") {
             questions = questions.filter((q: any) => q.subtes_code === subtes);
@@ -43,10 +32,9 @@ export async function GET(request: Request) {
     }
 }
 
-// POST: Respon sukses untuk sinkronisasi antarmuka
 export async function POST(request: Request) {
     return NextResponse.json({
         status: "success",
-        message: "Operasi bank soal berhasil disinkronkan ke memori lokal."
+        message: "Operasi soal statis aktif via repositori."
     });
 }

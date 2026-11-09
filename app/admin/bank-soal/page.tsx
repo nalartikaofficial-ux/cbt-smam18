@@ -415,24 +415,19 @@ function WordImporterSection({
                         </button>
                         <button
                             type="button"
-                            onClick={async () => {
-                                await onBulkSubmit(stagedList);
-                                setStagedList([]);
+                            onClick={() => {
+                                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(stagedList, null, 2));
+                                const downloadAnchor = document.createElement("a");
+                                downloadAnchor.setAttribute("href", dataStr);
+                                downloadAnchor.setAttribute("download", `${selectedPaket.toLowerCase()}.json`);
+                                document.body.appendChild(downloadAnchor);
+                                downloadAnchor.click();
+                                downloadAnchor.remove();
                             }}
-                            disabled={isSubmittingServer}
-                            className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50 transition-all"
+                            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition-all"
                         >
-                            {isSubmittingServer ? (
-                                <>
-                                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                    <span>Menyimpan ke Sistem...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Send className="w-3.5 h-3.5" />
-                                    <span>Simpan Semua ({stagedList.length} Soal)</span>
-                                </>
-                            )}
+                            <Download className="w-4 h-4" />
+                            <span>Download {selectedPaket.toLowerCase()}.json</span>
                         </button>
                     </div>
                 </div>
