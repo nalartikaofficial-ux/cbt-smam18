@@ -800,6 +800,46 @@ export default function AdminBankSoalPage() {
         }
     };
 
+    // Fungsi Hapus Semua Soal di Paket Aktif
+    const handleClearAllQuestions = async () => {
+        const konfirmasi = confirm(
+            `PERINGATAN!\nApakah Anda yakin ingin MENGHAPUS SEMUA SOAL di ${selectedPaket.replace("_", " ")}?\n\nSemua butir soal akan dikosongkan untuk diganti dengan paket soal baru.`
+        );
+        if (!konfirmasi) return;
+
+        setIsLoadingServerQuestions(true);
+        setStatusMsg(null);
+
+        try {
+            // 1. Bersihkan cache di browser
+            localStorage.removeItem(`cbt_questions_${selectedPaket}`);
+
+            // 2. Kirim permintaan hapus semua ke server
+            await fetch("/api/questions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: "clear_all_questions",
+                    paket: selectedPaket
+                })
+            });
+
+            setServerQuestions([]);
+            setNoSoal("1");
+            setStatusMsg({
+                type: "success",
+                text: `Seluruh soal di ${selectedPaket.replace("_", " ")} berhasil dikosongkan. Silakan unggah naskah soal yang baru.`
+            });
+        } catch (err: any) {
+            setStatusMsg({
+                type: "error",
+                text: "Gagal mengosongkan soal: " + err.message
+            });
+        } finally {
+            setIsLoadingServerQuestions(false);
+        }
+    };
+
     const handleEditQuestion = (item: any) => {
         setIsEditingMode(true);
         setNoSoal(String(item.no_soal || item.no || "1"));
@@ -1367,6 +1407,20 @@ export default function AdminBankSoalPage() {
                                     <option value="LIT_ENG">Literasi Bahasa Inggris</option>
                                     <option value="PM">Penalaran Matematika (PM)</option>
                                 </select>
+
+                                {/* TOMBOL HAPUS SEMUA SOAL */}
+                                {serverQuestions.length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={handleClearAllQuestions}
+                                        disabled={isLoadingServerQuestions}
+                                        className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-700 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                                        title="Kosongkan seluruh soal di paket ini"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                                        <span>Hapus Semua Soal</span>
+                                    </button>
+                                )}
                             </div>
                         </div>
 
