@@ -161,7 +161,7 @@ const SNBT_STRUCTURE = [
 ];
 
 // ========================================================
-// MESIN IMPORT WORD DENGAN PARTISI SUBTES OTOMATIS
+// MESIN IMPORT WORD DENGAN KUOTA PRESISI 7 SUBTES
 // ========================================================
 function WordImporterSection({
     selectedPaket,
@@ -176,20 +176,6 @@ function WordImporterSection({
     const [stagedList, setStagedList] = useState<ParsedQuestion[]>([]);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<ParsedQuestion | null>(null);
-
-    const getSubtestMetaByIndex = (indexZeroBased: number) => {
-        let accumulated = 0;
-        for (const sub of SNBT_STRUCTURE) {
-            if (indexZeroBased < accumulated + sub.count) {
-                return {
-                    subtes: sub.code,
-                    localNo: (indexZeroBased - accumulated) + 1
-                };
-            }
-            accumulated += sub.count;
-        }
-        return { subtes: "PM", localNo: indexZeroBased + 1 };
-    };
 
     const handleDocxUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -232,155 +218,177 @@ function WordImporterSection({
             });
 
             const rawQuestions: any[] = [];
-            let current: any = {
-                image_position: "above",
-                tingkat_kesukaran: "Sedang",
-                kunci: "A",
-            };
+            let pendingStimulus = "";
+            let currentImage = "";
+            let current: any = null;
 
             const commitCurrent = () => {
-                if (current.pertanyaan && current.opsi_a) {
-                    rawQuestions.push({
-                        detectedSubtest: current.detectedSubtest || null,
-                        stimulus: (current.stimulus || "").trim(),
-                        image_url: current.image_url || "",
-                        image_position: current.image_position || "above",
-                        pertanyaan: (current.pertanyaan || "Pertanyaan").trim(),
-                        opsi_a: (current.opsi_a || "").trim(),
-                        opsi_b: (current.opsi_b || "").trim(),
-                        opsi_c: (current.opsi_c || "").trim(),
-                        opsi_d: (current.opsi_d || "").trim(),
-                        opsi_e: (current.opsi_e || "").trim(),
-                        kunci: (current.kunci || "A").trim().toUpperCase(),
-                        tingkat_kesukaran: current.tingkat_kesukaran || "Sedang",
-                        pembahasan: (current.pembahasan || "").trim(),
-                    });
-                    current = {
-                        image_position: "above",
-                        tingkat_kesukaran: "Sedang",
-                        kunci: "A",
-                        detectedSubtest: current.detectedSubtest || null
-                    };
+                if (current && current.pertanyaan && current.opsi_a) {
+                    rawQuestions.push({ ...current });
                 }
+                current = null;
             };
 
             blocks.forEach((block) => {
                 const { text, imgUrl } = block;
 
-                if (imgUrl && !current.image_url) {
-                    current.image_url = imgUrl;
+                if (imgUrl) {
+                    currentImage = imgUrl;
                 }
 
                 if (!text) return;
 
-                const cleanLower = text.toLowerCase();
-                if (cleanLower.includes("penalaran umum") || cleanLower.includes("subtes pu")) {
-                    current.detectedSubtest = "PU";
-                } else if (cleanLower.includes("pengetahuan dan pemahaman umum") || cleanLower.includes("pemahaman umum") || cleanLower.includes("ppu")) {
-                    current.detectedSubtest = "PPU";
-                } else if (cleanLower.includes("pemahaman bacaan") || cleanLower.includes("bacaan dan menulis") || cleanLower.includes("pbm")) {
-                    current.detectedSubtest = "PBM";
-                } else if (cleanLower.includes("pengetahuan kuantitatif") || cleanLower.includes("kuantitatif") || cleanLower.includes("subtes pk")) {
-                    current.detectedSubtest = "PK";
-                } else if (cleanLower.includes("literasi dalam bahasa indonesia") || cleanLower.includes("literasi bahasa indonesia") || cleanLower.includes("lit indo")) {
-                    current.detectedSubtest = "LIT_INDO";
-                } else if (cleanLower.includes("literasi dalam bahasa inggris") || cleanLower.includes("literasi bahasa inggris") || cleanLower.includes("lit eng")) {
-                    current.detectedSubtest = "LIT_ENG";
-                } else if (cleanLower.includes("penalaran matematika") || cleanLower.includes("subtes pm")) {
-                    current.detectedSubtest = "PM";
-                }
-
-                if (/^(?:paket\s+[a-z]|bagian\s+[ivx]+|petunjuk|gambar\s+\d+:)/i.test(text)) {
+                // Abaikan judul dokumen dan petunjuk umum
+                if (/^(?:naskah\s+resmi|paket\s+\d+|penyusun|petunjuk|alokasi\s+waktu|gambar\s+ilustrasi)/i.test(text)) {
                     return;
                 }
 
+                // Deteksi header subtes
+                if (/^===\s*subtes/i.test(text)) {
+                    commitCurrent();
+                    pendingStimulus = "";
+                    return;
+                }
+
+                // Deteksi label wacana
+                if (/^(?:\[wacana\s*\/?\s*stimulus\]|wacana\s*:|stimulus\s*:)/i.test(text)) {
+                    const cleanStim = text.replace(/^(?:\[wacana\s*\/?\s*stimulus\]|wacana\s*:|stimulus\s*:)\s*/i, "").trim();
+                    if (cleanStim) {
+                        pendingStimulus = cleanStim;
+                    }
+                    return;
+                }
+
+                // Cek apakah paragraf adalah nomor soal (misal: "1. Pertanyaan..." atau "Soal 1. ...")
                 const explicitQ = text.match(/^(?:soal|nomor|no\.?)\s*(\d+)[\.\:\)]?\s*(.*)$/i);
                 const numericQ = text.match(/^(\d+)[\.\)\uff0e]\s*(.*)$/i);
+                const isOptionPattern = /^[a-e][\.\)\uff0e]/i.test(text);
+                const isKeyOrPbhPattern = /^(?:kunci(?:\s*jawaban)?|jawaban|pembahasan)/i.test(text);
 
-                let isNewQuestionTrigger = false;
-                let trailingQuestionText = "";
+                let isNewQuestion = false;
+                let qText = "";
 
-                if (explicitQ && !/^[a-e][\.\)\uff0e]/i.test(text) && !/^(?:kunci|jawaban|pembahasan)/i.test(text)) {
-                    isNewQuestionTrigger = true;
-                    trailingQuestionText = explicitQ[2].trim();
-                } else if (numericQ && !/^[a-e][\.\)\uff0e]/i.test(text) && !/^(?:kunci|jawaban|pembahasan)/i.test(text)) {
-                    if (current.opsi_a || !current.pertanyaan) {
-                        isNewQuestionTrigger = true;
-                        trailingQuestionText = numericQ[2].trim();
+                if (!isOptionPattern && !isKeyOrPbhPattern) {
+                    if (explicitQ) {
+                        isNewQuestion = true;
+                        qText = explicitQ[2].trim();
+                    } else if (numericQ) {
+                        isNewQuestion = true;
+                        qText = numericQ[2].trim();
                     }
                 }
 
-                if (isNewQuestionTrigger) {
+                if (isNewQuestion) {
                     commitCurrent();
-                    if (trailingQuestionText) {
-                        current.pertanyaan = trailingQuestionText;
+                    current = {
+                        stimulus: pendingStimulus.trim(),
+                        image_url: currentImage,
+                        image_position: "above",
+                        pertanyaan: qText || "Pertanyaan",
+                        opsi_a: "",
+                        opsi_b: "",
+                        opsi_c: "",
+                        opsi_d: "",
+                        opsi_e: "",
+                        kunci: "A",
+                        tingkat_kesukaran: "Sedang",
+                        pembahasan: ""
+                    };
+                    pendingStimulus = "";
+                    currentImage = "";
+                    return;
+                }
+
+                // Jika belum masuk butir soal, simpan teks sebagai wacana
+                if (!current) {
+                    if (!isOptionPattern && !isKeyOrPbhPattern) {
+                        pendingStimulus = pendingStimulus ? `${pendingStimulus}\n${text}` : text;
                     }
                     return;
                 }
 
+                // Cek opsi satuan (A. teks)
                 const singleOptMatch = text.match(/^([a-e])[\.\)\uff0e]\s*(.*)$/i);
                 if (singleOptMatch) {
                     const letter = singleOptMatch[1].toLowerCase();
-                    const val = singleOptMatch[2].trim();
-                    (current as any)[`opsi_${letter}`] = val;
+                    current[`opsi_${letter}`] = singleOptMatch[2].trim();
                     return;
                 }
 
+                // Cek opsi sejajar / inline (A. ... B. ...)
                 const inlineMatches = Array.from(text.matchAll(/(?:^|\s+)([a-e])[\.\)\uff0e]\s+/gi));
                 if (inlineMatches.length >= 2) {
                     for (let i = 0; i < inlineMatches.length; i++) {
                         const letter = inlineMatches[i][1].toLowerCase();
                         const start = inlineMatches[i].index! + inlineMatches[i][0].length;
                         const end = (i + 1 < inlineMatches.length) ? inlineMatches[i + 1].index! : text.length;
-                        (current as any)[`opsi_${letter}`] = text.substring(start, end).trim();
+                        current[`opsi_${letter}`] = text.substring(start, end).trim();
                     }
                     return;
                 }
 
+                // Cek kunci jawaban
                 const keyMatch = text.match(/(?:kunci(?:\s*jawaban)?|jawaban)\s*[:=]\s*([a-e])/i);
                 if (keyMatch) {
                     current.kunci = keyMatch[1].toUpperCase();
                     return;
                 }
 
+                // Cek pembahasan
                 const pbhMatch = text.match(/^pembahasan(?:\s*soal)?\s*[:=]?\s*(.*)$/i);
                 if (pbhMatch) {
                     current.pembahasan = pbhMatch[1] ? pbhMatch[1].trim() : "";
                     return;
                 }
 
-                if (/^wacana:\s*/i.test(text)) {
-                    current.stimulus = text.replace(/^wacana:\s*/i, "").trim();
-                    return;
-                }
-
+                // Sambungan pertanyaan atau pembahasan
                 if (!current.opsi_a) {
-                    if (!current.pertanyaan) {
-                        current.pertanyaan = text;
-                    } else {
-                        current.pertanyaan += "\n" + text;
-                    }
-                } else if (current.pembahasan) {
-                    current.pembahasan += "\n" + text;
+                    current.pertanyaan = current.pertanyaan ? `${current.pertanyaan}\n${text}` : text;
+                } else if (current.pembahasan !== undefined) {
+                    current.pembahasan = current.pembahasan ? `${current.pembahasan}\n${text}` : text;
                 }
             });
 
             commitCurrent();
 
             if (rawQuestions.length === 0) {
-                alert("Tidak ada butir soal yang terbaca dari dokumen Word.");
+                alert("Tidak ada butir soal yang terbaca dari dokumen Word. Pastikan format soal menggunakan nomor ('1.' atau 'Soal 1') dan pilihan (A-E).");
                 return;
             }
 
+            // KUOTA RESMI SNBT: Tepat 30 PU, 20 PPU, 20 PBM, 20 PK, 30 LIT_INDO, 20 LIT_ENG, 20 PM
+            const SUBTEST_QUOTAS = [
+                { code: "PU", count: 30 },
+                { code: "PPU", count: 20 },
+                { code: "PBM", count: 20 },
+                { code: "PK", count: 20 },
+                { code: "LIT_INDO", count: 30 },
+                { code: "LIT_ENG", count: 20 },
+                { code: "PM", count: 20 }
+            ];
+
+            const getSubtestMetaByQuota = (indexZeroBased: number) => {
+                let accumulated = 0;
+                for (const sub of SUBTEST_QUOTAS) {
+                    if (indexZeroBased < accumulated + sub.count) {
+                        return {
+                            subtes: sub.code,
+                            localNo: (indexZeroBased - accumulated) + 1
+                        };
+                    }
+                    accumulated += sub.count;
+                }
+                return { subtes: "PM", localNo: 20 };
+            };
+
             const finalized: ParsedQuestion[] = rawQuestions.map((q, idx) => {
-                const subMeta = getSubtestMetaByIndex(idx);
-                const assignedSub = q.detectedSubtest || subMeta.subtes;
+                const meta = getSubtestMetaByQuota(idx);
                 return {
-                    no_soal: subMeta.localNo,
-                    subtes_code: assignedSub,
-                    stimulus: q.stimulus,
-                    image_url: q.image_url,
-                    image_position: q.image_position,
+                    no_soal: meta.localNo,
+                    subtes_code: meta.subtes,
+                    stimulus: q.stimulus || "",
+                    image_url: q.image_url || "",
+                    image_position: q.image_position || "above",
                     pertanyaan: q.pertanyaan,
                     opsi_a: q.opsi_a,
                     opsi_b: q.opsi_b,
@@ -388,8 +396,8 @@ function WordImporterSection({
                     opsi_d: q.opsi_d,
                     opsi_e: q.opsi_e,
                     kunci: q.kunci,
-                    tingkat_kesukaran: q.tingkat_kesukaran,
-                    pembahasan: q.pembahasan
+                    tingkat_kesukaran: q.tingkat_kesukaran || "Sedang",
+                    pembahasan: q.pembahasan || ""
                 };
             });
 
@@ -434,7 +442,7 @@ function WordImporterSection({
                     </div>
                     <div>
                         <p className="text-sm font-bold text-slate-800">
-                            {isParsing ? "Sedang Memecah 160 Soal ke 7 Subtes..." : "Klik untuk Memilih File Dokumen Word (.docx)"}
+                            {isParsing ? "Sedang Memproses Naskah Word..." : "Klik untuk Memilih File Dokumen Word (.docx)"}
                         </p>
                         <p className="text-xs text-slate-400 mt-0.5">
                             Paket Target: <strong>{selectedPaket.replace("_", " ")}</strong>
@@ -453,7 +461,7 @@ function WordImporterSection({
                             <span className="text-xs text-slate-300">Siap disimpan ke {selectedPaket.replace("_", " ")}</span>
                         </div>
                         <p className="text-[11px] text-slate-400">
-                            Nomor soal telah di-reset per subtes (PU No. 1–30, PPU No. 1–20, dst).
+                            Nomor soal dimulai kembali dari No. 1 di setiap subtes (PU No. 1–30, PPU No. 1–20, dst).
                         </p>
                     </div>
 
@@ -664,7 +672,6 @@ export default function AdminBankSoalPage() {
     }, [router]);
 
     const [selectedPaket, setSelectedPaket] = useState<"PAKET_1" | "PAKET_2" | "PAKET_3">("PAKET_1");
-    // HANYA 3 MODE: LIST, DOCX_UPLOAD, CSV
     const [inputMode, setInputMode] = useState<"list" | "docx_upload" | "csv">("list");
 
     const [serverQuestions, setServerQuestions] = useState<ParsedQuestion[]>([]);
@@ -723,20 +730,10 @@ export default function AdminBankSoalPage() {
         }
     };
 
-    // Ambil data soal: Utamakan cache browser lokal, fallback ke API
+    // Ambil data soal: Selalu utamakan data file server (/api/questions) agar tidak tertahan cache
     const fetchServerQuestions = async (pkg = selectedPaket) => {
         setIsLoadingServerQuestions(true);
         try {
-            const localRaw = localStorage.getItem(`cbt_questions_${pkg}`);
-            if (localRaw) {
-                const parsedLocal = JSON.parse(localRaw);
-                if (Array.isArray(parsedLocal) && parsedLocal.length > 0) {
-                    setServerQuestions(parsedLocal);
-                    setIsLoadingServerQuestions(false);
-                    return;
-                }
-            }
-
             const res = await fetch(`/api/questions?paket=${pkg}&_t=${Date.now()}`, {
                 cache: "no-store"
             });
@@ -745,11 +742,26 @@ export default function AdminBankSoalPage() {
                 setServerQuestions(json.data);
                 localStorage.setItem(`cbt_questions_${pkg}`, JSON.stringify(json.data));
             } else {
-                setServerQuestions([]);
+                const localRaw = localStorage.getItem(`cbt_questions_${pkg}`);
+                if (localRaw) {
+                    const parsedLocal = JSON.parse(localRaw);
+                    setServerQuestions(Array.isArray(parsedLocal) ? parsedLocal : []);
+                } else {
+                    setServerQuestions([]);
+                }
             }
         } catch (err) {
             console.error("Gagal memuat soal:", err);
-            setServerQuestions([]);
+            const localRaw = localStorage.getItem(`cbt_questions_${pkg}`);
+            if (localRaw) {
+                try {
+                    setServerQuestions(JSON.parse(localRaw));
+                } catch {
+                    setServerQuestions([]);
+                }
+            } else {
+                setServerQuestions([]);
+            }
         } finally {
             setIsLoadingServerQuestions(false);
         }
