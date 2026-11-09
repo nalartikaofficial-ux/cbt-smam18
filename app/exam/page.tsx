@@ -65,7 +65,17 @@ const LOCAL_BENCHMARKS: PTNProdiBenchmark[] = (LIST_PRODI_SNBT || []).map((item)
     passingGradeMin: Number(item.passingGrade || 650)
 }));
 
-// HELPER FORMAT PERSENTASE KEKETATAN OTOMATIS
+// FORMAT RESMI 7 SUBTES SNBT
+const SNBT_STRUCTURE = [
+    { code: "PU", name: "Penalaran Umum (PU)", category: "Tes Potensi Skolastik", defaultDurationMinutes: 30, count: 30 },
+    { code: "PPU", name: "Pengetahuan & Pemahaman", category: "Tes Potensi Skolastik", defaultDurationMinutes: 15, count: 20 },
+    { code: "PBM", name: "Pemahaman Bacaan & Menulis", category: "Tes Potensi Skolastik", defaultDurationMinutes: 25, count: 20 },
+    { code: "PK", name: "Pengetahuan Kuantitatif", category: "Tes Potensi Skolastik", defaultDurationMinutes: 20, count: 20 },
+    { code: "LIT_INDO", name: "Literasi B. Indonesia", category: "Tes Literasi", defaultDurationMinutes: 42.5, count: 30 },
+    { code: "LIT_ENG", name: "Literasi Bahasa Inggris", category: "Tes Literasi", defaultDurationMinutes: 20, count: 20 },
+    { code: "PM", name: "Penalaran Matematika", category: "Penalaran Matematika", defaultDurationMinutes: 42.5, count: 20 }
+];
+
 export function formatKeketatan(val: any): string {
     if (!val && val !== 0) return "0%";
     const str = String(val).trim().replace(",", ".");
@@ -135,6 +145,7 @@ interface QuestionOption {
 
 interface QuestionItem {
     id: string | number;
+    localNo: number;
     subtest: string;
     subtestCategory: string;
     stimulus?: string;
@@ -167,15 +178,10 @@ function OfficialExamChamberContent() {
         kelas?: string;
     } | null>(null);
 
-    // PILIHAN KAMPUS & JURUSAN TARGET SISWA
     const [pilihanKampus1, setPilihanKampus1] = useState("");
     const [pilihanKampus2, setPilihanKampus2] = useState("");
 
-    // DATABASE PTN LANGSUNG DARI FILE JSON LOKAL
     const [ptnBenchmarks, setPtnBenchmarks] = useState<PTNProdiBenchmark[]>(LOCAL_BENCHMARKS);
-    const [isLoadingPTN, setIsLoadingPTN] = useState(false);
-
-    // MODAL DATABASE PTN LENGKAP FILTER JENJANG & RUMPUN
     const [showPTNDatabaseModal, setShowPTNDatabaseModal] = useState(false);
     const [modalSearchQuery, setModalSearchQuery] = useState("");
     const [modalRumpunFilter, setModalRumpunFilter] = useState<"ALL" | "SAINTEK" | "SOSHUM">("ALL");
@@ -183,15 +189,7 @@ function OfficialExamChamberContent() {
     const [targetSlotForSelection, setTargetSlotForSelection] = useState<1 | 2>(1);
 
     const [allQuestions, setAllQuestions] = useState<QuestionItem[]>([]);
-    const [subtestsList, setSubtestsList] = useState<SubtestConfigItem[]>([
-        { code: "PU", name: "Penalaran Umum (PU)", category: "Tes Potensi Skolastik", defaultDurationMinutes: 30 },
-        { code: "PPU", name: "Pengetahuan & Pemahaman", category: "Tes Potensi Skolastik", defaultDurationMinutes: 15 },
-        { code: "PBM", name: "Pemahaman Bacaan & Menulis", category: "Tes Potensi Skolastik", defaultDurationMinutes: 25 },
-        { code: "PK", name: "Pengetahuan Kuantitatif", category: "Tes Potensi Skolastik", defaultDurationMinutes: 20 },
-        { code: "LIT_INDO", name: "Literasi B. Indonesia", category: "Tes Literasi", defaultDurationMinutes: 42.5 },
-        { code: "LIT_ENG", name: "Literasi Bahasa Inggris", category: "Tes Literasi", defaultDurationMinutes: 20 },
-        { code: "PM", name: "Penalaran Matematika", category: "Penalaran Matematika", defaultDurationMinutes: 42.5 }
-    ]);
+    const [subtestsList, setSubtestsList] = useState<SubtestConfigItem[]>(SNBT_STRUCTURE);
 
     const [sessionTitle, setSessionTitle] = useState("RUANG UJIAN RESMI");
     const [isLoading, setIsLoading] = useState(true);
@@ -201,9 +199,7 @@ function OfficialExamChamberContent() {
     const [currentQIndexInSubtest, setCurrentQIndexInSubtest] = useState(0);
     const [subtestTimeLeft, setSubtestTimeLeft] = useState<number>(30 * 60);
 
-    // TRACKING WAKTU PENGERJAAN SUBTES
     const [timeSpentPerSubtest, setTimeSpentPerSubtest] = useState<Record<string, number>>({});
-
     const [answers, setAnswers] = useState<Record<string | number, string>>({});
     const [doubtfuls, setDoubtfuls] = useState<Record<string | number, boolean>>({});
     const [fontSizeMode, setFontSizeMode] = useState<"normal" | "large" | "xlarge">("normal");
@@ -213,8 +209,6 @@ function OfficialExamChamberContent() {
     const [isExamCompleted, setIsExamCompleted] = useState(false);
     const [isExitingToHome, setIsExitingToHome] = useState(false);
     const [showSubtestConfirmModal, setShowSubtestConfirmModal] = useState(false);
-
-    // MODAL REVIEW PEMBAHASAN
     const [showReviewModal, setShowReviewModal] = useState(false);
 
     const [isSessionLockedByProctor, setIsSessionLockedByProctor] = useState(false);
@@ -235,14 +229,42 @@ function OfficialExamChamberContent() {
         } catch { }
     };
 
-    // Helper fungsi format data mentah ke objek QuestionItem
+    // Helper: Pemetaan data dengan partisi 7 Subtes Resmi SNBT Otomatis
     const mapRawToQuestionItems = (rawData: any[]): QuestionItem[] => {
+        // Periksa apakah naskah sudah terbagi atau masih 1 subtes global
+        const uniqueSubtests = new Set(rawData.map((q) => (q.subtes_code || "PU").toUpperCase()));
+        const isPrePartitioned = uniqueSubtests.size >= 4;
+
+        let accumulatedIndex = 0;
+        const getSubtestMeta = (idx: number) => {
+            let acc = 0;
+            for (const sub of SNBT_STRUCTURE) {
+                if (idx < acc + sub.count) {
+                    return { subtes: sub.code, localNo: (idx - acc) + 1, category: sub.category };
+                }
+                acc += sub.count;
+            }
+            return { subtes: "PM", localNo: idx + 1, category: "Penalaran Matematika" };
+        };
+
         return rawData.map((item: any, idx: number) => {
-            const subCode = (item.subtes_code || "PU").toUpperCase();
+            let subCode = (item.subtes_code || "PU").toUpperCase();
+            let localNo = Number(item.no_soal) || (idx + 1);
+            let category = item.subtes_code || "Tes Potensi Skolastik";
+
+            // Jika naskah belum terbagi ke 7 subtes, otomatis partisi sesuai kuota SNBT
+            if (!isPrePartitioned) {
+                const meta = getSubtestMeta(idx);
+                subCode = meta.subtes;
+                localNo = meta.localNo;
+                category = meta.category;
+            }
+
             return {
-                id: `${subCode}_${Number(item.no_soal) || idx + 1}`,
+                id: `${subCode}_${localNo}`,
+                localNo,
                 subtest: subCode,
-                subtestCategory: item.subtes_code || "Tes Potensi Skolastik",
+                subtestCategory: category,
                 stimulus: item.stimulus || "",
                 imageUrl: getCleanImageUrl(item.image_url),
                 imagePosition: item.image_position === "above" ? "above" : "below",
@@ -254,13 +276,13 @@ function OfficialExamChamberContent() {
                     { id: "D", text: item.opsi_d ?? "", imageUrl: getCleanImageUrl(item.opsi_d_img) },
                     { id: "E", text: item.opsi_e ?? "", imageUrl: getCleanImageUrl(item.opsi_e_img) }
                 ],
-                correctAnswer: (item.kunci || "A").toUpperCase(),
+                correctAnswer: String(item.kunci || "A").trim().toUpperCase(),
                 explanation: item.pembahasan || ""
             };
         });
     };
 
-    // 1. MEMUAT SESI, SOAL DARI CACHE LOKAL (INSTAN) & SINKRONISASI API
+    // 1. MEMUAT SESI, SOAL DARI CACHE LOKAL & REVALIDASI API
     useEffect(() => {
         if (typeof window === "undefined") return;
 
@@ -287,7 +309,7 @@ function OfficialExamChamberContent() {
         const activePkg = queryPkg || sessionData.packageId || "PAKET_1";
         setSessionTitle(`RUANG UJIAN RESMI • ${activePkg.replace("_", " ")}`);
 
-        // Sinkronisasi Sesi & Jadwal Server (Background Check)
+        // Sinkronisasi Sesi & Jadwal Server
         fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_active_session&_t=${Date.now()}`, { cache: "no-store" })
             .then((r) => r.json())
             .then((res) => {
@@ -298,7 +320,7 @@ function OfficialExamChamberContent() {
             })
             .catch(() => { });
 
-        // Cek Cache Durasi Subtes lokal yang tersimpan
+        // Cek Cache Durasi Subtes
         const localDuration = localStorage.getItem(`durasi_${activePkg}`);
         if (localDuration) {
             try {
@@ -307,7 +329,7 @@ function OfficialExamChamberContent() {
             } catch { }
         }
 
-        // Pulihkan progres pengerjaan siswa jika tersimpan sebelumnya
+        // Pulihkan progres pengerjaan siswa
         const savedProgressKey = `cbt_progress_${sessionData.nisn}`;
         const savedProgress = localStorage.getItem(savedProgressKey);
         if (savedProgress) {
@@ -325,7 +347,7 @@ function OfficialExamChamberContent() {
             } catch { }
         }
 
-        // STRATEGI INSTAN: Baca langsung dari localStorage terlebih dahulu (0 milidetik)
+        // Strategi Instan: Ambil dari cache localStorage
         let hasLoadedFromCache = false;
         const localCachedQuestions = localStorage.getItem(`cbt_questions_${activePkg}`);
         if (localCachedQuestions) {
@@ -343,7 +365,7 @@ function OfficialExamChamberContent() {
             setIsLoading(true);
         }
 
-        // Revalidasi / Sinkronisasi background dari endpoint lokal Edge JSON
+        // Revalidasi / Sinkronisasi background dari berkas data lokal
         fetch(`/api/questions?paket=${activePkg}&_t=${Date.now()}`, {
             cache: "no-store"
         })
@@ -352,16 +374,15 @@ function OfficialExamChamberContent() {
                 if (res.status === "success" && Array.isArray(res.data) && res.data.length > 0) {
                     setAllQuestions(mapRawToQuestionItems(res.data));
                     setLoadError("");
-                    // Sinkronkan ke cache browser agar sesi berikutnya instan
                     localStorage.setItem(`cbt_questions_${activePkg}`, JSON.stringify(res.data));
                 } else if (!hasLoadedFromCache) {
-                    setLoadError("Naskah soal belum tersedia di berkas lokal untuk paket ini. Pastikan bank soal telah diimpor di menu admin.");
+                    setLoadError("Naskah soal belum tersedia di berkas lokal. Silakan unggah di dashboard admin.");
                 }
             })
             .catch((err) => {
                 console.error(err);
                 if (!hasLoadedFromCache) {
-                    setLoadError("Gagal mengambil naskah soal dari server lokal.");
+                    setLoadError("Gagal memuat naskah soal dari berkas data.");
                 }
             })
             .finally(() => {
@@ -369,6 +390,7 @@ function OfficialExamChamberContent() {
             });
     }, [searchParams]);
 
+    // Simpan progres ke browser saat mengerjakan
     useEffect(() => {
         if (!studentSession?.nisn || !isInExam || isExamCompleted) return;
         const savedProgressKey = `cbt_progress_${studentSession.nisn}`;
@@ -388,12 +410,66 @@ function OfficialExamChamberContent() {
 
     const activeSubtestConfig = subtestsList[currentSubtestIndex] || subtestsList[0];
 
+    // Filter soal yang aktif khusus untuk subtes yang sedang dikerjakan
     const currentSubtestQuestions = useMemo(() => {
         const filtered = allQuestions.filter((q) => q.subtest === activeSubtestConfig.code);
         return filtered.length > 0 ? filtered : allQuestions;
     }, [allQuestions, activeSubtestConfig]);
 
-    // HELPER PENCOCOKAN STRING TARGET PILIHAN SISWA
+    const currentQ = currentSubtestQuestions[currentQIndexInSubtest] || currentSubtestQuestions[0];
+
+    // Ganti Subtes (Manual & Otomatis): Pastikan indeks soal kembali ke 0
+    const handleNextSubtestManual = () => {
+        if (currentSubtestIndex < subtestsList.length - 1) {
+            setShowSubtestConfirmModal(false);
+            const nextIdx = currentSubtestIndex + 1;
+            setCurrentSubtestIndex(nextIdx);
+            setCurrentQIndexInSubtest(0); // Reset ke soal nomor 1 di subtes baru
+            const nextDurationMin = subtestsList[nextIdx]?.defaultDurationMinutes || 20;
+            setSubtestTimeLeft(Math.round(nextDurationMin * 60));
+        } else {
+            executeFinalSubmission();
+        }
+    };
+
+    // TRACKING TIMER & AUTO ADVANCE PER SUBTES
+    useEffect(() => {
+        if (!isInExam || isSyncingServer || isExamCompleted || isExamLockedPermanently || isSessionLockedByProctor) return;
+
+        const timer = setInterval(() => {
+            if (hardEndTime && Date.now() >= hardEndTime) {
+                clearInterval(timer);
+                alert("Waktu batas pelaksanaan sesi ujian telah berakhir. Lembar ujian Anda otomatis disimpan.");
+                executeFinalSubmission();
+                return;
+            }
+
+            setTimeSpentPerSubtest((prev) => {
+                const code = activeSubtestConfig.code;
+                return { ...prev, [code]: (prev[code] || 0) + 1 };
+            });
+
+            setSubtestTimeLeft((prev) => {
+                if (prev <= 1) {
+                    if (currentSubtestIndex < subtestsList.length - 1) {
+                        const nextIdx = currentSubtestIndex + 1;
+                        setCurrentSubtestIndex(nextIdx);
+                        setCurrentQIndexInSubtest(0); // Reset ke nomor 1
+                        const nextDurationMin = subtestsList[nextIdx]?.defaultDurationMinutes || 20;
+                        return Math.round(nextDurationMin * 60);
+                    } else {
+                        executeFinalSubmission();
+                        return 0;
+                    }
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [isInExam, isSyncingServer, isExamCompleted, isExamLockedPermanently, isSessionLockedByProctor, currentSubtestIndex, hardEndTime, subtestsList, activeSubtestConfig]);
+
+    // Parsing data pilihan kampus siswa
     const parseTargetSelection = useCallback((val: string) => {
         if (!val || typeof val !== "string") return null;
         const trimmed = val.trim();
@@ -405,7 +481,6 @@ function OfficialExamChamberContent() {
 
         const cleanKampus = rawKampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
         const cleanProdi = rawProdi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
-
         const matchJenjang = rawProdi.match(/\b(S1|D4|D3|D2)\b/i);
         const jenjang = matchJenjang ? matchJenjang[1].toUpperCase() : null;
 
@@ -420,19 +495,9 @@ function OfficialExamChamberContent() {
         return ptnBenchmarks.find((b) => {
             const bKampus = b.kampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
             const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
-
-            const isKampusMatch =
-                bKampus === parsed.cleanKampus ||
-                bKampus.includes(parsed.cleanKampus) ||
-                parsed.cleanKampus.includes(bKampus);
-
-            const isProdiMatch =
-                bProdi === parsed.cleanProdi ||
-                bProdi.includes(parsed.cleanProdi) ||
-                parsed.cleanProdi.includes(bProdi);
-
+            const isKampusMatch = bKampus === parsed.cleanKampus || bKampus.includes(parsed.cleanKampus) || parsed.cleanKampus.includes(bKampus);
+            const isProdiMatch = bProdi === parsed.cleanProdi || bProdi.includes(parsed.cleanProdi) || parsed.cleanProdi.includes(bProdi);
             const isJenjangMatch = parsed.jenjang ? (b.jenjang || "S1").toUpperCase() === parsed.jenjang : true;
-
             return isKampusMatch && isProdiMatch && isJenjangMatch;
         }) || null;
     }, [pilihanKampus1, ptnBenchmarks, parseTargetSelection]);
@@ -445,19 +510,9 @@ function OfficialExamChamberContent() {
         return ptnBenchmarks.find((b) => {
             const bKampus = b.kampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
             const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
-
-            const isKampusMatch =
-                bKampus === parsed.cleanKampus ||
-                bKampus.includes(parsed.cleanKampus) ||
-                parsed.cleanKampus.includes(bKampus);
-
-            const isProdiMatch =
-                bProdi === parsed.cleanProdi ||
-                bProdi.includes(parsed.cleanProdi) ||
-                parsed.cleanProdi.includes(bProdi);
-
+            const isKampusMatch = bKampus === parsed.cleanKampus || bKampus.includes(parsed.cleanKampus) || parsed.cleanKampus.includes(bKampus);
+            const isProdiMatch = bProdi === parsed.cleanProdi || bProdi.includes(parsed.cleanProdi) || parsed.cleanProdi.includes(bProdi);
             const isJenjangMatch = parsed.jenjang ? (b.jenjang || "S1").toUpperCase() === parsed.jenjang : true;
-
             return isKampusMatch && isProdiMatch && isJenjangMatch;
         }) || null;
     }, [pilihanKampus2, ptnBenchmarks, parseTargetSelection]);
@@ -465,10 +520,7 @@ function OfficialExamChamberContent() {
     const filteredModalBenchmarks = useMemo(() => {
         const q = modalSearchQuery.toLowerCase().trim();
         return ptnBenchmarks.filter((item) => {
-            const matchesQuery =
-                !q ||
-                item.kampus.toLowerCase().includes(q) ||
-                item.prodi.toLowerCase().includes(q);
+            const matchesQuery = !q || item.kampus.toLowerCase().includes(q) || item.prodi.toLowerCase().includes(q);
             const matchesRumpun = modalRumpunFilter === "ALL" || item.rumpun === modalRumpunFilter;
             const matchesJenjang = modalJenjangFilter === "ALL" || (item.jenjang || "S1") === modalJenjangFilter;
             return matchesQuery && matchesRumpun && matchesJenjang;
@@ -480,7 +532,6 @@ function OfficialExamChamberContent() {
 
         setViolationCount((prev) => {
             const next = prev + 1;
-
             if (studentSession?.nisn) {
                 const isFinalLock = next >= 3;
                 const cleanNisn = String(studentSession.nisn).replace(/\D/g, "").trim();
@@ -500,7 +551,6 @@ function OfficialExamChamberContent() {
                     setIsExamLockedPermanently(true);
                 }
             }
-
             return next;
         });
 
@@ -528,7 +578,7 @@ function OfficialExamChamberContent() {
         };
     }, [isInExam, isSyncingServer, isExamCompleted, recordViolation]);
 
-    // KALKULASI SKOR DETAIL 7 SUBTES
+    // KALKULASI SKOR 7 SUBTES
     const scoreResults = useMemo(() => {
         let correct = 0;
         let incorrect = 0;
@@ -657,54 +707,6 @@ function OfficialExamChamberContent() {
         setIsExamCompleted(true);
     };
 
-    // TRACKING TIMER & SUBTES BLOCKING
-    useEffect(() => {
-        if (!isInExam || isSyncingServer || isExamCompleted || isExamLockedPermanently || isSessionLockedByProctor) return;
-
-        const timer = setInterval(() => {
-            if (hardEndTime && Date.now() >= hardEndTime) {
-                clearInterval(timer);
-                alert("Waktu batas pelaksanaan sesi ujian telah berakhir. Lembar ujian Anda otomatis disimpan dan dikumpulkan.");
-                executeFinalSubmission();
-                return;
-            }
-
-            setTimeSpentPerSubtest((prev) => {
-                const code = activeSubtestConfig.code;
-                return { ...prev, [code]: (prev[code] || 0) + 1 };
-            });
-
-            setSubtestTimeLeft((prev) => {
-                if (prev <= 1) {
-                    if (currentSubtestIndex < subtestsList.length - 1) {
-                        const nextIdx = currentSubtestIndex + 1;
-                        setCurrentSubtestIndex(nextIdx);
-                        const nextDurationMin = subtestsList[nextIdx]?.defaultDurationMinutes || 20;
-                        return Math.round(nextDurationMin * 60);
-                    } else {
-                        executeFinalSubmission();
-                        return 0;
-                    }
-                }
-                return prev - 1;
-            });
-        }, 1000);
-
-        return () => clearInterval(timer);
-    }, [isInExam, isSyncingServer, isExamCompleted, isExamLockedPermanently, isSessionLockedByProctor, currentSubtestIndex, hardEndTime, subtestsList, activeSubtestConfig]);
-
-    const handleNextSubtestManual = () => {
-        if (currentSubtestIndex < subtestsList.length - 1) {
-            setShowSubtestConfirmModal(false);
-            const nextIdx = currentSubtestIndex + 1;
-            setCurrentSubtestIndex(nextIdx);
-            const nextDurationMin = subtestsList[nextIdx]?.defaultDurationMinutes || 20;
-            setSubtestTimeLeft(Math.round(nextDurationMin * 60));
-        } else {
-            executeFinalSubmission();
-        }
-    };
-
     const enterExamChamber = async () => {
         if (isSessionLockedByProctor || loadError) return;
 
@@ -774,8 +776,6 @@ function OfficialExamChamberContent() {
         }
         setShowPTNDatabaseModal(false);
     };
-
-    const currentQ = currentSubtestQuestions[currentQIndexInSubtest] || currentSubtestQuestions[0];
 
     const handleSelectOption = (optId: string) => {
         if (isExamLockedPermanently || isSessionLockedByProctor || !currentQ) return;
@@ -1262,7 +1262,7 @@ function OfficialExamChamberContent() {
                                         <div key={q.id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2.5 text-left text-xs">
                                             <div className="flex items-center justify-between border-b border-slate-200/70 pb-1.5">
                                                 <span className="font-mono font-bold text-blue-900">
-                                                    #{idx + 1} &bull; {q.subtest}
+                                                    No. {q.localNo || idx + 1} &bull; {q.subtest}
                                                 </span>
                                                 <span
                                                     className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold ${isCorrect
@@ -1692,7 +1692,7 @@ function OfficialExamChamberContent() {
                         </div>
                     </div>
 
-                    {/* 9. ANALISA PASSING SCORE PER SUBTES TERHADAP PROGRAM STUDI PILIHAN */}
+                    {/* 9. ANALISA PASSING SCORE PER SUBTES */}
                     <div className="space-y-1 text-left">
                         <div className="p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-xs font-bold font-mono">
                             <span>ANALISA PASSING SCORE PER SUBTES TERHADAP PROGRAM STUDI PILIHAN</span>
@@ -2043,7 +2043,7 @@ function OfficialExamChamberContent() {
                 <div className="lg:col-span-8 bg-white rounded-3xl border border-slate-200 p-5 sm:p-8 space-y-5 shadow-xs">
                     <div className="font-mono text-xs font-bold text-blue-900 border-b border-slate-100 pb-3 flex justify-between items-center">
                         <span>SOAL NOMOR {currentQIndexInSubtest + 1}</span>
-                        <span className="text-slate-400 font-normal">Subtes: {activeSubtestConfig.code}</span>
+                        <span className="text-slate-400 font-normal">Subtes: {activeSubtestConfig.code} ({currentQIndexInSubtest + 1} dari {currentSubtestQuestions.length})</span>
                     </div>
 
                     {currentQ?.stimulus && (
@@ -2052,7 +2052,7 @@ function OfficialExamChamberContent() {
                         </div>
                     )}
 
-                    {currentQ?.imageUrl && (
+                    {currentQ?.imageUrl && currentQ?.imagePosition === "above" && (
                         <div className="flex justify-center p-3 bg-slate-50 rounded-2xl border border-slate-200">
                             <img src={currentQ.imageUrl} alt="Diagram Soal" className="max-h-72 object-contain rounded-xl" />
                         </div>
@@ -2061,6 +2061,12 @@ function OfficialExamChamberContent() {
                     <div className={`text-slate-900 leading-snug ${fontClasses.question}`}>
                         <RenderLatex content={currentQ?.question} />
                     </div>
+
+                    {currentQ?.imageUrl && currentQ?.imagePosition === "below" && (
+                        <div className="flex justify-center p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                            <img src={currentQ.imageUrl} alt="Diagram Soal" className="max-h-72 object-contain rounded-xl" />
+                        </div>
+                    )}
 
                     <div className="space-y-2.5 pt-2">
                         {currentQ?.options?.map((opt) => {
@@ -2126,9 +2132,10 @@ function OfficialExamChamberContent() {
                     </div>
                 </div>
 
+                {/* MATRIX NOMOR SOAL KHUSUS SUBTES AKTIF */}
                 <div className="lg:col-span-4 bg-white rounded-3xl border border-slate-200 p-5 space-y-4 shadow-xs sticky top-24">
                     <div className="font-bold text-xs text-slate-800 flex justify-between items-center border-b border-slate-100 pb-3">
-                        <span>Daftar Soal Subtes</span>
+                        <span>Daftar Soal Subtes {activeSubtestConfig.code}</span>
                         <span className="font-mono text-blue-700 font-bold">{currentSubtestQuestions.length} Butir</span>
                     </div>
 
@@ -2210,7 +2217,6 @@ function OfficialExamChamberContent() {
     );
 }
 
-// WRAPPER UTAMA SUSPENSE
 export default function OfficialExamChamberPage() {
     return (
         <Suspense
