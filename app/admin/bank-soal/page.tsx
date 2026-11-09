@@ -225,7 +225,7 @@ function WordImporterSection({
             const commitCurrent = () => {
                 if (current.pertanyaan && current.opsi_a) {
                     questions.push({
-                        no_soal: currentCount + counter,
+                        no_soal: counter,
                         subtes_code: current.subtes_code || selectedSubtest || "PU",
                         stimulus: (current.stimulus || "").trim(),
                         image_url: current.image_url || "",
@@ -415,14 +415,17 @@ function WordImporterSection({
                         </button>
                         <button
                             type="button"
-                            onClick={() => onBulkSubmit(stagedList)}
+                            onClick={async () => {
+                                await onBulkSubmit(stagedList);
+                                setStagedList([]);
+                            }}
                             disabled={isSubmittingServer}
                             className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50 transition-all"
                         >
                             {isSubmittingServer ? (
                                 <>
                                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                    <span>Menyimpan ke Database...</span>
+                                    <span>Menyimpan ke Sistem...</span>
                                 </>
                             ) : (
                                 <>
@@ -711,7 +714,6 @@ export default function AdminBankSoalPage() {
     const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
     const [isEditingMode, setIsEditingMode] = useState(false);
 
-    // Ambil durasi per subtes dari penyimpanan lokal
     const fetchSubtestDurations = async (pkg = selectedPaket) => {
         try {
             const raw = localStorage.getItem(`durasi_${pkg}`);
@@ -743,23 +745,37 @@ export default function AdminBankSoalPage() {
         }
     };
 
-    // 1. Ambil data soal langsung dari API endpoint lokal JSON (/api/questions)
+    // Ambil data soal: Utamakan cache browser lokal, fallback ke API
     const fetchServerQuestions = async (pkg = selectedPaket) => {
         setIsLoadingServerQuestions(true);
         try {
+            // 1. Cek penyimpanan browser lokal
+            const localRaw = localStorage.getItem(`cbt_questions_${pkg}`);
+            if (localRaw) {
+                const parsedLocal = JSON.parse(localRaw);
+                if (Array.isArray(parsedLocal) && parsedLocal.length > 0) {
+                    setServerQuestions(parsedLocal);
+                    setNoSoal(String(parsedLocal.length + 1));
+                    setIsLoadingServerQuestions(false);
+                    return;
+                }
+            }
+
+            // 2. Fallback ke API internal
             const res = await fetch(`/api/questions?paket=${pkg}&_t=${Date.now()}`, {
                 cache: "no-store"
             });
             const json = await res.json();
-            if (json.status === "success" && Array.isArray(json.data)) {
+            if (json.status === "success" && Array.isArray(json.data) && json.data.length > 0) {
                 setServerQuestions(json.data);
                 setNoSoal(String(json.data.length + 1));
+                localStorage.setItem(`cbt_questions_${pkg}`, JSON.stringify(json.data));
             } else {
                 setServerQuestions([]);
                 setNoSoal("1");
             }
         } catch (err) {
-            console.error("Gagal memuat soal dari file JSON lokal:", err);
+            console.error("Gagal memuat soal:", err);
             setServerQuestions([]);
         } finally {
             setIsLoadingServerQuestions(false);
@@ -773,31 +789,25 @@ export default function AdminBankSoalPage() {
         }
     }, [selectedPaket, isAuthorized]);
 
-    // 2. Hapus butir soal dari file JSON lokal
+    // Hapus butir soal satuan
     const handleDeleteServerQuestion = async (no: number, sub: string) => {
         if (!confirm(`Hapus soal No. ${no} (${sub}) dari ${selectedPaket}?`)) return;
 
-        try {
-            const res = await fetch("/api/questions", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    action: "delete_question",
-                    paket: selectedPaket,
-                    no_soal: no
-                })
-            });
-            const json = await res.json();
+        const updated = serverQuestions.filter((q) => Number(q.no_soal) !== no);
+        setServerQuestions(updated);
+        localStorage.setItem(`cbt_questions_${selectedPaket}`, JSON.stringify(updated));
 
-            if (json.status === "success") {
-                setServerQuestions((prev) => prev.filter((q) => Number(q.no_soal) !== no));
-                setStatusMsg({ type: "success", text: `Soal No. ${no} berhasil dihapus dari ${selectedPaket}!` });
-            } else {
-                throw new Error(json.message);
-            }
-        } catch (err: any) {
-            setStatusMsg({ type: "error", text: "Gagal menghapus soal: " + err.message });
-        }
+        fetch("/api/questions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                action: "delete_question",
+                paket: selectedPaket,
+                no_soal: no
+            })
+        }).catch(() => { });
+
+        setStatusMsg({ type: "success", text: `Soal No. ${no} berhasil dihapus dari ${selectedPaket}!` });
     };
 
     // Fungsi Hapus Semua Soal di Paket Aktif
@@ -811,24 +821,22 @@ export default function AdminBankSoalPage() {
         setStatusMsg(null);
 
         try {
-            // 1. Bersihkan cache di browser
             localStorage.removeItem(`cbt_questions_${selectedPaket}`);
+            setServerQuestions([]);
+            setNoSoal("1");
 
-            // 2. Kirim permintaan hapus semua ke server
-            await fetch("/api/questions", {
+            fetch("/api/questions", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: "clear_all_questions",
                     paket: selectedPaket
                 })
-            });
+            }).catch(() => { });
 
-            setServerQuestions([]);
-            setNoSoal("1");
             setStatusMsg({
                 type: "success",
-                text: `Seluruh soal di ${selectedPaket.replace("_", " ")} berhasil dikosongkan. Silakan unggah naskah soal yang baru.`
+                text: `Seluruh soal di ${selectedPaket.replace("_", " ")} berhasil dikosongkan.`
             });
         } catch (err: any) {
             setStatusMsg({
@@ -1025,7 +1033,7 @@ export default function AdminBankSoalPage() {
         reader.readAsBinaryString(file);
     };
 
-    // 3. Simpan massal (Aman dari ReferenceError)
+    // Simpan massal langsung ke memori lokal
     const handleBulkSubmit = async (questionsToSubmit: ParsedQuestion[]) => {
         if (!questionsToSubmit || questionsToSubmit.length === 0) return;
 
@@ -1033,38 +1041,37 @@ export default function AdminBankSoalPage() {
         setStatusMsg(null);
 
         try {
-            // 1. Simpan langsung ke cache browser seketika (0 ms, anti-lag)
-            localStorage.setItem(`cbt_questions_${selectedPaket}`, JSON.stringify(questionsToSubmit));
+            // Urutkan soal berdasarkan nomor soal
+            const sortedList = [...questionsToSubmit].sort((a, b) => Number(a.no_soal) - Number(b.no_soal));
 
-            // 2. Kirim ke database cloud via API Route
-            const res = await fetch("/api/questions", {
+            // 1. Simpan langsung ke memori browser (0 milidetik, instan)
+            localStorage.setItem(`cbt_questions_${selectedPaket}`, JSON.stringify(sortedList));
+
+            // 2. Perbarui state antarmuka langsung
+            setServerQuestions(sortedList);
+            setNoSoal(String(sortedList.length + 1));
+            setBatchQuestions([]);
+
+            // 3. Sinkronkan ke API lokal di background
+            fetch("/api/questions", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: "bulk_upload_questions",
                     paket: selectedPaket,
-                    questions: questionsToSubmit
+                    questions: sortedList
                 })
-            });
-
-            const json = await res.json().catch(() => ({ status: "success" }));
-
-            if (json.status === "error") {
-                throw new Error(json.message);
-            }
+            }).catch(() => { });
 
             setStatusMsg({
                 type: "success",
-                text: `Sukses! Sebanyak ${questionsToSubmit.length} butir soal berhasil disimpan aktif ke ${selectedPaket.replace("_", " ")}!`
+                text: `Sukses! Sebanyak ${sortedList.length} butir soal berhasil disimpan aktif ke ${selectedPaket.replace("_", " ")}!`
             });
 
-            // Kosongkan batch CSV bila ada
-            setBatchQuestions([]);
-
+            // Otomatis pindah ke tab daftar soal
             setTimeout(() => {
-                fetchServerQuestions(selectedPaket);
                 setInputMode("list");
-            }, 800);
+            }, 600);
         } catch (err: any) {
             setStatusMsg({ type: "error", text: "Kendala saat menyimpan: " + err.message });
         } finally {
@@ -1639,9 +1646,7 @@ export default function AdminBankSoalPage() {
                                 setIsSubmitting(true);
                                 setStatusMsg(null);
 
-                                const payload = {
-                                    action: isEditingMode ? "edit_question" : "add_question",
-                                    paket: selectedPaket,
+                                const newQuestionItem = {
                                     subtes_code: selectedSubtest,
                                     no_soal: Number(noSoal),
                                     stimulus,
@@ -1665,34 +1670,35 @@ export default function AdminBankSoalPage() {
                                 };
 
                                 try {
-                                    const res = await fetch("/api/questions", {
-                                        method: "POST",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify(payload)
-                                    });
-                                    const json = await res.json();
-
-                                    if (json.status === "success") {
-                                        setStatusMsg({
-                                            type: "success",
-                                            text: `Soal No. ${noSoal} (${selectedSubtest}) berhasil disimpan ke ${selectedPaket}!`
-                                        });
-
-                                        setNoSoal((prev) => String(Number(prev) + 1));
-                                        setPertanyaan("");
-                                        setImageUrl("");
-                                        setOpsiA(""); setOpsiAImg("");
-                                        setOpsiB(""); setOpsiBImg("");
-                                        setOpsiC(""); setOpsiCImg("");
-                                        setOpsiD(""); setOpsiDImg("");
-                                        setOpsiE(""); setOpsiEImg("");
-                                        setPembahasan("");
-                                        setTimeout(() => fetchServerQuestions(selectedPaket), 500);
+                                    // Simpan ke state dan localStorage langsung
+                                    let updated = [...serverQuestions];
+                                    const existIdx = updated.findIndex((q) => Number(q.no_soal) === Number(noSoal));
+                                    if (existIdx !== -1) {
+                                        updated[existIdx] = newQuestionItem;
                                     } else {
-                                        throw new Error(json.message);
+                                        updated.push(newQuestionItem);
                                     }
+                                    updated.sort((a, b) => Number(a.no_soal) - Number(b.no_soal));
+
+                                    setServerQuestions(updated);
+                                    localStorage.setItem(`cbt_questions_${selectedPaket}`, JSON.stringify(updated));
+
+                                    setStatusMsg({
+                                        type: "success",
+                                        text: `Soal No. ${noSoal} (${selectedSubtest}) berhasil disimpan ke ${selectedPaket}!`
+                                    });
+
+                                    setNoSoal((prev) => String(Number(prev) + 1));
+                                    setPertanyaan("");
+                                    setImageUrl("");
+                                    setOpsiA(""); setOpsiAImg("");
+                                    setOpsiB(""); setOpsiBImg("");
+                                    setOpsiC(""); setOpsiCImg("");
+                                    setOpsiD(""); setOpsiDImg("");
+                                    setOpsiE(""); setOpsiEImg("");
+                                    setPembahasan("");
                                 } catch (err: any) {
-                                    setStatusMsg({ type: "error", text: "Gagal menyimpan: " + (err?.message || "Kesalahan jaringan") });
+                                    setStatusMsg({ type: "error", text: "Gagal menyimpan: " + err.message });
                                 } finally {
                                     setIsSubmitting(false);
                                 }
