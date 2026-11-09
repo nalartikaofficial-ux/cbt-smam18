@@ -1,7 +1,7 @@
 "use client";
 
 import { LIST_PRODI_SNBT, ProdiItem } from '@/data/prodiDatabase';
-import React, { useState, useEffect, useMemo, useCallback, Suspense } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
     ShieldAlert,
@@ -52,7 +52,6 @@ export interface PTNProdiBenchmark {
     passingGradeMin: number;
 }
 
-// Konversi format database lokal ke format benchmark komponen
 const LOCAL_BENCHMARKS: PTNProdiBenchmark[] = (LIST_PRODI_SNBT || []).map((item) => ({
     id: String(item.id),
     kampus: item.kampus,
@@ -231,11 +230,9 @@ function OfficialExamChamberContent() {
 
     // Helper: Pemetaan data dengan partisi 7 Subtes Resmi SNBT Otomatis
     const mapRawToQuestionItems = (rawData: any[]): QuestionItem[] => {
-        // Periksa apakah naskah sudah terbagi atau masih 1 subtes global
         const uniqueSubtests = new Set(rawData.map((q) => (q.subtes_code || "PU").toUpperCase()));
         const isPrePartitioned = uniqueSubtests.size >= 4;
 
-        let accumulatedIndex = 0;
         const getSubtestMeta = (idx: number) => {
             let acc = 0;
             for (const sub of SNBT_STRUCTURE) {
@@ -252,7 +249,6 @@ function OfficialExamChamberContent() {
             let localNo = Number(item.no_soal) || (idx + 1);
             let category = item.subtes_code || "Tes Potensi Skolastik";
 
-            // Jika naskah belum terbagi ke 7 subtes, otomatis partisi sesuai kuota SNBT
             if (!isPrePartitioned) {
                 const meta = getSubtestMeta(idx);
                 subCode = meta.subtes;
@@ -305,7 +301,8 @@ function OfficialExamChamberContent() {
         if (sessionData.pilihan1) setPilihanKampus1(sessionData.pilihan1);
         if (sessionData.pilihan2) setPilihanKampus2(sessionData.pilihan2);
 
-        const queryPkg = searchParams.get("package");
+        // Mendukung ?package= atau ?paket=
+        const queryPkg = searchParams.get("package") || searchParams.get("paket");
         const activePkg = queryPkg || sessionData.packageId || "PAKET_1";
         setSessionTitle(`RUANG UJIAN RESMI • ${activePkg.replace("_", " ")}`);
 
@@ -347,7 +344,6 @@ function OfficialExamChamberContent() {
             } catch { }
         }
 
-        // Strategi Instan: Ambil dari cache localStorage
         let hasLoadedFromCache = false;
         const localCachedQuestions = localStorage.getItem(`cbt_questions_${activePkg}`);
         if (localCachedQuestions) {
@@ -365,7 +361,7 @@ function OfficialExamChamberContent() {
             setIsLoading(true);
         }
 
-        // Revalidasi / Sinkronisasi background dari berkas data lokal
+        // Revalidasi / Sinkronisasi background dari endpoint Edge JSON lokal
         fetch(`/api/questions?paket=${activePkg}&_t=${Date.now()}`, {
             cache: "no-store"
         })
@@ -376,13 +372,13 @@ function OfficialExamChamberContent() {
                     setLoadError("");
                     localStorage.setItem(`cbt_questions_${activePkg}`, JSON.stringify(res.data));
                 } else if (!hasLoadedFromCache) {
-                    setLoadError("Naskah soal belum tersedia di berkas lokal. Silakan unggah di dashboard admin.");
+                    setLoadError("Naskah soal belum tersedia di berkas lokal. Silakan pastikan paket telah diunggah di dashboard admin.");
                 }
             })
             .catch((err) => {
                 console.error(err);
                 if (!hasLoadedFromCache) {
-                    setLoadError("Gagal memuat naskah soal dari berkas data.");
+                    setLoadError("Gagal memuat naskah soal dari server lokal.");
                 }
             })
             .finally(() => {
@@ -418,28 +414,28 @@ function OfficialExamChamberContent() {
 
     const currentQ = currentSubtestQuestions[currentQIndexInSubtest] || currentSubtestQuestions[0];
 
-    // Ganti Subtes (Manual & Otomatis): Pastikan indeks soal kembali ke 0
-    const handleNextSubtestManual = () => {
+    // Ganti Subtes (Manual): Reset ke soal nomor 1 di subtes baru
+    const handleNextSubtestManual = useCallback(() => {
+        setShowSubtestConfirmModal(false);
         if (currentSubtestIndex < subtestsList.length - 1) {
-            setShowSubtestConfirmModal(false);
             const nextIdx = currentSubtestIndex + 1;
             setCurrentSubtestIndex(nextIdx);
-            setCurrentQIndexInSubtest(0); // Reset ke soal nomor 1 di subtes baru
+            setCurrentQIndexInSubtest(0);
             const nextDurationMin = subtestsList[nextIdx]?.defaultDurationMinutes || 20;
             setSubtestTimeLeft(Math.round(nextDurationMin * 60));
         } else {
             executeFinalSubmission();
         }
-    };
+    }, [currentSubtestIndex, subtestsList]);
 
-    // TRACKING TIMER & AUTO ADVANCE PER SUBTES
+    // TRACKING TIMER PER DETIK (Pembersihan logic antar-state agar tidak bentrok)
     useEffect(() => {
         if (!isInExam || isSyncingServer || isExamCompleted || isExamLockedPermanently || isSessionLockedByProctor) return;
 
         const timer = setInterval(() => {
             if (hardEndTime && Date.now() >= hardEndTime) {
                 clearInterval(timer);
-                alert("Waktu batas pelaksanaan sesi ujian telah berakhir. Lembar ujian Anda otomatis disimpan.");
+                alert("Waktu batas pelaksanaan sesi ujian telah berakhir. Lembar ujian otomatis dikumpulkan.");
                 executeFinalSubmission();
                 return;
             }
@@ -449,25 +445,28 @@ function OfficialExamChamberContent() {
                 return { ...prev, [code]: (prev[code] || 0) + 1 };
             });
 
-            setSubtestTimeLeft((prev) => {
-                if (prev <= 1) {
-                    if (currentSubtestIndex < subtestsList.length - 1) {
-                        const nextIdx = currentSubtestIndex + 1;
-                        setCurrentSubtestIndex(nextIdx);
-                        setCurrentQIndexInSubtest(0); // Reset ke nomor 1
-                        const nextDurationMin = subtestsList[nextIdx]?.defaultDurationMinutes || 20;
-                        return Math.round(nextDurationMin * 60);
-                    } else {
-                        executeFinalSubmission();
-                        return 0;
-                    }
-                }
-                return prev - 1;
-            });
+            setSubtestTimeLeft((prev) => Math.max(0, prev - 1));
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [isInExam, isSyncingServer, isExamCompleted, isExamLockedPermanently, isSessionLockedByProctor, currentSubtestIndex, hardEndTime, subtestsList, activeSubtestConfig]);
+    }, [isInExam, isSyncingServer, isExamCompleted, isExamLockedPermanently, isSessionLockedByProctor, hardEndTime, activeSubtestConfig]);
+
+    // HANDLER SAAT WAKTU SUBTES HABIS TEPAT 0 DETIK
+    useEffect(() => {
+        if (!isInExam || isSyncingServer || isExamCompleted) return;
+
+        if (subtestTimeLeft === 0) {
+            if (currentSubtestIndex < subtestsList.length - 1) {
+                const nextIdx = currentSubtestIndex + 1;
+                setCurrentSubtestIndex(nextIdx);
+                setCurrentQIndexInSubtest(0);
+                const nextDurationMin = subtestsList[nextIdx]?.defaultDurationMinutes || 20;
+                setSubtestTimeLeft(Math.round(nextDurationMin * 60));
+            } else {
+                executeFinalSubmission();
+            }
+        }
+    }, [subtestTimeLeft, isInExam, isSyncingServer, isExamCompleted, currentSubtestIndex, subtestsList]);
 
     // Parsing data pilihan kampus siswa
     const parseTargetSelection = useCallback((val: string) => {
@@ -1189,757 +1188,6 @@ function OfficialExamChamberContent() {
                             className="text-blue-700 hover:underline cursor-pointer"
                         >
                             Ganti Akun
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    // TAHAP 4: RAPOR SKOR LENGKAP & EVALUASI DIAGNOSTIK
-    if (isExamCompleted) {
-        const p1Eval = benchmarkData1 ? renderAdmissionProbabilityBadge(benchmarkData1.passingGradeMin, scoreResults.scaledScore) : null;
-        const p2Eval = benchmarkData2 ? renderAdmissionProbabilityBadge(benchmarkData2.passingGradeMin, scoreResults.scaledScore) : null;
-
-        const tpsSubtests = subtestsList.filter((s) => ["PU", "PPU", "PBM", "PK"].includes(s.code));
-        const litSubtests = subtestsList.filter((s) => ["LIT_INDO", "LIT_ENG", "PM"].includes(s.code));
-
-        const currentDateStr = new Date().toLocaleDateString("id-ID", {
-            day: "numeric",
-            month: "long",
-            year: "numeric"
-        });
-
-        return (
-            <div className="min-h-screen bg-slate-100 py-6 px-3 sm:px-6 font-sans text-slate-800">
-                <style
-                    dangerouslySetInnerHTML={{
-                        __html: `
-                        @media print {
-                            * {
-                                -webkit-print-color-adjust: exact !important;
-                                print-color-adjust: exact !important;
-                                color-adjust: exact !important;
-                            }
-                            body { background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; }
-                            .print-hidden { display: none !important; }
-                            .print-card { box-shadow: none !important; border: none !important; max-width: 100% !important; border-radius: 0 !important; padding: 0 !important; }
-                            @page { size: A4 portrait; margin: 10mm; }
-                        }
-                    `
-                    }}
-                />
-
-                {/* MODAL REVIEW PEMBAHASAN */}
-                {showReviewModal && (
-                    <div className="fixed inset-0 z-[999999] bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-                        <div className="bg-white rounded-3xl border border-slate-200 max-w-3xl w-full p-6 space-y-4 shadow-2xl animate-in fade-in max-h-[90vh] flex flex-col">
-                            <div className="flex items-center justify-between border-b pb-3">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
-                                        <Eye className="w-4 h-4" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-black text-sm text-slate-900">Review Kunci Jawaban &amp; Pembahasan Soal</h3>
-                                        <p className="text-[11px] text-slate-500">Naskah Asesmen Resmi CBT - Paket {studentSession?.packageId}</p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => setShowReviewModal(false)}
-                                    className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 cursor-pointer"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-
-                            <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-                                {allQuestions.map((q, idx) => {
-                                    const studentAns = answers[q.id];
-                                    const isCorrect = studentAns === q.correctAnswer;
-                                    const isUnanswered = !studentAns;
-
-                                    return (
-                                        <div key={q.id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2.5 text-left text-xs">
-                                            <div className="flex items-center justify-between border-b border-slate-200/70 pb-1.5">
-                                                <span className="font-mono font-bold text-blue-900">
-                                                    No. {q.localNo || idx + 1} &bull; {q.subtest}
-                                                </span>
-                                                <span
-                                                    className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold ${isCorrect
-                                                        ? "bg-emerald-100 text-emerald-800"
-                                                        : isUnanswered
-                                                            ? "bg-slate-200 text-slate-700"
-                                                            : "bg-rose-100 text-rose-800"
-                                                        }`}
-                                                >
-                                                    {isCorrect ? "Benar (+)" : isUnanswered ? "Kosong (0)" : "Salah (X)"}
-                                                </span>
-                                            </div>
-
-                                            {q.stimulus && (
-                                                <div className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 text-[11.5px] whitespace-pre-line leading-relaxed">
-                                                    <RenderLatex content={q.stimulus} />
-                                                </div>
-                                            )}
-
-                                            <div className="font-semibold text-slate-900 leading-snug">
-                                                <RenderLatex content={q.question} />
-                                            </div>
-
-                                            <div className="space-y-1 pt-1">
-                                                {q.options.map((opt) => {
-                                                    const isSelected = studentAns === opt.id;
-                                                    const isKey = q.correctAnswer === opt.id;
-                                                    return (
-                                                        <div
-                                                            key={opt.id}
-                                                            className={`p-2 rounded-xl border flex items-center gap-2 text-[11px] ${isKey
-                                                                ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
-                                                                : isSelected
-                                                                    ? "bg-rose-50 border-rose-300 font-medium text-rose-900"
-                                                                    : "bg-white border-slate-200 text-slate-700"
-                                                                }`}
-                                                        >
-                                                            <span
-                                                                className={`w-5 h-5 rounded-md flex items-center justify-center font-mono text-[10px] font-bold shrink-0 ${isKey
-                                                                    ? "bg-emerald-600 text-white"
-                                                                    : isSelected
-                                                                        ? "bg-rose-600 text-white"
-                                                                        : "bg-slate-100 text-slate-600"
-                                                                    }`}
-                                                            >
-                                                                {opt.id}
-                                                            </span>
-                                                            <div className="flex-1">
-                                                                <RenderLatex content={opt.text} />
-                                                            </div>
-                                                            {isKey && <span className="text-[10px] font-mono font-bold text-emerald-700 uppercase">Kunci</span>}
-                                                            {isSelected && !isKey && <span className="text-[10px] font-mono font-bold text-rose-600 uppercase">Jawaban Anda</span>}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-
-                                            {q.explanation && (
-                                                <div className="p-2.5 rounded-xl bg-blue-50/70 border border-blue-200 text-blue-950 text-[11px] leading-relaxed">
-                                                    <strong className="block text-[10px] font-mono uppercase text-blue-900 mb-0.5">Pembahasan:</strong>
-                                                    <RenderLatex content={q.explanation} />
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* 1. TOP ACTION BAR */}
-                <div className="max-w-4xl mx-auto mb-4 bg-white rounded-2xl border border-slate-200 p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs print-hidden">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-                        <Award className="w-4 h-4 text-emerald-600" />
-                        <span>Hasil Asesmen Terstandarisasi &bull; Evaluasi Diagnostik Siap Cetak</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={handleExitToHome}
-                            className="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
-                        >
-                            <Home className="w-3.5 h-3.5" />
-                            <span>Halaman Utama</span>
-                        </button>
-
-                        <button
-                            onClick={() => setShowReviewModal(true)}
-                            className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
-                        >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>Review Pembahasan</span>
-                        </button>
-
-                        <button
-                            onClick={() => window.print()}
-                            className="px-3.5 py-1.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
-                        >
-                            <Printer className="w-3.5 h-3.5" />
-                            <span>Cetak Lembar Rapor</span>
-                        </button>
-                    </div>
-                </div>
-
-                {/* RAPOR RESMI BENTUK DOKUMEN CETAK */}
-                <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-10 space-y-6 print-card">
-                    {/* 2. KOP SURAT */}
-                    <div className="flex items-center gap-4 border-b-2 border-slate-900 pb-4 text-center">
-                        <div className="w-20 h-20 shrink-0 flex items-center justify-center p-1">
-                            <img
-                                src="/logo-timsim.jpg"
-                                alt="Logo SMA Muhammadiyah 18 Jakarta"
-                                className="w-full h-full object-contain"
-                                onError={(e) => {
-                                    (e.target as any).src = "/images/logo-smam18.png";
-                                }}
-                            />
-                        </div>
-                        <div className="flex-1 space-y-0.5">
-                            <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                                MAJELIS PENDIDIKAN DASAR DAN MENENGAH
-                            </div>
-                            <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                                PIMPINAN DAERAH MUHAMMADIYAH JAKARTA SELATAN
-                            </div>
-                            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight uppercase">
-                                SMA MUHAMMADIYAH 18 JAKARTA
-                            </h1>
-                            <div className="text-[10.5px] font-bold font-mono text-blue-900 uppercase">
-                                TERAKREDITASI &quot;A&quot;
-                            </div>
-                            <p className="text-[10px] text-slate-500">
-                                Jl. Panjang No. 19 RT.8/RW.9, Kel. Cipulir, Kec. Kebayoran Lama, Kota Jakarta Selatan, DKI Jakarta 12230
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* 3. IDENTITAS SISWA & JAM PELAKSANAAN */}
-                    <div
-                        className="p-3.5 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm"
-                        style={{ backgroundColor: "#1c4cb7" }}
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center font-bold">
-                                <GraduationCap className="w-5 h-5 text-blue-200" />
-                            </div>
-                            <div className="text-left">
-                                <div className="font-black text-sm uppercase tracking-wide">
-                                    {studentSession?.candidateName || "Peserta Ujian"}
-                                </div>
-                                <div className="text-[11px] text-blue-200 font-mono">
-                                    NISN: {studentSession?.nisn || "-"} &bull; KELAS: {studentSession?.kelas || "XII"} &bull; SMA MUHAMMADIYAH 18
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 text-right">
-                            <div>
-                                <span className="text-[9.5px] text-blue-300 font-mono block uppercase">WAKTU UJIAN</span>
-                                <span className="font-mono font-bold text-[11px]">
-                                    {currentDateStr}, {examStartTimeStr || "07:30"} - {examEndTimeStr || "10:45"}
-                                </span>
-                            </div>
-                            <span className="px-3 py-1 rounded-full bg-emerald-500 text-white font-black text-[10.5px] font-mono uppercase tracking-wider">
-                                Selesai
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* 4. NILAI RATA-RATA KESELURUHAN BANNER */}
-                    <div
-                        className="p-6 rounded-2xl text-white text-center space-y-1 shadow-md"
-                        style={{ backgroundColor: "#1c4cb7" }}
-                    >
-                        <div className="text-xs font-mono font-bold text-blue-100 uppercase tracking-wider">
-                            NILAI RATA-RATA KESELURUHAN (IRT 3-PARAMETER)
-                        </div>
-                        <div className="text-6xl font-black tracking-tight text-white my-1">{scoreResults.scaledScore}</div>
-                        <div className="text-[11px] text-blue-100 font-mono">
-                            Kalkulasi {scoreResults.total} Butir Soal Terstandarisasi Pemerintah &bull; Skala 200 s.d. 1000
-                        </div>
-                    </div>
-
-                    {/* 5. PILIHAN PROGRAM STUDI & STATUS KELULUSAN */}
-                    <div className="space-y-2 text-left">
-                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-                            <Target className="w-4 h-4 text-blue-700" />
-                            <span className="uppercase font-mono text-[11px]">PILIHAN PROGRAM STUDI &amp; KELULUSAN</span>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                            {/* KARTU PILIHAN 1 */}
-                            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
-                                <div className="text-[10px] font-mono font-bold text-slate-400 uppercase">PTN Pilihan 1:</div>
-                                <div className="text-sm font-black text-slate-900 leading-tight">
-                                    {benchmarkData1?.kampus || pilihanKampus1?.split("-")[0] || "Pilihan 1 Belum Dipilih"}
-                                </div>
-                                <div className="text-xs font-semibold text-slate-600">
-                                    {benchmarkData1?.prodi || pilihanKampus1?.split("-")[1] || "-"}
-                                </div>
-
-                                {benchmarkData1 && (
-                                    <div className="flex items-center gap-1.5 pt-1 text-[10px] font-mono font-bold">
-                                        <span className="px-2 py-0.5 rounded bg-rose-50 border border-rose-200 text-rose-700">
-                                            DK: {formatKeketatan(benchmarkData1.keketatan)}
-                                        </span>
-                                        <span className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-700">
-                                            DT: {benchmarkData1.dayaTampung}
-                                        </span>
-                                        <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700">
-                                            Peminat: {benchmarkData1.peminat}
-                                        </span>
-                                    </div>
-                                )}
-
-                                <div className="pt-2 border-t border-slate-200 text-[11px] space-y-1">
-                                    <div className="text-slate-500 font-medium">
-                                        Subtes Utama Penentu: <strong className="text-slate-800">Penalaran Matematika &amp; Penalaran Umum</strong>
-                                    </div>
-                                    <div className="font-mono text-[10.5px] text-slate-600">
-                                        PASSING SCORE TARGET: <strong>{benchmarkData1?.passingGradeMin || 650}</strong>
-                                    </div>
-                                    <div className={`font-bold pt-0.5 flex items-center gap-1.5 text-xs ${p1Eval?.colorText || "text-slate-500"}`}>
-                                        {p1Eval?.isPassed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
-                                        <span>{p1Eval?.note || "Pilihan belum ditentukan"}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* KARTU PILIHAN 2 */}
-                            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
-                                <div className="text-[10px] font-mono font-bold text-slate-400 uppercase">PTN Pilihan 2:</div>
-                                <div className="text-sm font-black text-slate-900 leading-tight">
-                                    {benchmarkData2?.kampus || pilihanKampus2?.split("-")[0] || "Pilihan 2 Belum Dipilih"}
-                                </div>
-                                <div className="text-xs font-semibold text-slate-600">
-                                    {benchmarkData2?.prodi || pilihanKampus2?.split("-")[1] || "-"}
-                                </div>
-
-                                {benchmarkData2 && (
-                                    <div className="flex items-center gap-1.5 pt-1 text-[10px] font-mono font-bold">
-                                        <span className="px-2 py-0.5 rounded bg-rose-50 border border-rose-200 text-rose-700">
-                                            DK: {formatKeketatan(benchmarkData2.keketatan)}
-                                        </span>
-                                        <span className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-700">
-                                            DT: {benchmarkData2.dayaTampung}
-                                        </span>
-                                        <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700">
-                                            Peminat: {benchmarkData2.peminat}
-                                        </span>
-                                    </div>
-                                )}
-
-                                <div className="pt-2 border-t border-slate-200 text-[11px] space-y-1">
-                                    <div className="text-slate-500 font-medium">
-                                        Subtes Utama Penentu: <strong className="text-slate-800">Pengetahuan Kuantitatif &amp; Pemahaman Bacaan</strong>
-                                    </div>
-                                    <div className="font-mono text-[10.5px] text-slate-600">
-                                        PASSING SCORE TARGET: <strong>{benchmarkData2?.passingGradeMin || 620}</strong>
-                                    </div>
-                                    <div className={`font-bold pt-0.5 flex items-center gap-1.5 text-xs ${p2Eval?.colorText || "text-slate-500"}`}>
-                                        {p2Eval?.isPassed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
-                                        <span>{p2Eval?.note || "Pilihan belum ditentukan"}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 6. TABEL TES SKOLASTIK (4 SUBTES) */}
-                    <div className="space-y-1 text-left">
-                        <div
-                            className="p-2.5 rounded-t-xl text-white flex items-center justify-between text-xs font-bold font-mono"
-                            style={{ backgroundColor: "#1c4cb7" }}
-                        >
-                            <span>TES SKOLASTIK (4 SUBTES)</span>
-                            <span>Rerata: {scoreResults.tpsAvg}</span>
-                        </div>
-                        <div className="border border-slate-200 rounded-b-xl overflow-hidden">
-                            <table className="w-full text-left text-xs">
-                                <thead className="bg-slate-50 text-[10px] font-mono font-bold text-slate-400 border-b">
-                                    <tr>
-                                        <th className="p-2.5">SUBTES</th>
-                                        <th className="p-2.5 text-center">BENAR</th>
-                                        <th className="p-2.5 text-center">SALAH</th>
-                                        <th className="p-2.5 text-center">KOSONG</th>
-                                        <th className="p-2.5">PROGRESS CAPAIAN</th>
-                                        <th className="p-2.5 text-right">SKOR</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                                    {tpsSubtests.map((st) => {
-                                        const s = scoreResults.subtestBreakdown[st.code] || { correct: 0, incorrect: 0, unattempted: 0, percentage: 0, scoreIRT: 200 };
-                                        return (
-                                            <tr key={st.code} className="hover:bg-slate-50/50">
-                                                <td className="p-2.5 font-bold text-slate-900">{st.name}</td>
-                                                <td className="p-2.5 text-center font-mono text-emerald-700 font-bold">{s.correct}</td>
-                                                <td className="p-2.5 text-center font-mono text-rose-600 font-bold">{s.incorrect}</td>
-                                                <td className="p-2.5 text-center font-mono text-slate-400">{s.unattempted}</td>
-                                                <td className="p-2.5 w-44">
-                                                    <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                                                        <div className="bg-blue-700 h-full rounded-full" style={{ width: `${Math.max(5, s.percentage)}%` }} />
-                                                    </div>
-                                                </td>
-                                                <td className="p-2.5 text-right font-mono font-bold text-slate-900">{s.scoreIRT}.0</td>
-                                            </tr>
-                                        );
-                                    })}
-                                    <tr className="bg-slate-50 font-bold text-slate-900 border-t">
-                                        <td className="p-2.5">Nilai Rata-rata Skolastik</td>
-                                        <td className="p-2.5 text-center font-mono text-emerald-700">
-                                            {tpsSubtests.reduce((a, b) => a + (scoreResults.subtestBreakdown[b.code]?.correct || 0), 0)}
-                                        </td>
-                                        <td className="p-2.5 text-center font-mono text-rose-600">
-                                            {tpsSubtests.reduce((a, b) => a + (scoreResults.subtestBreakdown[b.code]?.incorrect || 0), 0)}
-                                        </td>
-                                        <td className="p-2.5 text-center font-mono text-slate-400">
-                                            {tpsSubtests.reduce((a, b) => a + (scoreResults.subtestBreakdown[b.code]?.unattempted || 0), 0)}
-                                        </td>
-                                        <td className="p-2.5"></td>
-                                        <td className="p-2.5 text-right font-mono text-blue-900 font-black">{scoreResults.tpsAvg}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* 7. TABEL TES LITERASI & PENALARAN MATEMATIKA (3 SUBTES) */}
-                    <div className="space-y-1 text-left">
-                        <div
-                            className="p-2.5 rounded-t-xl text-white flex items-center justify-between text-xs font-bold font-mono"
-                            style={{ backgroundColor: "#6d28d9" }}
-                        >
-                            <span>TES LITERASI &amp; PENALARAN MATEMATIKA (3 SUBTES)</span>
-                            <span>Rerata: {scoreResults.litAvg}</span>
-                        </div>
-                        <div className="border border-slate-200 rounded-b-xl overflow-hidden">
-                            <table className="w-full text-left text-xs">
-                                <thead className="bg-slate-50 text-[10px] font-mono font-bold text-slate-400 border-b">
-                                    <tr>
-                                        <th className="p-2.5">SUBTES</th>
-                                        <th className="p-2.5 text-center">BENAR</th>
-                                        <th className="p-2.5 text-center">SALAH</th>
-                                        <th className="p-2.5 text-center">KOSONG</th>
-                                        <th className="p-2.5">PROGRESS CAPAIAN</th>
-                                        <th className="p-2.5 text-right">SKOR</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                                    {litSubtests.map((st) => {
-                                        const s = scoreResults.subtestBreakdown[st.code] || { correct: 0, incorrect: 0, unattempted: 0, percentage: 0, scoreIRT: 200 };
-                                        return (
-                                            <tr key={st.code} className="hover:bg-slate-50/50">
-                                                <td className="p-2.5 font-bold text-slate-900">{st.name}</td>
-                                                <td className="p-2.5 text-center font-mono text-emerald-700 font-bold">{s.correct}</td>
-                                                <td className="p-2.5 text-center font-mono text-rose-600 font-bold">{s.incorrect}</td>
-                                                <td className="p-2.5 text-center font-mono text-slate-400">{s.unattempted}</td>
-                                                <td className="p-2.5 w-44">
-                                                    <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                                                        <div className="bg-purple-700 h-full rounded-full" style={{ width: `${Math.max(5, s.percentage)}%` }} />
-                                                    </div>
-                                                </td>
-                                                <td className="p-2.5 text-right font-mono font-bold text-slate-900">{s.scoreIRT}.0</td>
-                                            </tr>
-                                        );
-                                    })}
-                                    <tr className="bg-slate-50 font-bold text-slate-900 border-t">
-                                        <td className="p-2.5">Nilai Rata-rata Literasi</td>
-                                        <td className="p-2.5 text-center font-mono text-emerald-700">
-                                            {litSubtests.reduce((a, b) => a + (scoreResults.subtestBreakdown[b.code]?.correct || 0), 0)}
-                                        </td>
-                                        <td className="p-2.5 text-center font-mono text-rose-600">
-                                            {litSubtests.reduce((a, b) => a + (scoreResults.subtestBreakdown[b.code]?.incorrect || 0), 0)}
-                                        </td>
-                                        <td className="p-2.5 text-center font-mono text-slate-400">
-                                            {litSubtests.reduce((a, b) => a + (scoreResults.subtestBreakdown[b.code]?.unattempted || 0), 0)}
-                                        </td>
-                                        <td className="p-2.5"></td>
-                                        <td className="p-2.5 text-right font-mono text-purple-900 font-black">{scoreResults.litAvg}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* 8. BLOCKING TIME & EVALUASI KECEPATAN PENGERJAAN */}
-                    <div className="space-y-1 text-left">
-                        <div className="p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-xs font-bold font-mono">
-                            <span className="flex items-center gap-1.5">
-                                <Clock className="w-3.5 h-3.5 text-blue-400" />
-                                <span>BLOCKING TIME &amp; EVALUASI KECEPATAN PENGERJAAN</span>
-                            </span>
-                            <span className="text-[10px] text-slate-400 font-normal">Terdistribusi Presisi</span>
-                        </div>
-                        <div className="border border-slate-200 rounded-b-xl p-4 divide-y divide-slate-100 bg-white">
-                            {subtestsList.map((st) => {
-                                const s = scoreResults.subtestBreakdown[st.code] || { correct: 0, incorrect: 0, unattempted: 0, total: 20 };
-                                const spentSecs = timeSpentPerSubtest[st.code] || 15;
-                                const spentMin = Math.floor(spentSecs / 60);
-                                const spentSecRemainder = spentSecs % 60;
-                                const totalMin = st.defaultDurationMinutes;
-                                const pctTime = Math.min(100, Math.round((spentSecs / (totalMin * 60)) * 100));
-
-                                const isHasty = pctTime < 35 && s.correct < s.total * 0.5;
-
-                                return (
-                                    <div key={st.code} className="py-2.5 flex items-center justify-between gap-3 text-xs">
-                                        <div className="space-y-0.5">
-                                            <div className="font-bold text-slate-900">{st.name}</div>
-                                            <div className="text-[11px] text-slate-500 font-mono">
-                                                Dikerjakan {spentMin} menit {spentSecRemainder} detik dari {totalMin} menit ({pctTime}%) &bull; Benar: {s.correct}, Salah: {s.incorrect}, Kosong: {s.unattempted}
-                                            </div>
-                                            <p className="text-[10.5px] text-slate-400 italic">
-                                                {isHasty
-                                                    ? "Alokasi waktu tersisa banyak, tapi banyak jawaban yang terlewat. Majukan ritme soal!"
-                                                    : "Ritme pengerjaan terjaga stabil, tingkatkan fokus ketelitian saat eliminasi opsi."}
-                                            </p>
-                                        </div>
-                                        <span className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold shrink-0 ${isHasty ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
-                                            }`}>
-                                            {isHasty ? "Terburu-buru" : "Optimal"}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* 9. ANALISA PASSING SCORE PER SUBTES */}
-                    <div className="space-y-1 text-left">
-                        <div className="p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-xs font-bold font-mono">
-                            <span>ANALISA PASSING SCORE PER SUBTES TERHADAP PROGRAM STUDI PILIHAN</span>
-                        </div>
-                        <div className="border border-slate-200 rounded-b-xl overflow-hidden">
-                            <table className="w-full text-left text-xs">
-                                <thead className="bg-slate-50 text-[10px] font-mono font-bold text-slate-400 border-b">
-                                    <tr>
-                                        <th className="p-2.5">SUBTES</th>
-                                        <th className="p-2.5 text-center">SKOR KAMU</th>
-                                        <th className="p-2.5 text-center">PILIHAN 1 - {benchmarkData1?.prodi || "PILIHAN 1"}</th>
-                                        <th className="p-2.5 text-center">PILIHAN 2 - {benchmarkData2?.prodi || "PILIHAN 2"}</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                                    {subtestsList.map((st) => {
-                                        const s = scoreResults.subtestBreakdown[st.code] || { scoreIRT: 200 };
-                                        const targetP1 = benchmarkData1?.passingGradeMin || 650;
-                                        const targetP2 = benchmarkData2?.passingGradeMin || 620;
-
-                                        const p1Passed = s.scoreIRT >= targetP1;
-                                        const p2Passed = s.scoreIRT >= targetP2;
-
-                                        return (
-                                            <tr key={st.code} className="hover:bg-slate-50/50">
-                                                <td className="p-2.5 font-bold text-slate-900">{st.name}</td>
-                                                <td className="p-2.5 text-center font-mono font-bold text-slate-900">{s.scoreIRT}.0</td>
-                                                <td className="p-2.5 text-center font-mono text-[11px]">
-                                                    {p1Passed ? (
-                                                        <span className="text-emerald-700 font-bold">&radic; Memenuhi ({targetP1})</span>
-                                                    ) : (
-                                                        <span className="text-rose-600 font-bold">&times; Belum mencukupi ({targetP1})</span>
-                                                    )}
-                                                </td>
-                                                <td className="p-2.5 text-center font-mono text-[11px]">
-                                                    {p2Passed ? (
-                                                        <span className="text-emerald-700 font-bold">&radic; Memenuhi ({targetP2})</span>
-                                                    ) : (
-                                                        <span className="text-rose-600 font-bold">&times; Belum mencukupi ({targetP2})</span>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* 10. DIAGRAM KOMPARASI CAPAIAN 7 SUBTES */}
-                    <div className="p-5 rounded-2xl border border-slate-200 bg-white text-left space-y-4">
-                        <div className="flex items-center justify-between border-b pb-2">
-                            <div>
-                                <h3 className="font-mono font-bold text-xs uppercase text-slate-900">
-                                    DIAGRAM KOMPARASI CAPAIAN 7 SUBTES (SKALA 200 - 1000)
-                                </h3>
-                                <p className="text-[10px] text-slate-400">
-                                    Garis vertikal batas putus-putus menunjukkan ambang batas rata-rata kelulusan SNBT Target 650
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-2 text-[10px] font-mono">
-                                <span className="flex items-center gap-1">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                                    &ge; 650 (Aman)
-                                </span>
-                                <span className="flex items-center gap-1">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                                    500 - 649 (Ketat)
-                                </span>
-                                <span className="flex items-center gap-1">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                                    &lt; 500 (Kurang)
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="space-y-3 relative pt-3">
-                            <div className="absolute top-0 bottom-0 left-[65%] w-px border-l-2 border-dashed border-slate-400 z-10 pointer-events-none">
-                                <span className="absolute -top-3 -left-6 bg-slate-900 text-white font-mono text-[9px] font-black px-1.5 py-0.2 rounded">
-                                    TARGET 650
-                                </span>
-                            </div>
-
-                            {subtestsList.map((st) => {
-                                const s = scoreResults.subtestBreakdown[st.code] || { scoreIRT: 200 };
-                                const pctWidth = Math.min(100, Math.max(10, ((s.scoreIRT - 200) / 800) * 100));
-                                const barColor = s.scoreIRT >= 650 ? "bg-emerald-600" : s.scoreIRT >= 500 ? "bg-amber-500" : "bg-rose-500";
-
-                                return (
-                                    <div key={st.code} className="space-y-1">
-                                        <div className="flex justify-between text-xs font-mono">
-                                            <span className="font-semibold text-slate-800">{st.name}</span>
-                                            <span className="font-bold text-slate-900">{s.scoreIRT}.0</span>
-                                        </div>
-                                        <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
-                                            <div className={`h-full rounded-full transition-all duration-700 ${barColor}`} style={{ width: `${pctWidth}%` }} />
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* 11. REKOMENDASI PTN LAIN */}
-                    <div className="space-y-1 text-left">
-                        <div className="p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-xs font-bold font-mono">
-                            <span>REKOMENDASI PTN LAIN - PROGRAM STUDI SERUPA DENGAN PILIHAN 1</span>
-                            <span className="text-[10px] text-slate-400 font-normal">Daya Tampung &amp; Keketatan</span>
-                        </div>
-                        <div className="border border-slate-200 rounded-b-xl overflow-hidden">
-                            <table className="w-full text-left text-xs">
-                                <thead className="bg-slate-50 text-[10px] font-mono font-bold text-slate-400 border-b">
-                                    <tr>
-                                        <th className="p-2.5">#</th>
-                                        <th className="p-2.5">UNIVERSITAS</th>
-                                        <th className="p-2.5">PROGRAM STUDI</th>
-                                        <th className="p-2.5 text-center">DK (%)</th>
-                                        <th className="p-2.5 text-center">DAYA TAMPUNG</th>
-                                        <th className="p-2.5 text-center">PEMINAT</th>
-                                        <th className="p-2.5 text-right">PELUANG KELULUSAN</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                                    {recommendedAlternativePTNs.map((rec, idx) => (
-                                        <tr key={rec.id} className="hover:bg-slate-50/50">
-                                            <td className="p-2.5 font-mono text-slate-400">{idx + 1}</td>
-                                            <td className="p-2.5 font-bold text-slate-900">{rec.kampus}</td>
-                                            <td className="p-2.5">{rec.prodi} ({rec.jenjang || "S1"})</td>
-                                            <td className="p-2.5 text-center font-mono">{formatKeketatan(rec.keketatan)}</td>
-                                            <td className="p-2.5 text-center font-mono">{rec.dayaTampung}</td>
-                                            <td className="p-2.5 text-center font-mono">{rec.peminat}</td>
-                                            <td className={`p-2.5 text-right font-mono text-[11px] ${rec.kelulusanColor}`}>
-                                                {rec.kelulusanStatus}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* 12. BANNER SIMULATOR RASIONALISASI */}
-                    <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 text-white flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-1.5 text-xs font-bold">
-                                <TrendingUp className="w-4 h-4 text-emerald-400" />
-                                <span>Lanjutkan ke Aplikasi Analisis &amp; Rasionalisasi SNBT</span>
-                            </div>
-                            <p className="text-[11px] text-blue-200">
-                                Skor rata-rata Anda ({scoreResults.scaledScore}) dapat langsung diuji ke simulator passing grade dengan data daya tampung seluruh PTN nasional.
-                            </p>
-                        </div>
-                        <button
-                            onClick={() => window.open("/simulation", "_blank")}
-                            className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-blue-950 font-bold text-xs shrink-0 cursor-pointer shadow-xs transition-all flex items-center gap-1.5"
-                        >
-                            <span>Buka Aplikasi Analisis</span>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                        </button>
-                    </div>
-
-                    {/* 13. TANDA TANGAN RESMI SEKOLAH */}
-                    <div className="pt-8 pb-4 grid grid-cols-2 gap-8 text-center text-xs font-serif text-slate-800">
-                        <div className="space-y-16">
-                            <div>
-                                <p className="text-[11px]">Mengetahui,</p>
-                                <div
-                                    contentEditable
-                                    suppressContentEditableWarning
-                                    className="font-bold text-[11.5px] outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-600 px-1 transition-all inline-block"
-                                    title="Klik untuk mengubah jabatan penandatangan"
-                                >
-                                    Koordinator BK / Pembina KIR
-                                </div>
-                            </div>
-                            <div>
-                                <div
-                                    contentEditable
-                                    suppressContentEditableWarning
-                                    className="font-bold underline text-[12px] outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-600 px-1 transition-all inline-block"
-                                    title="Klik untuk mengubah nama guru/pembina"
-                                >
-                                    Fadhillah Umar, S.Pd.
-                                </div>
-                                <div
-                                    contentEditable
-                                    suppressContentEditableWarning
-                                    className="text-[10px] font-mono text-slate-500 outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-600 px-1 transition-all block"
-                                    title="Klik untuk mengubah NIP/NBM"
-                                >
-                                    NIP: 121 2026 001
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-16">
-                            <div>
-                                <p className="text-[11px]">Jakarta, {currentDateStr}</p>
-                                <p className="font-bold text-[11.5px]">Peserta Ujian</p>
-                            </div>
-                            <div>
-                                <p className="font-bold underline text-[12px]">
-                                    ( <span
-                                        contentEditable
-                                        suppressContentEditableWarning
-                                        className="outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-600 px-1 transition-all inline-block"
-                                        title="Klik untuk mengubah nama siswa"
-                                    >
-                                        {studentSession?.candidateName || "..............................."}
-                                    </span> )
-                                </p>
-                                <p className="text-[10px] font-mono text-slate-500">
-                                    NISN: {studentSession?.nisn || "-"}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 14. FOOTER ACTION */}
-                    <div className="pt-2 border-t flex flex-col sm:flex-row items-center justify-between gap-3 print-hidden">
-                        <button
-                            onClick={() => {
-                                safeExitFullscreen();
-                                localStorage.removeItem("cbt_exam_result");
-                                window.location.reload();
-                            }}
-                            className="w-full sm:w-auto px-6 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs cursor-pointer"
-                        >
-                            Ulangi Sesi Ini
-                        </button>
-
-                        <button
-                            onClick={handleExitToHome}
-                            disabled={isExitingToHome}
-                            className="w-full sm:w-auto px-8 py-2.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all disabled:opacity-50"
-                        >
-                            {isExitingToHome ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                    <span>Menutup Bilik Ujian...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Home className="w-4 h-4" />
-                                    <span>Kembali ke Halaman Utama</span>
-                                </>
-                            )}
                         </button>
                     </div>
                 </div>
