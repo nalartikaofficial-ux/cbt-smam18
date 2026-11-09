@@ -151,26 +151,48 @@ interface SubtestDurationItem {
     defaultDurationMinutes: number;
 }
 
+// STRUKTUR RESMI 7 SUBTES SNBT (TOTAL 160 BUTIR SOAL)
+const SNBT_STRUCTURE = [
+    { code: "PU", name: "Penalaran Umum (PU)", count: 30 },
+    { code: "PPU", name: "Pengetahuan & Pemahaman", count: 20 },
+    { code: "PBM", name: "Pemahaman Bacaan & Menulis", count: 20 },
+    { code: "PK", name: "Pengetahuan Kuantitatif", count: 20 },
+    { code: "LIT_INDO", name: "Literasi B. Indonesia", count: 30 },
+    { code: "LIT_ENG", name: "Literasi Bahasa Inggris", count: 20 },
+    { code: "PM", name: "Penalaran Matematika", count: 20 }
+];
+
 // ========================================================
-// MESIN IMPORT WORD UNIVERSAL (MENDUKUNG SEGALA MODEL WORD)
+// MESIN IMPORT WORD DENGAN PARTISI SUBTES OTOMATIS
 // ========================================================
 function WordImporterSection({
-    selectedSubtest,
     selectedPaket,
-    currentCount,
     onBulkSubmit,
     isSubmittingServer
 }: {
-    selectedSubtest: string;
     selectedPaket: string;
-    currentCount: number;
     onBulkSubmit: (questions: ParsedQuestion[]) => Promise<void>;
     isSubmittingServer: boolean;
 }) {
     const [isParsing, setIsParsing] = useState(false);
     const [stagedList, setStagedList] = useState<ParsedQuestion[]>([]);
-    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<ParsedQuestion | null>(null);
+
+    // Pemetaan subtes berdasarkan nomor urut global 0..159
+    const getSubtestMetaByIndex = (indexZeroBased: number) => {
+        let accumulated = 0;
+        for (const sub of SNBT_STRUCTURE) {
+            if (indexZeroBased < accumulated + sub.count) {
+                return {
+                    subtes: sub.code,
+                    localNo: (indexZeroBased - accumulated) + 1
+                };
+            }
+            accumulated += sub.count;
+        }
+        return { subtes: "PM", localNo: indexZeroBased + 1 };
+    };
 
     const handleDocxUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -212,21 +234,17 @@ function WordImporterSection({
                 }
             });
 
-            const questions: ParsedQuestion[] = [];
-            let current: Partial<ParsedQuestion> = {
-                subtes_code: selectedSubtest || "PU",
+            const rawQuestions: any[] = [];
+            let current: any = {
                 image_position: "above",
                 tingkat_kesukaran: "Sedang",
                 kunci: "A",
             };
 
-            let counter = 1;
-
             const commitCurrent = () => {
                 if (current.pertanyaan && current.opsi_a) {
-                    questions.push({
-                        no_soal: counter,
-                        subtes_code: current.subtes_code || selectedSubtest || "PU",
+                    rawQuestions.push({
+                        detectedSubtest: current.detectedSubtest || null,
                         stimulus: (current.stimulus || "").trim(),
                         image_url: current.image_url || "",
                         image_position: current.image_position || "above",
@@ -240,12 +258,11 @@ function WordImporterSection({
                         tingkat_kesukaran: current.tingkat_kesukaran || "Sedang",
                         pembahasan: (current.pembahasan || "").trim(),
                     });
-                    counter++;
                     current = {
-                        subtes_code: selectedSubtest || "PU",
                         image_position: "above",
                         tingkat_kesukaran: "Sedang",
                         kunci: "A",
+                        detectedSubtest: current.detectedSubtest || null
                     };
                 }
             };
@@ -258,6 +275,23 @@ function WordImporterSection({
                 }
 
                 if (!text) return;
+
+                const cleanLower = text.toLowerCase();
+                if (cleanLower.includes("penalaran umum") || cleanLower.includes("subtes pu")) {
+                    current.detectedSubtest = "PU";
+                } else if (cleanLower.includes("pengetahuan dan pemahaman umum") || cleanLower.includes("pemahaman umum") || cleanLower.includes("ppu")) {
+                    current.detectedSubtest = "PPU";
+                } else if (cleanLower.includes("pemahaman bacaan") || cleanLower.includes("bacaan dan menulis") || cleanLower.includes("pbm")) {
+                    current.detectedSubtest = "PBM";
+                } else if (cleanLower.includes("pengetahuan kuantitatif") || cleanLower.includes("kuantitatif") || cleanLower.includes("subtes pk")) {
+                    current.detectedSubtest = "PK";
+                } else if (cleanLower.includes("literasi dalam bahasa indonesia") || cleanLower.includes("literasi bahasa indonesia") || cleanLower.includes("lit indo")) {
+                    current.detectedSubtest = "LIT_INDO";
+                } else if (cleanLower.includes("literasi dalam bahasa inggris") || cleanLower.includes("literasi bahasa inggris") || cleanLower.includes("lit eng")) {
+                    current.detectedSubtest = "LIT_ENG";
+                } else if (cleanLower.includes("penalaran matematika") || cleanLower.includes("subtes pm")) {
+                    current.detectedSubtest = "PM";
+                }
 
                 if (/^(?:paket\s+[a-z]|bagian\s+[ivx]+|petunjuk|gambar\s+\d+:)/i.test(text)) {
                     return;
@@ -336,11 +370,34 @@ function WordImporterSection({
 
             commitCurrent();
 
-            if (questions.length === 0) {
-                alert("Tidak ada butir soal yang terbaca. Pastikan terdapat format penomoran ('1.' atau 'Soal 1') dan opsi pilihan (A-E).");
-            } else {
-                setStagedList(questions);
+            if (rawQuestions.length === 0) {
+                alert("Tidak ada butir soal yang terbaca dari dokumen Word.");
+                return;
             }
+
+            // Pemisahan nomor lokal dan pembagian 7 subtes SNBT
+            const finalized: ParsedQuestion[] = rawQuestions.map((q, idx) => {
+                const subMeta = getSubtestMetaByIndex(idx);
+                const assignedSub = q.detectedSubtest || subMeta.subtes;
+                return {
+                    no_soal: subMeta.localNo,
+                    subtes_code: assignedSub,
+                    stimulus: q.stimulus,
+                    image_url: q.image_url,
+                    image_position: q.image_position,
+                    pertanyaan: q.pertanyaan,
+                    opsi_a: q.opsi_a,
+                    opsi_b: q.opsi_b,
+                    opsi_c: q.opsi_c,
+                    opsi_d: q.opsi_d,
+                    opsi_e: q.opsi_e,
+                    kunci: q.kunci,
+                    tingkat_kesukaran: q.tingkat_kesukaran,
+                    pembahasan: q.pembahasan
+                };
+            });
+
+            setStagedList(finalized);
         } catch (err: any) {
             console.error(err);
             alert("Gagal membaca file .docx: " + (err?.message || "Format berkas tidak valid"));
@@ -355,10 +412,10 @@ function WordImporterSection({
             <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                        Import Naskah Word (.docx) &bull; Format Universal
+                        Import Naskah Word (.docx) &bull; Pembagian Otomatis 7 Subtes SNBT
                     </h2>
                     <p className="text-xs text-slate-500">
-                        Mendukung semua gaya penulisan: nomor sejajar/terpisah baris, opsi di tabel/teks biasa, gambar grafik, kunci, dan pembahasan.
+                        160 soal otomatis dipartisi: PU (30 soal), PPU (20 soal), PBM (20 soal), PK (20 soal), LIT_INDO (30 soal), LIT_ENG (20 soal), PM (20 soal).
                     </p>
                 </div>
             </div>
@@ -381,10 +438,10 @@ function WordImporterSection({
                     </div>
                     <div>
                         <p className="text-sm font-bold text-slate-800">
-                            {isParsing ? "Sedang Mengekstrak Seluruh Butir Soal..." : "Klik untuk Memilih File Dokumen Word (.docx)"}
+                            {isParsing ? "Sedang Memecah 160 Soal ke 7 Subtes..." : "Klik untuk Memilih File Dokumen Word (.docx)"}
                         </p>
                         <p className="text-xs text-slate-400 mt-0.5">
-                            Paket Target: <strong>{selectedPaket.replace("_", " ")}</strong> &bull; Subtes Default: <strong>{selectedSubtest}</strong>
+                            Paket Target: <strong>{selectedPaket.replace("_", " ")}</strong>
                         </p>
                     </div>
                 </label>
@@ -395,12 +452,12 @@ function WordImporterSection({
                     <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
                             <span className="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-xs font-mono">
-                                {stagedList.length} Soal Berhasil Terbaca Sempurna
+                                {stagedList.length} Soal Berhasil Dipisahkan ke 7 Subtes
                             </span>
                             <span className="text-xs text-slate-300">Siap disimpan ke {selectedPaket.replace("_", " ")}</span>
                         </div>
                         <p className="text-[11px] text-slate-400">
-                            Seluruh nomor soal, opsi A–E, dan kunci jawaban telah dipisahkan secara akurat.
+                            Nomor soal telah di-reset per subtes (PU No. 1–30, PPU No. 1–20, dst).
                         </p>
                     </div>
 
@@ -413,6 +470,7 @@ function WordImporterSection({
                         >
                             Batalkan
                         </button>
+
                         <button
                             type="button"
                             onClick={() => {
@@ -429,27 +487,41 @@ function WordImporterSection({
                             <Download className="w-4 h-4" />
                             <span>Download {selectedPaket.toLowerCase()}.json</span>
                         </button>
+
+                        <button
+                            type="button"
+                            onClick={async () => {
+                                await onBulkSubmit(stagedList);
+                                setStagedList([]);
+                            }}
+                            disabled={isSubmittingServer}
+                            className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50 transition-all"
+                        >
+                            <Send className="w-3.5 h-3.5" />
+                            <span>Terapkan ke Pratinjau</span>
+                        </button>
                     </div>
                 </div>
             )}
 
             {stagedList.length > 0 && (
-                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-1">
-                    {stagedList.map((q) => {
-                        const isEditing = editingId === q.no_soal;
+                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+                    {stagedList.map((q, idx) => {
+                        const uniqueKey = `${q.subtes_code}_${q.no_soal}`;
+                        const isEditing = editingId === uniqueKey;
 
                         if (isEditing && editForm) {
                             return (
-                                <div key={q.no_soal} className="p-5 rounded-2xl bg-white border-2 border-indigo-500 shadow-md space-y-3">
+                                <div key={uniqueKey} className="p-5 rounded-2xl bg-white border-2 border-indigo-500 shadow-md space-y-3">
                                     <div className="flex items-center justify-between pb-2 border-b">
                                         <span className="text-xs font-bold text-indigo-700 font-mono">
-                                            Edit Soal No. {q.no_soal}
+                                            Edit Soal No. {q.no_soal} ({q.subtes_code})
                                         </span>
                                         <div className="flex gap-2">
                                             <button
                                                 type="button"
                                                 onClick={() => {
-                                                    setStagedList((prev) => prev.map((item) => item.no_soal === editForm.no_soal ? editForm : item));
+                                                    setStagedList((prev) => prev.map((item) => (item.subtes_code === editForm.subtes_code && item.no_soal === editForm.no_soal) ? editForm : item));
                                                     setEditingId(null);
                                                     setEditForm(null);
                                                 }}
@@ -494,36 +566,12 @@ function WordImporterSection({
                                             </div>
                                         ))}
                                     </div>
-
-                                    <div className="grid grid-cols-2 gap-3 pt-2">
-                                        <div>
-                                            <label className="text-[10px] font-bold text-slate-600 font-mono block mb-1">KUNCI JAWABAN:</label>
-                                            <select
-                                                value={editForm.kunci}
-                                                onChange={(e) => setEditForm({ ...editForm, kunci: e.target.value })}
-                                                className="w-full text-xs p-2 border rounded-xl font-bold bg-white"
-                                            >
-                                                {["A", "B", "C", "D", "E"].map((k) => (
-                                                    <option key={k} value={k}>Opsi {k}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-bold text-slate-600 font-mono block mb-1">PEMBAHASAN:</label>
-                                            <input
-                                                type="text"
-                                                value={editForm.pembahasan}
-                                                onChange={(e) => setEditForm({ ...editForm, pembahasan: e.target.value })}
-                                                className="w-full text-xs p-2 border rounded-xl"
-                                            />
-                                        </div>
-                                    </div>
                                 </div>
                             );
                         }
 
                         return (
-                            <div key={q.no_soal} className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                            <div key={uniqueKey} className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                                 <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200">
                                     <div className="flex items-center gap-2">
                                         <span className="px-2 py-0.5 rounded bg-[#1e3a8a] text-white font-mono font-bold text-[10px]">
@@ -540,7 +588,7 @@ function WordImporterSection({
                                     <div className="flex items-center gap-1.5">
                                         <button
                                             type="button"
-                                            onClick={() => { setEditingId(q.no_soal); setEditForm({ ...q }); }}
+                                            onClick={() => { setEditingId(uniqueKey); setEditForm({ ...q }); }}
                                             className="px-2.5 py-1 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg flex items-center gap-1 transition-all"
                                         >
                                             <Edit3 className="w-3 h-3" />
@@ -548,7 +596,7 @@ function WordImporterSection({
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => setStagedList((prev) => prev.filter((item) => item.no_soal !== q.no_soal))}
+                                            onClick={() => setStagedList((prev) => prev.filter((_, i) => i !== idx))}
                                             className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
@@ -562,50 +610,9 @@ function WordImporterSection({
                                     </div>
                                 )}
 
-                                {q.image_url && (
-                                    <div className="p-2 bg-white rounded-xl border border-slate-200 flex flex-col items-center justify-center">
-                                        <img
-                                            src={q.image_url}
-                                            alt={`Gambar Soal No. ${q.no_soal}`}
-                                            className="max-h-56 max-w-full rounded-lg object-contain"
-                                        />
-                                        <span className="text-[10px] text-slate-400 mt-1">
-                                            Gambar diekstrak dari dokumen Word
-                                        </span>
-                                    </div>
-                                )}
-
                                 <div className="text-xs font-semibold text-slate-900 leading-relaxed">
                                     <MathRenderer content={q.pertanyaan} />
                                 </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                                    {[
-                                        { label: "A", text: q.opsi_a },
-                                        { label: "B", text: q.opsi_b },
-                                        { label: "C", text: q.opsi_c },
-                                        { label: "D", text: q.opsi_d },
-                                        { label: "E", text: q.opsi_e },
-                                    ].map((opt) => (
-                                        <div
-                                            key={opt.label}
-                                            className={`p-2 rounded-xl border text-xs flex items-center gap-2 ${q.kunci === opt.label
-                                                ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
-                                                : "bg-white border-slate-200 text-slate-700"
-                                                }`}
-                                        >
-                                            <span className="font-mono font-bold">{opt.label}.</span>
-                                            <span><MathRenderer content={opt.text || "-"} /></span>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {q.pembahasan && (
-                                    <div className="p-2.5 bg-blue-50/60 rounded-xl border border-blue-100 text-[11px] text-blue-900">
-                                        <strong>Pembahasan: </strong>
-                                        <MathRenderer content={q.pembahasan} />
-                                    </div>
-                                )}
                             </div>
                         );
                     })}
@@ -744,30 +751,25 @@ export default function AdminBankSoalPage() {
     const fetchServerQuestions = async (pkg = selectedPaket) => {
         setIsLoadingServerQuestions(true);
         try {
-            // 1. Cek penyimpanan browser lokal
             const localRaw = localStorage.getItem(`cbt_questions_${pkg}`);
             if (localRaw) {
                 const parsedLocal = JSON.parse(localRaw);
                 if (Array.isArray(parsedLocal) && parsedLocal.length > 0) {
                     setServerQuestions(parsedLocal);
-                    setNoSoal(String(parsedLocal.length + 1));
                     setIsLoadingServerQuestions(false);
                     return;
                 }
             }
 
-            // 2. Fallback ke API internal
             const res = await fetch(`/api/questions?paket=${pkg}&_t=${Date.now()}`, {
                 cache: "no-store"
             });
             const json = await res.json();
             if (json.status === "success" && Array.isArray(json.data) && json.data.length > 0) {
                 setServerQuestions(json.data);
-                setNoSoal(String(json.data.length + 1));
                 localStorage.setItem(`cbt_questions_${pkg}`, JSON.stringify(json.data));
             } else {
                 setServerQuestions([]);
-                setNoSoal("1");
             }
         } catch (err) {
             console.error("Gagal memuat soal:", err);
@@ -788,7 +790,7 @@ export default function AdminBankSoalPage() {
     const handleDeleteServerQuestion = async (no: number, sub: string) => {
         if (!confirm(`Hapus soal No. ${no} (${sub}) dari ${selectedPaket}?`)) return;
 
-        const updated = serverQuestions.filter((q) => Number(q.no_soal) !== no);
+        const updated = serverQuestions.filter((q) => !(Number(q.no_soal) === no && q.subtes_code === sub));
         setServerQuestions(updated);
         localStorage.setItem(`cbt_questions_${selectedPaket}`, JSON.stringify(updated));
 
@@ -798,14 +800,15 @@ export default function AdminBankSoalPage() {
             body: JSON.stringify({
                 action: "delete_question",
                 paket: selectedPaket,
-                no_soal: no
+                no_soal: no,
+                subtes_code: sub
             })
         }).catch(() => { });
 
-        setStatusMsg({ type: "success", text: `Soal No. ${no} berhasil dihapus dari ${selectedPaket}!` });
+        setStatusMsg({ type: "success", text: `Soal No. ${no} (${sub}) berhasil dihapus!` });
     };
 
-    // Fungsi Hapus Semua Soal di Paket Aktif
+    // Hapus Semua Soal
     const handleClearAllQuestions = async () => {
         const konfirmasi = confirm(
             `PERINGATAN!\nApakah Anda yakin ingin MENGHAPUS SEMUA SOAL di ${selectedPaket.replace("_", " ")}?\n\nSemua butir soal akan dikosongkan untuk diganti dengan paket soal baru.`
@@ -1036,43 +1039,47 @@ export default function AdminBankSoalPage() {
         setStatusMsg(null);
 
         try {
-            // Urutkan soal berdasarkan nomor soal
-            const sortedList = [...questionsToSubmit].sort((a, b) => Number(a.no_soal) - Number(b.no_soal));
-
-            // 1. Simpan langsung ke memori browser (0 milidetik, instan)
-            localStorage.setItem(`cbt_questions_${selectedPaket}`, JSON.stringify(sortedList));
-
-            // 2. Perbarui state antarmuka langsung
-            setServerQuestions(sortedList);
-            setNoSoal(String(sortedList.length + 1));
+            // Urutkan soal berdasarkan subtes dan nomor soal
+            localStorage.setItem(`cbt_questions_${selectedPaket}`, JSON.stringify(questionsToSubmit));
+            setServerQuestions(questionsToSubmit);
             setBatchQuestions([]);
 
-            // 3. Sinkronkan ke API lokal di background
             fetch("/api/questions", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: "bulk_upload_questions",
                     paket: selectedPaket,
-                    questions: sortedList
+                    questions: questionsToSubmit
                 })
             }).catch(() => { });
 
             setStatusMsg({
                 type: "success",
-                text: `Sukses! Sebanyak ${sortedList.length} butir soal berhasil disimpan aktif ke ${selectedPaket.replace("_", " ")}!`
+                text: `Sukses! Sebanyak ${questionsToSubmit.length} butir soal berhasil dibagi ke 7 subtes!`
             });
 
-            // Otomatis pindah ke tab daftar soal
             setTimeout(() => {
                 setInputMode("list");
-            }, 600);
+            }, 500);
         } catch (err: any) {
             setStatusMsg({ type: "error", text: "Kendala saat menyimpan: " + err.message });
         } finally {
             setIsSubmitting(false);
         }
     };
+
+    // Rekapitulasi jumlah butir soal per subtes
+    const subtestCounts = useMemo(() => {
+        const counts: Record<string, number> = {};
+        SNBT_STRUCTURE.forEach((s) => { counts[s.code] = 0; });
+        serverQuestions.forEach((q) => {
+            if (counts[q.subtes_code] !== undefined) {
+                counts[q.subtes_code]++;
+            }
+        });
+        return counts;
+    }, [serverQuestions]);
 
     const filteredServerQuestions = useMemo(() => {
         if (filterSubtestView === "ALL") return serverQuestions;
@@ -1147,7 +1154,7 @@ export default function AdminBankSoalPage() {
                         </div>
                         <div>
                             <div className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2">
-                                <span>Penyimpanan Lokal Edge JSON</span>
+                                <span>Penyimpanan Lokal Edge JSON (7 Subtes SNBT)</span>
                                 <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono text-[10px]">
                                     Aktif &bull; {serverQuestions.length} Butir Soal
                                 </span>
@@ -1173,6 +1180,43 @@ export default function AdminBankSoalPage() {
                             </button>
                         ))}
                     </div>
+                </div>
+
+                {/* KARTU STATISTIK 7 SUBTES SNBT */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+                    {SNBT_STRUCTURE.map((s) => {
+                        const count = subtestCounts[s.code] || 0;
+                        const isComplete = count >= s.count;
+                        return (
+                            <div
+                                key={s.code}
+                                onClick={() => {
+                                    setFilterSubtestView(s.code);
+                                    setInputMode("list");
+                                }}
+                                className={`p-3 rounded-2xl border cursor-pointer transition-all text-center ${filterSubtestView === s.code
+                                    ? "bg-blue-900 text-white border-blue-900 shadow-sm"
+                                    : "bg-white hover:bg-slate-50 border-slate-200 text-slate-800"
+                                    }`}
+                            >
+                                <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${filterSubtestView === s.code
+                                    ? "bg-white/20 text-white"
+                                    : "bg-indigo-50 text-indigo-800 border border-indigo-200"
+                                    }`}>
+                                    {s.code}
+                                </span>
+                                <div className="text-[11px] font-bold mt-1.5 truncate" title={s.name}>
+                                    {s.name}
+                                </div>
+                                <div className="text-[11px] font-mono mt-0.5 font-bold">
+                                    <span className={filterSubtestView === s.code ? "text-emerald-300" : isComplete ? "text-emerald-600" : "text-amber-600"}>
+                                        {count}
+                                    </span>
+                                    <span className={filterSubtestView === s.code ? "text-slate-300" : "text-slate-400"}> / {s.count}</span>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
 
                 {/* TOOL: EKSTRAKTOR GAMBAR GOOGLE DRIVE */}
@@ -1331,7 +1375,7 @@ export default function AdminBankSoalPage() {
                             }`}
                     >
                         <ListFilter className="w-4 h-4 text-indigo-600" />
-                        <span>Daftar Soal di Berkas ({serverQuestions.length})</span>
+                        <span>Daftar Soal Terbagi ({serverQuestions.length})</span>
                     </button>
 
                     <button
@@ -1341,7 +1385,7 @@ export default function AdminBankSoalPage() {
                             }`}
                     >
                         <FileText className="w-4 h-4 text-indigo-600" />
-                        <span>Import Dokumen Word (.docx)</span>
+                        <span>Import Naskah Word (.docx) Otomatis</span>
                     </button>
 
                     <button
@@ -1387,10 +1431,12 @@ export default function AdminBankSoalPage() {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-3">
                             <div>
                                 <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                                    Koleksi Soal {selectedPaket.replace("_", " ")} Terdaftar
+                                    Koleksi Soal {selectedPaket.replace("_", " ")} ({filterSubtestView === "ALL" ? "Semua Subtes" : filterSubtestView})
                                 </h2>
                                 <p className="text-xs text-slate-500">
-                                    Daftar butir soal yang saat ini tersimpan di berkas JSON lokal dan akan diujikan kepada siswa.
+                                    {filterSubtestView === "ALL"
+                                        ? "Menampilkan seluruh koleksi 7 subtes."
+                                        : `Menampilkan soal khusus subtes ${filterSubtestView} (Mulai dari No. 1).`}
                                 </p>
                             </div>
 
@@ -1401,13 +1447,11 @@ export default function AdminBankSoalPage() {
                                     className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold outline-none bg-white"
                                 >
                                     <option value="ALL">Semua Subtes ({serverQuestions.length})</option>
-                                    <option value="PU">Penalaran Umum (PU)</option>
-                                    <option value="PPU">Pengetahuan &amp; Pemahaman Umum (PPU)</option>
-                                    <option value="PBM">Pemahaman Bacaan &amp; Menulis (PBM)</option>
-                                    <option value="PK">Pengetahuan Kuantitatif (PK)</option>
-                                    <option value="LIT_INDO">Literasi Bahasa Indonesia</option>
-                                    <option value="LIT_ENG">Literasi Bahasa Inggris</option>
-                                    <option value="PM">Penalaran Matematika (PM)</option>
+                                    {SNBT_STRUCTURE.map((s) => (
+                                        <option key={s.code} value={s.code}>
+                                            {s.name} ({subtestCounts[s.code] || 0})
+                                        </option>
+                                    ))}
                                 </select>
 
                                 {/* TOMBOL HAPUS SEMUA SOAL */}
@@ -1420,7 +1464,7 @@ export default function AdminBankSoalPage() {
                                         title="Kosongkan seluruh soal di paket ini"
                                     >
                                         <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                                        <span>Hapus Semua Soal</span>
+                                        <span>Hapus Semua</span>
                                     </button>
                                 )}
                             </div>
@@ -1433,8 +1477,8 @@ export default function AdminBankSoalPage() {
                             </div>
                         ) : filteredServerQuestions.length === 0 ? (
                             <div className="text-center py-12 text-slate-400 space-y-2">
-                                <p className="text-sm font-medium">Belum ada butir soal di {selectedPaket.replace("_", " ")}.</p>
-                                <p className="text-xs">Gunakan tab <strong>Import Dokumen Word</strong>, <strong>Import Massal CSV</strong>, atau <strong>Input Satuan</strong> untuk menambahkan soal.</p>
+                                <p className="text-sm font-medium">Belum ada butir soal pada kategori ini.</p>
+                                <p className="text-xs">Gunakan tab <strong>Import Dokumen Word</strong> untuk membagi soal otomatis ke 7 subtes.</p>
                             </div>
                         ) : (
                             <div className="space-y-4 max-h-[600px] overflow-y-auto pr-1">
@@ -1489,14 +1533,6 @@ export default function AdminBankSoalPage() {
                                                     referrerPolicy="no-referrer"
                                                     className="max-h-64 max-w-full rounded-lg object-contain shadow-xs"
                                                 />
-                                                <a
-                                                    href={q.image_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-[10px] text-blue-600 hover:underline mt-1.5"
-                                                >
-                                                    Buka gambar di tab baru ↗
-                                                </a>
                                             </div>
                                         )}
 
@@ -1506,11 +1542,11 @@ export default function AdminBankSoalPage() {
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                                             {[
-                                                { label: "A", text: q.opsi_a, img: q.opsi_a_img },
-                                                { label: "B", text: q.opsi_b, img: q.opsi_b_img },
-                                                { label: "C", text: q.opsi_c, img: q.opsi_c_img },
-                                                { label: "D", text: q.opsi_d, img: q.opsi_d_img },
-                                                { label: "E", text: q.opsi_e, img: q.opsi_e_img }
+                                                { label: "A", text: q.opsi_a },
+                                                { label: "B", text: q.opsi_b },
+                                                { label: "C", text: q.opsi_c },
+                                                { label: "D", text: q.opsi_d },
+                                                { label: "E", text: q.opsi_e }
                                             ].map((opt) => (
                                                 <div
                                                     key={opt.label}
@@ -1524,6 +1560,13 @@ export default function AdminBankSoalPage() {
                                                 </div>
                                             ))}
                                         </div>
+
+                                        {q.pembahasan && (
+                                            <div className="p-2.5 bg-blue-50/60 rounded-xl border border-blue-100 text-[11px] text-blue-900">
+                                                <strong>Pembahasan: </strong>
+                                                <MathRenderer content={q.pembahasan} />
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -1534,9 +1577,7 @@ export default function AdminBankSoalPage() {
                 {/* TAB 1: IMPORT DOKUMEN WORD (.DOCX) */}
                 {inputMode === "docx_upload" && (
                     <WordImporterSection
-                        selectedSubtest={selectedSubtest}
                         selectedPaket={selectedPaket}
-                        currentCount={serverQuestions.length}
                         onBulkSubmit={async (readyList) => {
                             const formatted = readyList.map((item) => ({
                                 ...item,
@@ -1665,15 +1706,13 @@ export default function AdminBankSoalPage() {
                                 };
 
                                 try {
-                                    // Simpan ke state dan localStorage langsung
                                     let updated = [...serverQuestions];
-                                    const existIdx = updated.findIndex((q) => Number(q.no_soal) === Number(noSoal));
+                                    const existIdx = updated.findIndex((q) => Number(q.no_soal) === Number(noSoal) && q.subtes_code === selectedSubtest);
                                     if (existIdx !== -1) {
                                         updated[existIdx] = newQuestionItem;
                                     } else {
                                         updated.push(newQuestionItem);
                                     }
-                                    updated.sort((a, b) => Number(a.no_soal) - Number(b.no_soal));
 
                                     setServerQuestions(updated);
                                     localStorage.setItem(`cbt_questions_${selectedPaket}`, JSON.stringify(updated));
@@ -1724,7 +1763,7 @@ export default function AdminBankSoalPage() {
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-slate-700 font-mono">NO SOAL:</label>
+                                    <label className="text-xs font-bold text-slate-700 font-mono">NO SOAL (LOKAL SUBTES):</label>
                                     <input
                                         type="number"
                                         required
@@ -1851,7 +1890,7 @@ export default function AdminBankSoalPage() {
                                     {isSubmitting
                                         ? "Menyimpan ke File..."
                                         : isEditingMode
-                                            ? `Perbarui Soal No. ${noSoal} di ${selectedPaket}`
+                                            ? `Perbarui Soal No. ${noSoal} (${selectedSubtest})`
                                             : `Simpan Soal Baru ke ${selectedPaket}`}
                                 </span>
                             </button>
