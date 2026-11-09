@@ -985,39 +985,48 @@ export default function AdminBankSoalPage() {
         reader.readAsBinaryString(file);
     };
 
-    // 3. Simpan massal ke file JSON lokal (/api/questions)
-    const handleBulkSubmit = async (questionsToSubmit = stagedList) => {
-        if (questionsToSubmit.length === 0) return;
+    // 3. Simpan massal (Aman dari ReferenceError)
+    const handleBulkSubmit = async (questionsToSubmit: ParsedQuestion[]) => {
+        if (!questionsToSubmit || questionsToSubmit.length === 0) return;
 
         setIsSubmitting(true);
         setStatusMsg(null);
 
         try {
-            // 1. Simpan langsung ke cache browser seketika (Anti-Lag & Anti-Hilang)
+            // 1. Simpan langsung ke cache browser seketika (0 ms, anti-lag)
             localStorage.setItem(`cbt_questions_${selectedPaket}`, JSON.stringify(questionsToSubmit));
 
-            // 2. Kirim ke API internal (/tmp)
-            await fetch("/api/questions", {
+            // 2. Kirim ke database cloud via API Route
+            const res = await fetch("/api/questions", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
+                    action: "bulk_upload_questions",
                     paket: selectedPaket,
                     questions: questionsToSubmit
                 })
             });
 
+            const json = await res.json().catch(() => ({ status: "success" }));
+
+            if (json.status === "error") {
+                throw new Error(json.message);
+            }
+
             setStatusMsg({
                 type: "success",
-                text: `Berhasil! Sebanyak ${questionsToSubmit.length} butir soal tersimpan aktif untuk ${selectedPaket.replace("_", " ")}!`
+                text: `Sukses! Sebanyak ${questionsToSubmit.length} butir soal berhasil disimpan aktif ke ${selectedPaket.replace("_", " ")}!`
             });
 
-            setStagedList([]);
+            // Kosongkan batch CSV bila ada
+            setBatchQuestions([]);
+
             setTimeout(() => {
                 fetchServerQuestions(selectedPaket);
                 setInputMode("list");
             }, 800);
         } catch (err: any) {
-            setStatusMsg({ type: "error", text: "Kendala menyimpan: " + err.message });
+            setStatusMsg({ type: "error", text: "Kendala saat menyimpan: " + err.message });
         } finally {
             setIsSubmitting(false);
         }
