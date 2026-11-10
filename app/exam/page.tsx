@@ -64,6 +64,7 @@ const LOCAL_BENCHMARKS: PTNProdiBenchmark[] = (LIST_PRODI_SNBT || []).map((item)
     passingGradeMin: Number(item.passingGrade || 650)
 }));
 
+// KUOTA RESMI 7 SUBTES SNBT (TOTAL 160 BUTIR SOAL)
 const SNBT_STRUCTURE = [
     { code: "PU", name: "Penalaran Umum (PU)", category: "Tes Potensi Skolastik", defaultDurationMinutes: 30, count: 30 },
     { code: "PPU", name: "Pengetahuan & Pemahaman", category: "Tes Potensi Skolastik", defaultDurationMinutes: 15, count: 20 },
@@ -227,7 +228,7 @@ function OfficialExamChamberContent() {
         } catch { }
     };
 
-    // Helper: Map data naskah
+    // Helper: Map data naskah dengan partisi kuota SNBT presisi
     const mapRawToQuestionItems = (rawData: any[]): QuestionItem[] => {
         const getSubtestMeta = (idx: number) => {
             let acc = 0;
@@ -267,7 +268,7 @@ function OfficialExamChamberContent() {
         });
     };
 
-    // 1. MEMUAT SESI & SELALU PRIORITASKAN DATA RESMI SERVER
+    // 1. MEMUAT SESI & SELALU MENGAMBIL NASKAH RESMI SERVER DENGAN ANTI-STALE CACHE
     useEffect(() => {
         if (typeof window === "undefined") return;
 
@@ -314,7 +315,7 @@ function OfficialExamChamberContent() {
             } catch { }
         }
 
-        // Pulihkan progres pengerjaan jika siswa sedang melanjutkan
+        // Pulihkan progres pengerjaan siswa jika sedang melanjutkan
         const savedProgressKey = `cbt_progress_${sessionData.nisn}`;
         const savedProgress = localStorage.getItem(savedProgressKey);
         if (savedProgress) {
@@ -332,22 +333,22 @@ function OfficialExamChamberContent() {
             } catch { }
         }
 
-        // SELALU AMBIL DATA DARI ENDPOINT SERVER TERLEBIH DAHULU (Anti-Stale Cache)
+        // SELALU PRIORITASKAN FILE RESMI DARI SERVER (Mencegah data tertahan 29 soal)
         setIsLoading(true);
         fetch(`/api/questions?paket=${activePkg}&_t=${Date.now()}`, { cache: "no-store" })
             .then((res) => res.json())
             .then((res) => {
                 if (res.status === "success" && Array.isArray(res.data) && res.data.length > 0) {
-                    setAllQuestions(mapRawToQuestionItems(res.data));
+                    const formatted = mapRawToQuestionItems(res.data);
+                    setAllQuestions(formatted);
                     setLoadError("");
                     localStorage.setItem(`cbt_questions_${activePkg}`, JSON.stringify(res.data));
                 } else {
-                    // Fallback ke cache jika offline
                     const cached = localStorage.getItem(`cbt_questions_${activePkg}`);
                     if (cached) {
                         setAllQuestions(mapRawToQuestionItems(JSON.parse(cached)));
                     } else {
-                        setLoadError("Naskah soal belum tersedia di server. Harap hubungi pengawas.");
+                        setLoadError("Naskah soal belum tersedia di server. Harap hubungi pengawas ujian.");
                     }
                 }
             })
@@ -384,14 +385,17 @@ function OfficialExamChamberContent() {
 
     const activeSubtestConfig = subtestsList[currentSubtestIndex] || subtestsList[0];
 
+    // Filter soal yang aktif khusus untuk subtes yang sedang dikerjakan dan urutkan nomornya
     const currentSubtestQuestions = useMemo(() => {
-        const filtered = allQuestions.filter((q) => q.subtest === activeSubtestConfig.code);
+        const filtered = allQuestions
+            .filter((q) => q.subtest === activeSubtestConfig.code)
+            .sort((a, b) => Number(a.localNo) - Number(b.localNo));
         return filtered.length > 0 ? filtered : allQuestions;
     }, [allQuestions, activeSubtestConfig]);
 
     const currentQ = currentSubtestQuestions[currentQIndexInSubtest] || currentSubtestQuestions[0];
 
-    // Ganti Subtes (Manual)
+    // Ganti Subtes (Manual): Reset ke soal nomor 1 di subtes baru
     const handleNextSubtestManual = useCallback(() => {
         setShowSubtestConfirmModal(false);
         if (currentSubtestIndex < subtestsList.length - 1) {
@@ -412,7 +416,7 @@ function OfficialExamChamberContent() {
         const timer = setInterval(() => {
             if (hardEndTime && Date.now() >= hardEndTime) {
                 clearInterval(timer);
-                alert("Waktu batas pelaksanaan sesi ujian telah berakhir. Lembar ujian Anda otomatis disimpan.");
+                alert("Waktu batas pelaksanaan sesi ujian telah berakhir. Lembar ujian otomatis dikumpulkan.");
                 executeFinalSubmission();
                 return;
             }
@@ -620,7 +624,7 @@ function OfficialExamChamberContent() {
         };
     }, [answers, allQuestions, subtestsList]);
 
-    // PENGUMPULAN AKHIR SOAL (DILENGKAPI TIMEOUT AGAR TIDAK MACET LOADING)
+    // PENGUMPULAN AKHIR SOAL & PENGIRIMAN DATA LENGKAP KE GOOGLE SHEETS DENGAN TIMEOUT
     const executeFinalSubmission = async () => {
         setShowSubtestConfirmModal(false);
         setIsSyncingServer(true);
@@ -653,41 +657,57 @@ function OfficialExamChamberContent() {
             pilihan2: pilihanKampus2
         };
 
-        // Simpan langsung ke memori browser agar hasil nilai langsung bisa ditampilkan
+        // Simpan langsung ke memori browser agar hasil nilai siswa langsung muncul
         localStorage.setItem("cbt_exam_result", JSON.stringify(finalReport));
 
+        // Pengiriman payload komprehensif ke Google Apps Script (Spreadsheet TIM PTN)
         if (cleanNisn) {
             localStorage.removeItem(`cbt_progress_${cleanNisn}`);
 
+            const gasPayload = {
+                action: "update_student_status",
+                nisn: cleanNisn,
+                nama_siswa: studentSession?.candidateName || "-",
+                kelas: studentSession?.kelas || "XII",
+                paket: studentSession?.packageId || "PAKET_1",
+                status: "Selesai",
+                nilai_total: scoreResults.scaledScore,
+                nilai_tps: scoreResults.tpsAvg,
+                nilai_literasi: scoreResults.litAvg,
+                skor_pu: scoreResults.subtestBreakdown["PU"]?.scoreIRT || 200,
+                skor_ppu: scoreResults.subtestBreakdown["PPU"]?.scoreIRT || 200,
+                skor_pbm: scoreResults.subtestBreakdown["PBM"]?.scoreIRT || 200,
+                skor_pk: scoreResults.subtestBreakdown["PK"]?.scoreIRT || 200,
+                skor_lit_indo: scoreResults.subtestBreakdown["LIT_INDO"]?.scoreIRT || 200,
+                skor_lit_eng: scoreResults.subtestBreakdown["LIT_ENG"]?.scoreIRT || 200,
+                skor_pm: scoreResults.subtestBreakdown["PM"]?.scoreIRT || 200,
+                benar: scoreResults.correct,
+                salah: scoreResults.incorrect,
+                kosong: scoreResults.unattempted,
+                violations: violationCount,
+                waktu_mulai: examStartTimeStr || "-",
+                waktu_selesai: timeStr,
+                pilihan_kampus_1: pilihanKampus1 || "-",
+                pilihan_kampus_2: pilihanKampus2 || "-"
+            };
+
+            // Gunakan timeout 3.5 detik agar siswa TIDAK PERNAH STUCK LOADING
+            const fetchPromise = fetch(GOOGLE_SCRIPT_API_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(gasPayload)
+            });
+
+            const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 3500));
+
             try {
-                // Gunakan timeout 3 detik agar tidak menggantung jika server Apps Script lambat
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-                await fetch(GOOGLE_SCRIPT_API_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    signal: controller.signal,
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({
-                        action: "update_student_status",
-                        nisn: cleanNisn,
-                        status: "Selesai",
-                        score: scoreResults.scaledScore,
-                        violations: violationCount,
-                        waktu_selesai: timeStr,
-                        pilihan_kampus_1: pilihanKampus1 || "-",
-                        pilihan_kampus_2: pilihanKampus2 || "-"
-                    })
-                }).catch(() => { });
-
-                clearTimeout(timeoutId);
+                await Promise.race([fetchPromise, timeoutPromise]);
             } catch (err) {
-                console.warn("Sinkronisasi server Apps Script dilewati demi kelancaran rapor:", err);
+                console.warn("Sinkronisasi Apps Script selesai di background:", err);
             }
         }
 
-        // Matikan loading dan tampilkan rapor secara instan
         setIsSyncingServer(false);
         setIsExamCompleted(true);
     };
@@ -986,7 +1006,7 @@ function OfficialExamChamberContent() {
                             <span className="text-blue-700 font-black">{sessionTitle}</span>
                         </div>
                         <p className="text-slate-600 leading-relaxed text-[11px]">
-                            Ujian terdiri dari <strong>{subtestsList.length} subtes bertahap</strong>. Naskah soal disajikan secara instan via server sekolah.
+                            Ujian terdiri dari <strong>{subtestsList.length} subtes bertahap</strong>. Naskah soal disajikan secara instan via server lokal sekolah.
                         </p>
                     </div>
 
@@ -1189,9 +1209,9 @@ function OfficialExamChamberContent() {
                     <div className="bg-white rounded-3xl border border-slate-200 max-w-sm w-full p-8 text-center space-y-4 shadow-2xl animate-in fade-in">
                         <Loader2 className="w-12 h-12 text-[#1e3a8a] animate-spin mx-auto" />
                         <div className="space-y-1">
-                            <h3 className="text-base font-black text-slate-900">Menyinkronkan Jawaban...</h3>
+                            <h3 className="text-base font-black text-slate-900">Menyimpan ke Google Sheets...</h3>
                             <p className="text-xs text-slate-500 leading-relaxed">
-                                Menghitung nilai dan menyimpan hasil lembar ujian. Harap tunggu...
+                                Mengirim data nilai siswa ke sistem TIM PTN sekolah. Harap tunggu sebentar...
                             </p>
                         </div>
                     </div>
@@ -1332,21 +1352,21 @@ function OfficialExamChamberContent() {
                         })}
                     </div>
 
-                    {/* BARIS TOMBOL NAVIGASI DENGAN STYLING KONTRAS */}
+                    {/* BARIS TOMBOL NAVIGASI DENGAN WARNA TEGAS & KONTRAS */}
                     <div className="pt-4 flex justify-between items-center border-t border-slate-100 gap-3">
                         <button
                             onClick={() => setCurrentQIndexInSubtest((i) => Math.max(0, i - 1))}
                             disabled={currentQIndexInSubtest === 0}
-                            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                            className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs active:scale-95"
                         >
                             &larr; Sebelumnya
                         </button>
 
                         <button
                             onClick={handleToggleDoubtful}
-                            className={`px-4 py-2.5 border rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs ${doubtfuls[currentQ?.id]
+                            className={`px-5 py-2.5 border rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${doubtfuls[currentQ?.id]
                                 ? "bg-amber-400 text-amber-950 border-amber-500 font-black ring-2 ring-amber-300"
-                                : "bg-slate-100 hover:bg-amber-50 border-slate-300 text-slate-700 hover:border-amber-400"
+                                : "bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-900"
                                 }`}
                         >
                             {doubtfuls[currentQ?.id] ? "✓ Ragu-Ragu (Ditandai)" : "Ragu-Ragu"}
@@ -1360,7 +1380,7 @@ function OfficialExamChamberContent() {
                                     setShowSubtestConfirmModal(true);
                                 }
                             }}
-                            className="px-5 py-2.5 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
+                            className="px-6 py-2.5 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer active:scale-95"
                         >
                             {currentQIndexInSubtest < currentSubtestQuestions.length - 1 ? "Berikutnya →" : "Selesai Subtes"}
                         </button>
@@ -1428,7 +1448,7 @@ function OfficialExamChamberContent() {
                         </h3>
                         <p className="text-xs text-slate-500 leading-relaxed">
                             {currentSubtestIndex === subtestsList.length - 1
-                                ? "Nilai resmi Anda akan dihitung dan ditampilkan di layar."
+                                ? "Nilai resmi Anda akan dihitung dan dikirim langsung ke server bilik pengawas dan data TIM PTN."
                                 : "Setelah dikonfirmasi, Anda akan beralih ke subtes berikutnya dan jawaban subtes ini tidak dapat diubah lagi."}
                         </p>
                         <div className="flex gap-2 pt-2">
