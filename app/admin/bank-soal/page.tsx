@@ -161,7 +161,7 @@ const SNBT_STRUCTURE = [
 ];
 
 // ========================================================
-// MESIN IMPORT WORD DENGAN KUOTA PRESISI 7 SUBTES
+// MESIN IMPORT WORD DENGAN TEMPLATE BAKU & ANTI-ERROR
 // ========================================================
 function WordImporterSection({
     selectedPaket,
@@ -174,6 +174,51 @@ function WordImporterSection({
 }) {
     const [isParsing, setIsParsing] = useState(false);
     const [stagedList, setStagedList] = useState<ParsedQuestion[]>([]);
+
+    // Fungsi unduh template resmi format Word (.docx / .doc)
+    const handleDownloadWordTemplate = () => {
+        const templateContent = `=== NASKAH RESMI SIMULASI SNBT 2026 ===
+PAKET: ${selectedPaket}
+
+[SUBTES: PU]
+
+[WACANA]
+Penelitian terbaru di bidang neurobiologi menunjukkan bahwa paparan cahaya biru (blue light) dari layar gawai pada malam hari menekan sekresi melatonin oleh kelenjar pineal, memicu desinkronisasi ritme sirkadian. Gangguan ini meningkatkan risiko resistensi insulin dan penurunan fungsi konsolidasi memori di hipokampus.
+[/WACANA]
+
+[SOAL: 1]
+Berdasarkan teks di atas, manakah simpulan yang PALING DIDUKUNG oleh bacaan?
+A. Penurunan fungsi memori hanya dialami oleh individu yang terpapar cahaya biru lebih dari dua jam.
+B. Menjaga stabilitas sekresi melatonin berkontribusi pada penurunan risiko resistensi insulin.
+C. Filter spektrum kuning menghentikan seluruh dampak negatif gawai secara permanen.
+D. Fase tidur gelombang lambat tidak dipengaruhi oleh kelenjar pineal.
+E. Paparan cahaya gawai aman bagi ritme sirkadian.
+[KUNCI: B]
+[PEMBAHASAN]
+Cahaya biru menekan sekresi melatonin yang memicu desinkronisasi sirkadian, sehingga stabilitas melatonin menjaga keteraturan fungsi biologis tubuh.
+[/PEMBAHASAN]
+
+[SOAL: 2]
+Sebuah fungsi kuadrat didefinisikan sebagai $f(x) = x^2 - 4x + 3$. Berapakah nilai minimum fungsi tersebut?
+A. -2
+B. -1
+C. 0
+D. 1
+E. 3
+[KUNCI: B]
+[PEMBAHASAN]
+Nilai minimum terletak pada sumbu simetri $x = -b/(2a) = 4/2 = 2$. Maka $f(2) = 2^2 - 4(2) + 3 = 4 - 8 + 3 = -1$.
+[/PEMBAHASAN]
+`;
+
+        const blob = new Blob([templateContent], { type: "text/plain;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Template_Soal_Word_${selectedPaket}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     const handleDocxUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -214,8 +259,11 @@ function WordImporterSection({
             });
 
             const rawQuestions: any[] = [];
+            let inWacanaBlock = false;
+            let inPembahasanBlock = false;
             let pendingStimulus = "";
             let currentImage = "";
+            let currentSubtestContext = "PU";
             let current: any = null;
 
             const commitCurrent = () => {
@@ -231,30 +279,49 @@ function WordImporterSection({
                 if (imgUrl) currentImage = imgUrl;
                 if (!text) return;
 
-                if (/^(?:naskah\s+resmi|paket\s+\d+|penyusun|petunjuk|alokasi\s+waktu|gambar\s+ilustrasi)/i.test(text)) return;
-
-                if (/^===\s*subtes/i.test(text)) {
+                // 1. Tangkap Tag Subtes [SUBTES: PK]
+                const subtestMatch = text.match(/\[SUBTES:\s*([A-Za-z_]+)\]/i);
+                if (subtestMatch) {
                     commitCurrent();
+                    currentSubtestContext = subtestMatch[1].toUpperCase();
                     pendingStimulus = "";
                     return;
                 }
 
-                if (/^(?:\[wacana\s*\/?\s*stimulus\]|wacana\s*:|stimulus\s*:)/i.test(text)) {
-                    const cleanStim = text.replace(/^(?:\[wacana\s*\/?\s*stimulus\]|wacana\s*:|stimulus\s*:)\s*/i, "").trim();
-                    if (cleanStim) pendingStimulus = cleanStim;
+                // 2. Tangkap Blok Wacana [WACANA] ... [/WACANA]
+                if (/\[WACANA\]/i.test(text)) {
+                    inWacanaBlock = true;
+                    const clean = text.replace(/\[WACANA\]/i, "").trim();
+                    if (clean) pendingStimulus = clean;
+                    return;
+                }
+                if (/\[\/WACANA\]/i.test(text)) {
+                    inWacanaBlock = false;
+                    const clean = text.replace(/\[\/WACANA\]/i, "").trim();
+                    if (clean) pendingStimulus = pendingStimulus ? `${pendingStimulus}\n${clean}` : clean;
+                    return;
+                }
+                if (inWacanaBlock) {
+                    pendingStimulus = pendingStimulus ? `${pendingStimulus}\n${text}` : text;
                     return;
                 }
 
+                // 3. Tangkap Tag Soal [SOAL: 1] atau nomor standar 1. / Soal 1.
+                const tagSoalMatch = text.match(/\[SOAL:\s*(\d+)\]\s*(.*)$/i);
                 const explicitQ = text.match(/^(?:soal|nomor|no\.?)\s*(\d+)[\.\:\)]?\s*(.*)$/i);
                 const numericQ = text.match(/^(\d+)[\.\)\uff0e]\s*(.*)$/i);
+
                 const isOptionPattern = /^[a-e][\.\)\uff0e]/i.test(text);
-                const isKeyOrPbhPattern = /^(?:kunci(?:\s*jawaban)?|jawaban|pembahasan)/i.test(text);
+                const isKeyPattern = /(?:\[KUNCI:\s*[A-E]\]|kunci(?:\s*jawaban)?\s*[:=]\s*[A-E])/i.test(text);
 
                 let isNewQuestion = false;
                 let qText = "";
 
-                if (!isOptionPattern && !isKeyOrPbhPattern) {
-                    if (explicitQ) {
+                if (!isOptionPattern && !isKeyPattern) {
+                    if (tagSoalMatch) {
+                        isNewQuestion = true;
+                        qText = tagSoalMatch[2].trim();
+                    } else if (explicitQ) {
                         isNewQuestion = true;
                         qText = explicitQ[2].trim();
                     } else if (numericQ) {
@@ -266,6 +333,7 @@ function WordImporterSection({
                 if (isNewQuestion) {
                     commitCurrent();
                     current = {
+                        subtes_code: currentSubtestContext,
                         stimulus: pendingStimulus.trim(),
                         image_url: currentImage,
                         image_position: "above",
@@ -284,13 +352,9 @@ function WordImporterSection({
                     return;
                 }
 
-                if (!current) {
-                    if (!isOptionPattern && !isKeyOrPbhPattern) {
-                        pendingStimulus = pendingStimulus ? `${pendingStimulus}\n${text}` : text;
-                    }
-                    return;
-                }
+                if (!current) return;
 
+                // 4. Tangkap Opsi A - E
                 const singleOptMatch = text.match(/^([a-e])[\.\)\uff0e]\s*(.*)$/i);
                 if (singleOptMatch) {
                     const letter = singleOptMatch[1].toLowerCase();
@@ -309,40 +373,50 @@ function WordImporterSection({
                     return;
                 }
 
-                const keyMatch = text.match(/(?:kunci(?:\s*jawaban)?|jawaban)\s*[:=]\s*([a-e])/i);
-                if (keyMatch) {
-                    current.kunci = keyMatch[1].toUpperCase();
+                // 5. Tangkap Kunci Jawaban [KUNCI: B]
+                const keyTagMatch = text.match(/\[KUNCI:\s*([A-E])\]/i) || text.match(/(?:kunci(?:\s*jawaban)?|jawaban)\s*[:=]\s*([a-e])/i);
+                if (keyTagMatch) {
+                    current.kunci = keyTagMatch[1].toUpperCase();
                     return;
                 }
 
-                const pbhMatch = text.match(/^pembahasan(?:\s*soal)?\s*[:=]?\s*(.*)$/i);
-                if (pbhMatch) {
-                    current.pembahasan = pbhMatch[1] ? pbhMatch[1].trim() : "";
+                // 6. Tangkap Pembahasan [PEMBAHASAN] ... [/PEMBAHASAN]
+                if (/\[PEMBAHASAN\]/i.test(text)) {
+                    inPembahasanBlock = true;
+                    const clean = text.replace(/\[PEMBAHASAN\]/i, "").trim();
+                    if (clean) current.pembahasan = clean;
+                    return;
+                }
+                if (/\[\/PEMBAHASAN\]/i.test(text)) {
+                    inPembahasanBlock = false;
+                    const clean = text.replace(/\[\/PEMBAHASAN\]/i, "").trim();
+                    if (clean) current.pembahasan = current.pembahasan ? `${current.pembahasan}\n${clean}` : clean;
+                    return;
+                }
+                if (inPembahasanBlock) {
+                    current.pembahasan = current.pembahasan ? `${current.pembahasan}\n${text}` : text;
                     return;
                 }
 
+                // Sambungan pertanyaan
                 if (!current.opsi_a) {
                     current.pertanyaan = current.pertanyaan ? `${current.pertanyaan}\n${text}` : text;
-                } else if (current.pembahasan !== undefined) {
-                    current.pembahasan = current.pembahasan ? `${current.pembahasan}\n${text}` : text;
                 }
             });
 
             commitCurrent();
 
             if (rawQuestions.length === 0) {
-                alert("Tidak ada butir soal yang terbaca dari dokumen Word.");
+                alert("Tidak ada butir soal yang terbaca. Pastikan dokumen memakai format [SOAL: X] atau penomoran 1 s.d. 30!");
                 return;
             }
 
+            // Sanitasi kuota mutlak 160 butir SNBT (PU 30, PPU 20, dst)
             const getSubtestMetaByQuota = (idx: number) => {
                 let accumulated = 0;
                 for (const sub of SNBT_STRUCTURE) {
                     if (idx < accumulated + sub.count) {
-                        return {
-                            subtes: sub.code,
-                            localNo: (idx - accumulated) + 1
-                        };
+                        return { subtes: sub.code, localNo: (idx - accumulated) + 1 };
                     }
                     accumulated += sub.count;
                 }
@@ -381,13 +455,24 @@ function WordImporterSection({
 
     return (
         <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-6 shadow-sm text-left">
-            <div className="border-b border-slate-100 pb-4">
-                <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                    Import Naskah Word (.docx) &bull; Pembagian Kuota 7 Subtes Resmi
-                </h2>
-                <p className="text-xs text-slate-500">
-                    Otomatis mengunci: PU (30 soal), PPU (20 soal), PBM (20 soal), PK (20 soal), LIT_INDO (30 soal), LIT_ENG (20 soal), PM (20 soal).
-                </p>
+            <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                        Import Naskah Word (.docx) Otomatis
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                        Mendukung tag baku: <code className="text-indigo-600 font-bold font-mono">[WACANA]</code>, <code className="text-indigo-600 font-bold font-mono">[SOAL: 1]</code>, <code className="text-indigo-600 font-bold font-mono">[KUNCI: A]</code>, <code className="text-indigo-600 font-bold font-mono">[PEMBAHASAN]</code>.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={handleDownloadWordTemplate}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition-all cursor-pointer shadow-xs active:scale-95"
+                >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Unduh Panduan Template Word</span>
+                </button>
             </div>
 
             <div className="border-2 border-dashed border-indigo-300 hover:border-indigo-600 bg-indigo-50/20 hover:bg-indigo-50/40 rounded-3xl p-8 text-center transition-all">
@@ -452,7 +537,7 @@ function WordImporterSection({
                             className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
                         >
                             <Download className="w-4 h-4" />
-                            <span>Download {selectedPaket.toLowerCase()}.json</span>
+                            <span>Download JSON</span>
                         </button>
 
                         <button
@@ -465,7 +550,7 @@ function WordImporterSection({
                             className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
                         >
                             <Send className="w-3.5 h-3.5" />
-                            <span>Terapkan ke Pratinjau</span>
+                            <span>Terapkan ke Server</span>
                         </button>
                     </div>
                 </div>
