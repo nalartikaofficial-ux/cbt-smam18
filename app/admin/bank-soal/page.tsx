@@ -175,46 +175,94 @@ function WordImporterSection({
     const [isParsing, setIsParsing] = useState(false);
     const [stagedList, setStagedList] = useState<ParsedQuestion[]>([]);
 
-    // Fungsi unduh template resmi format Word (.docx / .doc)
+    // FUNGSI UNDUH ASLI BERKAS MICROSOFT WORD (.DOC)
     const handleDownloadWordTemplate = () => {
-        const templateContent = `=== NASKAH RESMI SIMULASI SNBT 2026 ===
-PAKET: ${selectedPaket}
+        const wordHtmlContent = `
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+    <meta charset="utf-8">
+    <title>Template Soal Word CBT SMA M18</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+        body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #1e293b; margin: 20mm; }
+        .header { text-align: center; font-weight: bold; font-size: 13pt; margin-bottom: 16px; border-bottom: 2px solid #0f172a; padding-bottom: 8px; }
+        .tag { font-family: 'Consolas', 'Courier New', monospace; font-weight: bold; color: #4338ca; }
+        .box { background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 10px; margin: 8px 0; border-radius: 4px; }
+        p { margin: 4px 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        NASKAH RESMI SIMULASI CBT UTBK-SNBT 2026<br/>
+        SMA MUHAMMADIYAH 18 JAKARTA
+    </div>
 
-[SUBTES: PU]
+    <p><span class="tag">=== SUBTES: PU ===</span></p>
 
-[WACANA]
-Penelitian terbaru di bidang neurobiologi menunjukkan bahwa paparan cahaya biru (blue light) dari layar gawai pada malam hari menekan sekresi melatonin oleh kelenjar pineal, memicu desinkronisasi ritme sirkadian. Gangguan ini meningkatkan risiko resistensi insulin dan penurunan fungsi konsolidasi memori di hipokampus.
-[/WACANA]
+    <p><span class="tag">[WACANA]</span></p>
+    <div class="box">
+        Penelitian terbaru di bidang neurobiologi menunjukkan bahwa paparan cahaya biru (blue light) dari layar gawai pada malam hari menekan sekresi melatonin oleh kelenjar pineal, memicu desinkronisasi ritme sirkadian. Gangguan kronis ini terbukti meningkatkan risiko resistensi insulin dan penurunan fungsi konsolidasi memori di hipokampus. Para peneliti menyimpulkan bahwa membatasi penggunaan gawai dua jam sebelum tidur dapat menjaga keteraturan ritme biologis tubuh.
+    </div>
+    <p><span class="tag">[/WACANA]</span></p>
 
-[SOAL: 1]
-Berdasarkan teks di atas, manakah simpulan yang PALING DIDUKUNG oleh bacaan?
-A. Penurunan fungsi memori hanya dialami oleh individu yang terpapar cahaya biru lebih dari dua jam.
-B. Menjaga stabilitas sekresi melatonin berkontribusi pada penurunan risiko resistensi insulin.
-C. Filter spektrum kuning menghentikan seluruh dampak negatif gawai secara permanen.
-D. Fase tidur gelombang lambat tidak dipengaruhi oleh kelenjar pineal.
-E. Paparan cahaya gawai aman bagi ritme sirkadian.
-[KUNCI: B]
-[PEMBAHASAN]
-Cahaya biru menekan sekresi melatonin yang memicu desinkronisasi sirkadian, sehingga stabilitas melatonin menjaga keteraturan fungsi biologis tubuh.
-[/PEMBAHASAN]
+    <p><span class="tag">[SOAL: 1]</span></p>
+    <p>Berdasarkan teks di atas, manakah simpulan yang PALING DIDUKUNG oleh bacaan?</p>
+    <p>A. Penurunan fungsi memori hanya dialami individu yang menatap gawai lebih dari dua jam.</p>
+    <p>B. Menjaga stabilitas sekresi melatonin berkontribusi pada penurunan risiko resistensi insulin.</p>
+    <p>C. Filter spektrum kuning mampu menghentikan seluruh dampak negatif gawai secara permanen.</p>
+    <p>D. Fase tidur gelombang lambat tidak dipengaruhi oleh fungsi kelenjar pineal.</p>
+    <p>E. Paparan cahaya gawai terbukti aman bagi sinkronisasi ritme sirkadian.</p>
+    <p><span class="tag">[KUNCI: B]</span></p>
+    <p><span class="tag">[PEMBAHASAN]</span></p>
+    <p>Cahaya biru menekan sekresi hormon melatonin yang memicu gangguan ritme sirkadian dan resistensi insulin. Maka menjaga stabilitas sekresi melatonin berkontribusi menurunkan risiko tersebut.</p>
+    <p><span class="tag">[/PEMBAHASAN]</span></p>
 
-[SOAL: 2]
-Sebuah fungsi kuadrat didefinisikan sebagai $f(x) = x^2 - 4x + 3$. Berapakah nilai minimum fungsi tersebut?
-A. -2
-B. -1
-C. 0
-D. 1
-E. 3
-[KUNCI: B]
-[PEMBAHASAN]
-Nilai minimum terletak pada sumbu simetri $x = -b/(2a) = 4/2 = 2$. Maka $f(2) = 2^2 - 4(2) + 3 = 4 - 8 + 3 = -1$.
-[/PEMBAHASAN]
-`;
+    <br/>
 
-        const blob = new Blob([templateContent], { type: "text/plain;charset=utf-8" });
+    <p><span class="tag">[SOAL: 2]</span></p>
+    <p>Sebuah fungsi kuadrat didefinisikan sebagai $f(x) = x^2 - 4x + 3$. Berapakah nilai minimum fungsi tersebut?</p>
+    <p>A. -2</p>
+    <p>B. -1</p>
+    <p>C. 0</p>
+    <p>D. 1</p>
+    <p>E. 3</p>
+    <p><span class="tag">[KUNCI: B]</span></p>
+    <p><span class="tag">[PEMBAHASAN]</span></p>
+    <p>Titik balik minimum berada pada $x = -b/(2a) = 4/2 = 2$. Maka nilai minimumnya adalah $f(2) = 2^2 - 4(2) + 3 = -1$.</p>
+    <p><span class="tag">[/PEMBAHASAN]</span></p>
+
+    <br/>
+
+    <p><span class="tag">=== SUBTES: PPU ===</span></p>
+
+    <p><span class="tag">[SOAL: 1]</span></p>
+    <p>Tuliskan pertanyaan nomor 1 untuk subtes Pengetahuan & Pemahaman Umum di sini...</p>
+    <p>A. Opsi A</p>
+    <p>B. Opsi B</p>
+    <p>C. Opsi C</p>
+    <p>D. Opsi D</p>
+    <p>E. Opsi E</p>
+    <p><span class="tag">[KUNCI: A]</span></p>
+    <p><span class="tag">[PEMBAHASAN]</span></p>
+    <p>Tuliskan pembahasan di sini.</p>
+    <p><span class="tag">[/PEMBAHASAN]</span></p>
+</body>
+</html>`;
+
+        const blob = new Blob(['\ufeff' + wordHtmlContent], {
+            type: 'application/msword;charset=utf-8'
+        });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `Template_Soal_Word_${selectedPaket}.txt`;
+        link.download = `Template_Soal_Word_${selectedPaket}.doc`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
