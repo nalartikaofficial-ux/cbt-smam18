@@ -174,8 +174,6 @@ function WordImporterSection({
 }) {
     const [isParsing, setIsParsing] = useState(false);
     const [stagedList, setStagedList] = useState<ParsedQuestion[]>([]);
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [editForm, setEditForm] = useState<ParsedQuestion | null>(null);
 
     const handleDocxUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -233,24 +231,20 @@ function WordImporterSection({
                 if (imgUrl) currentImage = imgUrl;
                 if (!text) return;
 
-                // Abaikan judul dokumen dan header umum
                 if (/^(?:naskah\s+resmi|paket\s+\d+|penyusun|petunjuk|alokasi\s+waktu|gambar\s+ilustrasi)/i.test(text)) return;
 
-                // Deteksi header subtes (misal: "=== SUBTES 1: PENALARAN UMUM ===")
                 if (/^===\s*subtes/i.test(text)) {
                     commitCurrent();
                     pendingStimulus = "";
                     return;
                 }
 
-                // Deteksi label wacana
                 if (/^(?:\[wacana\s*\/?\s*stimulus\]|wacana\s*:|stimulus\s*:)/i.test(text)) {
                     const cleanStim = text.replace(/^(?:\[wacana\s*\/?\s*stimulus\]|wacana\s*:|stimulus\s*:)\s*/i, "").trim();
                     if (cleanStim) pendingStimulus = cleanStim;
                     return;
                 }
 
-                // Cek format nomor soal (misal: "1. Pertanyaan..." atau "Soal 1. ...")
                 const explicitQ = text.match(/^(?:soal|nomor|no\.?)\s*(\d+)[\.\:\)]?\s*(.*)$/i);
                 const numericQ = text.match(/^(\d+)[\.\)\uff0e]\s*(.*)$/i);
                 const isOptionPattern = /^[a-e][\.\)\uff0e]/i.test(text);
@@ -290,7 +284,6 @@ function WordImporterSection({
                     return;
                 }
 
-                // Jika belum masuk butir soal, teks diperlakukan sebagai wacana
                 if (!current) {
                     if (!isOptionPattern && !isKeyOrPbhPattern) {
                         pendingStimulus = pendingStimulus ? `${pendingStimulus}\n${text}` : text;
@@ -298,7 +291,6 @@ function WordImporterSection({
                     return;
                 }
 
-                // Cek opsi satuan (A. teks)
                 const singleOptMatch = text.match(/^([a-e])[\.\)\uff0e]\s*(.*)$/i);
                 if (singleOptMatch) {
                     const letter = singleOptMatch[1].toLowerCase();
@@ -306,7 +298,6 @@ function WordImporterSection({
                     return;
                 }
 
-                // Cek opsi inline (A. ... B. ...)
                 const inlineMatches = Array.from(text.matchAll(/(?:^|\s+)([a-e])[\.\)\uff0e]\s+/gi));
                 if (inlineMatches.length >= 2) {
                     for (let i = 0; i < inlineMatches.length; i++) {
@@ -318,21 +309,18 @@ function WordImporterSection({
                     return;
                 }
 
-                // Cek kunci jawaban
                 const keyMatch = text.match(/(?:kunci(?:\s*jawaban)?|jawaban)\s*[:=]\s*([a-e])/i);
                 if (keyMatch) {
                     current.kunci = keyMatch[1].toUpperCase();
                     return;
                 }
 
-                // Cek pembahasan
                 const pbhMatch = text.match(/^pembahasan(?:\s*soal)?\s*[:=]?\s*(.*)$/i);
                 if (pbhMatch) {
                     current.pembahasan = pbhMatch[1] ? pbhMatch[1].trim() : "";
                     return;
                 }
 
-                // Sambungan teks pertanyaan atau pembahasan
                 if (!current.opsi_a) {
                     current.pertanyaan = current.pertanyaan ? `${current.pertanyaan}\n${text}` : text;
                 } else if (current.pembahasan !== undefined) {
@@ -343,18 +331,17 @@ function WordImporterSection({
             commitCurrent();
 
             if (rawQuestions.length === 0) {
-                alert("Tidak ada butir soal yang terbaca dari dokumen Word. Pastikan ada penomoran ('1.' atau 'Soal 1') dan pilihan (A-E).");
+                alert("Tidak ada butir soal yang terbaca dari dokumen Word.");
                 return;
             }
 
-            // KUNCI KUOTA RESMI SNBT: Tepat 30 PU, 20 PPU, 20 PBM, 20 PK, 30 LIT_INDO, 20 LIT_ENG, 20 PM
-            const getSubtestMetaByQuota = (indexZeroBased: number) => {
+            const getSubtestMetaByQuota = (idx: number) => {
                 let accumulated = 0;
                 for (const sub of SNBT_STRUCTURE) {
-                    if (indexZeroBased < accumulated + sub.count) {
+                    if (idx < accumulated + sub.count) {
                         return {
                             subtes: sub.code,
-                            localNo: (indexZeroBased - accumulated) + 1
+                            localNo: (idx - accumulated) + 1
                         };
                     }
                     accumulated += sub.count;
@@ -550,9 +537,6 @@ export default function AdminBankSoalPage() {
     const [isSavingDurations, setIsSavingDurations] = useState(false);
 
     const [showCsvPreview, setShowCsvPreview] = useState(true);
-    const [testInputUrl, setTestInputUrl] = useState("");
-    const [testedDirectUrl, setTestedDirectUrl] = useState("");
-    const [isCopied, setIsCopied] = useState(false);
     const [batchQuestions, setBatchQuestions] = useState<ParsedQuestion[]>([]);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -1093,7 +1077,7 @@ export default function AdminBankSoalPage() {
                         ) : filteredServerQuestions.length === 0 ? (
                             <div className="text-center py-12 text-slate-400 space-y-2">
                                 <p className="text-sm font-medium">Belum ada butir soal pada kategori ini.</p>
-                                <p className="text-xs">Gunakan tab <strong>Import Dokumen Word</strong> untuk membagi soal otomatis ke 7 subtes.</p>
+                                <p className="text-xs">Gunakan tab <strong>Import Dokumen Word</strong> atau <strong>Import Massal CSV</strong> untuk mengisi paket soal.</p>
                             </div>
                         ) : (
                             <div className="space-y-4 max-h-[600px] overflow-y-auto pr-1">
@@ -1182,6 +1166,90 @@ export default function AdminBankSoalPage() {
                         }}
                         isSubmittingServer={isSubmitting}
                     />
+                )}
+
+                {/* TAB 2: UPLOAD MASSAL FILE CSV / EXCEL */}
+                {inputMode === "csv" && (
+                    <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-6 shadow-sm">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                            <div>
+                                <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                                    Upload Massal Soal via File CSV / Excel
+                                </h2>
+                                <p className="text-xs text-slate-500">
+                                    Mendukung formula KaTeX serta link Google Drive langsung pada kolom stimulus maupun pilihan A–E.
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={handleDownloadExcelTemplate}
+                                className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-400 rounded-full transition-all duration-200 shadow-sm hover:shadow active:scale-95 cursor-pointer"
+                            >
+                                <Download className="w-4 h-4 text-emerald-700" />
+                                <span>Unduh Template Lengkap (Excel .xlsx)</span>
+                            </button>
+                        </div>
+
+                        <div
+                            onClick={() => fileInputRef.current?.click()}
+                            className="border-2 border-dashed border-slate-300 hover:border-blue-600 hover:bg-blue-50/40 rounded-3xl p-8 text-center cursor-pointer transition-all space-y-3"
+                        >
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".csv, .xlsx, .xls"
+                                onChange={handleFileUpload}
+                                className="hidden"
+                            />
+                            <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center mx-auto">
+                                <UploadCloud className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-slate-800">Klik untuk Memilih File CSV atau Excel dari Komputer</p>
+                                <p className="text-xs text-slate-400 mt-0.5">Mendukung format .csv atau .xlsx standar Excel dan Google Sheets</p>
+                            </div>
+                        </div>
+
+                        {batchQuestions.length > 0 && (
+                            <div className="space-y-4 pt-4 border-t border-slate-200">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCsvPreview(!showCsvPreview)}
+                                        className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition-all cursor-pointer shadow-xs active:scale-95"
+                                    >
+                                        <Eye className="w-4 h-4 text-blue-700" />
+                                        <span>Pratinjau Hasil Impor CSV ({batchQuestions.length} Soal)</span>
+                                        <span className="text-[10px] bg-blue-200/70 text-blue-900 px-1.5 py-0.5 rounded font-mono">
+                                            {showCsvPreview ? "Tutup ▲" : "Lihat Hasil ▼"}
+                                        </span>
+                                    </button>
+
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setBatchQuestions([])}
+                                            className="px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-xl transition-all cursor-pointer flex items-center gap-1"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                            <span>Bersihkan</span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            disabled={isSubmitting}
+                                            onClick={() => handleBulkSubmit(batchQuestions)}
+                                            className="px-5 py-2.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-blue-900/20 cursor-pointer disabled:opacity-50"
+                                        >
+                                            <Send className="w-3.5 h-3.5" />
+                                            <span>{isSubmitting ? "Menyimpan ke File..." : `Simpan Semua ke ${selectedPaket}`}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
         </div>
