@@ -32,7 +32,8 @@ import {
     FileText,
     ExternalLink,
     HelpCircle,
-    Eye
+    Eye,
+    LayoutGrid
 } from "lucide-react";
 import katex from "katex";
 import "katex/dist/katex.min.css";
@@ -104,7 +105,7 @@ function RenderLatex({ content = "" }: { content: any }) {
                     return (
                         <span
                             key={idx}
-                            className="block my-2 overflow-x-auto py-1"
+                            className="block my-2 overflow-x-auto py-1 max-w-full text-center"
                             dangerouslySetInnerHTML={{ __html: html }}
                         />
                     );
@@ -114,7 +115,7 @@ function RenderLatex({ content = "" }: { content: any }) {
                     return (
                         <span
                             key={idx}
-                            className="inline-block px-0.5 align-middle"
+                            className="inline-block px-0.5 align-middle max-w-full overflow-x-auto"
                             dangerouslySetInnerHTML={{ __html: html }}
                         />
                     );
@@ -203,6 +204,9 @@ function OfficialExamChamberContent() {
     const [doubtfuls, setDoubtfuls] = useState<Record<string | number, boolean>>({});
     const [fontSizeMode, setFontSizeMode] = useState<"normal" | "large" | "xlarge">("normal");
 
+    // Laci kisi-kisi untuk tablet & HP
+    const [showMobileMatrix, setShowMobileMatrix] = useState(false);
+
     const [isInExam, setIsInExam] = useState(false);
     const [isSyncingServer, setIsSyncingServer] = useState(false);
     const [isExamCompleted, setIsExamCompleted] = useState(false);
@@ -228,7 +232,7 @@ function OfficialExamChamberContent() {
         } catch { }
     };
 
-    // STRICT PARTITIONING BERDASARKAN INDEKS MURNI 0..159 (KEBAL SALAH LABEL/OFF-BY-ONE)
+    // STRICT INDEX PARTITIONING (0..159) - KUNCI MATI KUOTA RESMI
     const mapRawToQuestionItems = (rawData: any[]): QuestionItem[] => {
         const getSubtestMetaByStrictIndex = (idx: number) => {
             let acc = 0;
@@ -845,23 +849,23 @@ function OfficialExamChamberContent() {
         });
     }, [ptnBenchmarks, scoreResults.scaledScore]);
 
-    // TAHAP 1: GERBANG KARANTINA
+    // TAHAP 1: GERBANG KARANTINA (RESPONSIF MOBILE / TABLET / LAPTOP)
     if (!isInExam) {
         return (
-            <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans text-slate-800">
+            <div className="min-h-screen bg-slate-100 flex items-center justify-center p-3 sm:p-6 font-sans text-slate-800">
                 {showPTNDatabaseModal && (
-                    <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-                        <div className="bg-white rounded-3xl border border-slate-200 max-w-2xl w-full p-6 space-y-4 shadow-2xl animate-in fade-in max-h-[90vh] flex flex-col">
+                    <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+                        <div className="bg-white rounded-3xl border border-slate-200 max-w-2xl w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in fade-in max-h-[92vh] flex flex-col">
                             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
+                                    <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold shrink-0">
                                         <BookOpen className="w-4 h-4" />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-sm text-slate-900">
+                                        <h3 className="font-black text-xs sm:text-sm text-slate-900 leading-tight">
                                             Database Resmi SNBT &bull; Target Pilihan {targetSlotForSelection}
                                         </h3>
-                                        <p className="text-[11px] text-slate-500">
+                                        <p className="text-[10px] sm:text-[11px] text-slate-500">
                                             Menampilkan {filteredModalBenchmarks.length} prodi terdaftar nasional (S1, D4, D3)
                                         </p>
                                     </div>
@@ -888,12 +892,12 @@ function OfficialExamChamberContent() {
 
                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                     <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
-                                        <span className="text-[10px] font-mono font-bold text-slate-400 px-1.5">JENJANG:</span>
+                                        <span className="text-[9.5px] font-mono font-bold text-slate-400 px-1">JENJANG:</span>
                                         {(["ALL", "S1", "D4", "D3"] as const).map((j) => (
                                             <button
                                                 key={j}
                                                 onClick={() => setModalJenjangFilter(j)}
-                                                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold font-mono transition-all cursor-pointer ${modalJenjangFilter === j ? "bg-indigo-700 text-white shadow-2xs" : "text-slate-600 hover:text-slate-900"
+                                                className={`px-2 py-0.5 rounded-lg text-[9.5px] font-bold font-mono transition-all cursor-pointer ${modalJenjangFilter === j ? "bg-indigo-700 text-white shadow-2xs" : "text-slate-600 hover:text-slate-900"
                                                     }`}
                                             >
                                                 {j === "ALL" ? "Semua" : j}
@@ -906,7 +910,7 @@ function OfficialExamChamberContent() {
                                             <button
                                                 key={r}
                                                 onClick={() => setModalRumpunFilter(r)}
-                                                className={`px-3 py-1 rounded-lg text-[10px] font-bold font-mono transition-all cursor-pointer ${modalRumpunFilter === r ? "bg-white text-blue-900 shadow-2xs" : "text-slate-500 hover:text-slate-900"
+                                                className={`px-2.5 py-0.5 rounded-lg text-[9.5px] font-bold font-mono transition-all cursor-pointer ${modalRumpunFilter === r ? "bg-white text-blue-900 shadow-2xs" : "text-slate-500 hover:text-slate-900"
                                                     }`}
                                             >
                                                 {r}
@@ -916,7 +920,7 @@ function OfficialExamChamberContent() {
                                 </div>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[300px]">
+                            <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[260px]">
                                 {filteredModalBenchmarks.slice(0, 50).map((item) => (
                                     <div
                                         key={item.id}
@@ -925,7 +929,7 @@ function OfficialExamChamberContent() {
                                     >
                                         <div className="flex items-start justify-between gap-2">
                                             <div>
-                                                <div className="text-xs font-black text-slate-900 group-hover:text-blue-900 flex items-center gap-1.5">
+                                                <div className="text-xs font-black text-slate-900 group-hover:text-blue-900 flex items-center gap-1.5 flex-wrap">
                                                     <span>{item.prodi}</span>
                                                     <span className="px-1.5 py-0.2 rounded bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono text-[9.5px] font-bold">
                                                         {item.jenjang || "S1"}
@@ -968,10 +972,10 @@ function OfficialExamChamberContent() {
                     </div>
                 )}
 
-                <div className="w-full max-w-xl bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-9 space-y-5 text-center relative overflow-hidden">
+                <div className="w-full max-w-xl bg-white rounded-3xl border border-slate-200 shadow-xl p-5 sm:p-9 space-y-4 sm:space-y-5 text-center relative overflow-hidden">
                     <div className="absolute top-0 inset-x-0 h-1.5 bg-[#1e3a8a]" />
 
-                    <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 flex items-center justify-center p-1 mx-auto shadow-xs">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white border border-slate-200 flex items-center justify-center p-1 mx-auto shadow-xs">
                         <img
                             src="/logo-timsim.jpg"
                             alt="Logo Sekolah"
@@ -983,40 +987,40 @@ function OfficialExamChamberContent() {
                     </div>
 
                     <div className="space-y-1">
-                        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-blue-50 border border-blue-200 font-mono text-[10px] font-bold text-blue-900 tracking-wider">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-blue-50 border border-blue-200 font-mono text-[9.5px] sm:text-[10px] font-bold text-blue-900 tracking-wider">
                             <span>SMA MUHAMMADIYAH 18 JAKARTA</span>
                         </div>
-                        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Karantina Bilik Ujian</h1>
-                        <p className="text-xs text-slate-500 max-w-md mx-auto">
+                        <h1 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">Karantina Bilik Ujian</h1>
+                        <p className="text-xs text-slate-500 max-w-md mx-auto truncate">
                             Peserta: <strong className="text-slate-800">{studentSession?.candidateName || "Peserta"}</strong> ({studentSession?.nisn || "-"})
                         </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-left space-y-2 text-xs">
-                        <div className="font-bold text-slate-700 font-mono uppercase text-[11px] flex justify-between">
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200 text-left space-y-1.5 text-xs">
+                        <div className="font-bold text-slate-700 font-mono uppercase text-[10.5px] sm:text-[11px] flex justify-between">
                             <span>Sesi Ujian:</span>
                             <span className="text-blue-700 font-black">{sessionTitle}</span>
                         </div>
-                        <p className="text-slate-600 leading-relaxed text-[11px]">
+                        <p className="text-slate-600 leading-relaxed text-[10.5px] sm:text-[11px]">
                             Ujian terdiri dari <strong>{subtestsList.length} subtes bertahap</strong>. Naskah soal disajikan secara instan via server lokal sekolah.
                         </p>
                     </div>
 
                     {/* KARTU TARGET KAMPUS */}
-                    <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 text-left space-y-3.5">
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-blue-50/70 border border-blue-200 text-left space-y-3">
                         <div className="flex items-center justify-between border-b border-blue-200/80 pb-2">
                             <div className="flex items-center gap-2">
-                                <GraduationCap className="w-4 h-4 text-blue-800" />
-                                <span className="text-xs font-black text-blue-950 uppercase tracking-tight">
+                                <GraduationCap className="w-4 h-4 text-blue-800 shrink-0" />
+                                <span className="text-[11px] sm:text-xs font-black text-blue-950 uppercase tracking-tight">
                                     Target Program Studi &amp; PTN Impian (SNBT 2026)
                                 </span>
                             </div>
                         </div>
 
                         {/* PILIHAN 1 */}
-                        <div className="space-y-1.5">
+                        <div className="space-y-1">
                             <div className="flex items-center justify-between">
-                                <label className="text-[11px] font-bold text-slate-700 font-mono">
+                                <label className="text-[10.5px] sm:text-[11px] font-bold text-slate-700 font-mono">
                                     PILIHAN KAMPUS 1 (PRIORITAS UTAMA):
                                 </label>
                                 <button
@@ -1025,7 +1029,7 @@ function OfficialExamChamberContent() {
                                         setTargetSlotForSelection(1);
                                         setShowPTNDatabaseModal(true);
                                     }}
-                                    className="text-[10.5px] font-bold text-blue-700 hover:text-blue-900 inline-flex items-center gap-1 cursor-pointer"
+                                    className="text-[10px] sm:text-[10.5px] font-bold text-blue-700 hover:text-blue-900 inline-flex items-center gap-1 cursor-pointer"
                                 >
                                     <Search className="w-3 h-3" />
                                     <span>Pilih dari Database</span>
@@ -1043,13 +1047,13 @@ function OfficialExamChamberContent() {
                             {benchmarkData1 && (
                                 <div className="p-2.5 rounded-xl bg-white border border-blue-200 space-y-1 shadow-2xs animate-in fade-in">
                                     <div className="flex items-center justify-between text-[11px] font-bold text-slate-800">
-                                        <div className="flex items-center gap-1.5">
+                                        <div className="flex items-center gap-1.5 truncate">
                                             <span>{benchmarkData1.prodi} &bull; {benchmarkData1.kampus}</span>
                                             <span className="px-1.5 py-0.2 rounded bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono text-[9px] font-bold">
                                                 {benchmarkData1.jenjang || "S1"}
                                             </span>
                                         </div>
-                                        <span className="font-mono text-[10px] text-blue-700 font-black">{benchmarkData1.rumpun}</span>
+                                        <span className="font-mono text-[10px] text-blue-700 font-black shrink-0">{benchmarkData1.rumpun}</span>
                                     </div>
                                     <div className="grid grid-cols-3 gap-1.5 text-[10px] font-mono pt-0.5 border-t border-slate-100">
                                         <div>
@@ -1070,9 +1074,9 @@ function OfficialExamChamberContent() {
                         </div>
 
                         {/* PILIHAN 2 */}
-                        <div className="space-y-1.5">
+                        <div className="space-y-1">
                             <div className="flex items-center justify-between">
-                                <label className="text-[11px] font-bold text-slate-700 font-mono">
+                                <label className="text-[10.5px] sm:text-[11px] font-bold text-slate-700 font-mono">
                                     PILIHAN KAMPUS 2 (ALTERNATIF):
                                 </label>
                                 <button
@@ -1081,7 +1085,7 @@ function OfficialExamChamberContent() {
                                         setTargetSlotForSelection(2);
                                         setShowPTNDatabaseModal(true);
                                     }}
-                                    className="text-[10.5px] font-bold text-blue-700 hover:text-blue-900 inline-flex items-center gap-1 cursor-pointer"
+                                    className="text-[10px] sm:text-[10.5px] font-bold text-blue-700 hover:text-blue-900 inline-flex items-center gap-1 cursor-pointer"
                                 >
                                     <Search className="w-3 h-3" />
                                     <span>Pilih dari Database</span>
@@ -1099,13 +1103,13 @@ function OfficialExamChamberContent() {
                             {benchmarkData2 && (
                                 <div className="p-2.5 rounded-xl bg-white border border-blue-200 space-y-1 shadow-2xs animate-in fade-in">
                                     <div className="flex items-center justify-between text-[11px] font-bold text-slate-800">
-                                        <div className="flex items-center gap-1.5">
+                                        <div className="flex items-center gap-1.5 truncate">
                                             <span>{benchmarkData2.prodi} &bull; {benchmarkData2.kampus}</span>
                                             <span className="px-1.5 py-0.2 rounded bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono text-[9px] font-bold">
                                                 {benchmarkData2.jenjang || "S1"}
                                             </span>
                                         </div>
-                                        <span className="font-mono text-[10px] text-blue-700 font-black">{benchmarkData2.rumpun}</span>
+                                        <span className="font-mono text-[10px] text-blue-700 font-black shrink-0">{benchmarkData2.rumpun}</span>
                                     </div>
                                     <div className="grid grid-cols-3 gap-1.5 text-[10px] font-mono pt-0.5 border-t border-slate-100">
                                         <div>
@@ -1135,12 +1139,12 @@ function OfficialExamChamberContent() {
                     </div>
 
                     {loadError ? (
-                        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2.5 text-left">
+                        <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2.5 text-left">
                             <AlertTriangle className="w-5 h-5 shrink-0 text-rose-600" />
                             <span>{loadError}</span>
                         </div>
                     ) : isSessionLockedByProctor ? (
-                        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-800 text-xs font-bold flex items-center gap-2.5 text-left">
+                        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-800 text-xs font-bold flex items-center gap-2.5 text-left">
                             <Lock className="w-5 h-5 shrink-0 text-amber-600" />
                             <span>{sessionLockMessage || "Akses ujian sedang ditutup oleh Pengawas."}</span>
                         </div>
@@ -1150,7 +1154,7 @@ function OfficialExamChamberContent() {
                         <button
                             onClick={enterExamChamber}
                             disabled={isLoading || Boolean(loadError) || isSessionLockedByProctor}
-                            className={`w-full py-3.5 px-6 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer ${isLoading || loadError || isSessionLockedByProctor
+                            className={`w-full py-3.5 px-6 rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer ${isLoading || loadError || isSessionLockedByProctor
                                 ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
                                 : "bg-[#1e3a8a] hover:bg-blue-900 text-white shadow-blue-900/25 active:scale-[0.99]"
                                 }`}
@@ -1174,7 +1178,7 @@ function OfficialExamChamberContent() {
                         </button>
                     </div>
 
-                    <div className="text-[11px] font-mono text-slate-400 flex items-center justify-between border-t pt-3">
+                    <div className="text-[10px] sm:text-[11px] font-mono text-slate-400 flex items-center justify-between border-t pt-2.5">
                         <span>Kiosk Shield Siap</span>
                         <button
                             onClick={() => {
@@ -1229,16 +1233,16 @@ function OfficialExamChamberContent() {
 
                 {/* MODAL REVIEW PEMBAHASAN */}
                 {showReviewModal && (
-                    <div className="fixed inset-0 z-[999999] bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-                        <div className="bg-white rounded-3xl border border-slate-200 max-w-3xl w-full p-6 space-y-4 shadow-2xl animate-in fade-in max-h-[90vh] flex flex-col">
+                    <div className="fixed inset-0 z-[999999] bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+                        <div className="bg-white rounded-3xl border border-slate-200 max-w-3xl w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in fade-in max-h-[90vh] flex flex-col">
                             <div className="flex items-center justify-between border-b pb-3">
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
                                         <Eye className="w-4 h-4" />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-sm text-slate-900">Review Kunci Jawaban &amp; Pembahasan Soal</h3>
-                                        <p className="text-[11px] text-slate-500">Naskah Asesmen Resmi CBT - Paket {studentSession?.packageId}</p>
+                                        <h3 className="font-black text-xs sm:text-sm text-slate-900">Review Kunci Jawaban &amp; Pembahasan Soal</h3>
+                                        <p className="text-[10px] sm:text-[11px] text-slate-500">Naskah Asesmen Resmi CBT - Paket {studentSession?.packageId}</p>
                                     </div>
                                 </div>
                                 <button
@@ -1256,13 +1260,13 @@ function OfficialExamChamberContent() {
                                     const isUnanswered = !studentAns;
 
                                     return (
-                                        <div key={q.id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2.5 text-left text-xs">
+                                        <div key={q.id} className="p-3.5 sm:p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2.5 text-left text-xs">
                                             <div className="flex items-center justify-between border-b border-slate-200/70 pb-1.5">
                                                 <span className="font-mono font-bold text-blue-900">
                                                     No. {q.localNo || idx + 1} &bull; {q.subtest}
                                                 </span>
                                                 <span
-                                                    className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold ${isCorrect
+                                                    className={`px-2 py-0.5 rounded font-mono text-[9.5px] sm:text-[10px] font-bold ${isCorrect
                                                         ? "bg-emerald-100 text-emerald-800"
                                                         : isUnanswered
                                                             ? "bg-slate-200 text-slate-700"
@@ -1274,7 +1278,7 @@ function OfficialExamChamberContent() {
                                             </div>
 
                                             {q.stimulus && (
-                                                <div className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 text-[11.5px] whitespace-pre-line leading-relaxed">
+                                                <div className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 text-[11px] sm:text-[11.5px] whitespace-pre-line leading-relaxed">
                                                     <RenderLatex content={q.stimulus} />
                                                 </div>
                                             )}
@@ -1290,7 +1294,7 @@ function OfficialExamChamberContent() {
                                                     return (
                                                         <div
                                                             key={opt.id}
-                                                            className={`p-2 rounded-xl border flex items-center gap-2 text-[11px] ${isKey
+                                                            className={`p-2 rounded-xl border flex items-center gap-2 text-[10.5px] sm:text-[11px] ${isKey
                                                                 ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
                                                                 : isSelected
                                                                     ? "bg-rose-50 border-rose-300 font-medium text-rose-900"
@@ -1298,7 +1302,7 @@ function OfficialExamChamberContent() {
                                                                 }`}
                                                         >
                                                             <span
-                                                                className={`w-5 h-5 rounded-md flex items-center justify-center font-mono text-[10px] font-bold shrink-0 ${isKey
+                                                                className={`w-5 h-5 rounded-md flex items-center justify-center font-mono text-[9px] sm:text-[10px] font-bold shrink-0 ${isKey
                                                                     ? "bg-emerald-600 text-white"
                                                                     : isSelected
                                                                         ? "bg-rose-600 text-white"
@@ -1310,16 +1314,16 @@ function OfficialExamChamberContent() {
                                                             <div className="flex-1">
                                                                 <RenderLatex content={opt.text} />
                                                             </div>
-                                                            {isKey && <span className="text-[10px] font-mono font-bold text-emerald-700 uppercase">Kunci</span>}
-                                                            {isSelected && !isKey && <span className="text-[10px] font-mono font-bold text-rose-600 uppercase">Jawaban Anda</span>}
+                                                            {isKey && <span className="text-[9.5px] sm:text-[10px] font-mono font-bold text-emerald-700 uppercase">Kunci</span>}
+                                                            {isSelected && !isKey && <span className="text-[9.5px] sm:text-[10px] font-mono font-bold text-rose-600 uppercase">Jawaban Anda</span>}
                                                         </div>
                                                     );
                                                 })}
                                             </div>
 
                                             {q.explanation && (
-                                                <div className="p-2.5 rounded-xl bg-blue-50/70 border border-blue-200 text-blue-950 text-[11px] leading-relaxed">
-                                                    <strong className="block text-[10px] font-mono uppercase text-blue-900 mb-0.5">Pembahasan:</strong>
+                                                <div className="p-2.5 rounded-xl bg-blue-50/70 border border-blue-200 text-blue-950 text-[10.5px] sm:text-[11px] leading-relaxed">
+                                                    <strong className="block text-[9.5px] sm:text-[10px] font-mono uppercase text-blue-900 mb-0.5">Pembahasan:</strong>
                                                     <RenderLatex content={q.explanation} />
                                                 </div>
                                             )}
@@ -1332,16 +1336,16 @@ function OfficialExamChamberContent() {
                 )}
 
                 {/* 1. TOP ACTION BAR */}
-                <div className="max-w-4xl mx-auto mb-4 bg-white rounded-2xl border border-slate-200 p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs print-hidden">
+                <div className="max-w-4xl mx-auto mb-4 bg-white rounded-2xl border border-slate-200 p-3 flex flex-wrap items-center justify-between gap-2.5 shadow-xs print-hidden">
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-                        <Award className="w-4 h-4 text-emerald-600" />
-                        <span>Hasil Asesmen Terstandarisasi &bull; Evaluasi Diagnostik Siap Cetak</span>
+                        <Award className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span className="text-[11px] sm:text-xs">Hasil Asesmen Terstandarisasi &bull; Evaluasi Diagnostik Siap Cetak</span>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-end">
                         <button
                             onClick={handleExitToHome}
-                            className="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                            className="px-3 sm:px-3.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-[11px] sm:text-xs flex items-center gap-1 cursor-pointer"
                         >
                             <Home className="w-3.5 h-3.5" />
                             <span>Halaman Utama</span>
@@ -1349,7 +1353,7 @@ function OfficialExamChamberContent() {
 
                         <button
                             onClick={() => setShowReviewModal(true)}
-                            className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                            className="px-3 sm:px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] sm:text-xs flex items-center gap-1 cursor-pointer"
                         >
                             <Eye className="w-3.5 h-3.5" />
                             <span>Review Pembahasan</span>
@@ -1357,7 +1361,7 @@ function OfficialExamChamberContent() {
 
                         <button
                             onClick={() => window.print()}
-                            className="px-3.5 py-1.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+                            className="px-3 sm:px-3.5 py-1.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-[11px] sm:text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
                         >
                             <Printer className="w-3.5 h-3.5" />
                             <span>Cetak Lembar Rapor</span>
@@ -1366,10 +1370,10 @@ function OfficialExamChamberContent() {
                 </div>
 
                 {/* RAPOR RESMI BENTUK DOKUMEN CETAK */}
-                <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-10 space-y-6 print-card">
+                <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200 shadow-xl p-4 sm:p-10 space-y-5 sm:space-y-6 print-card">
                     {/* 2. KOP SURAT */}
-                    <div className="flex items-center gap-4 border-b-2 border-slate-900 pb-4 text-center">
-                        <div className="w-20 h-20 shrink-0 flex items-center justify-center p-1">
+                    <div className="flex items-center gap-3 sm:gap-4 border-b-2 border-slate-900 pb-3 sm:pb-4 text-center">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 flex items-center justify-center p-0.5">
                             <img
                                 src="/logo-timsim.jpg"
                                 alt="Logo SMA Muhammadiyah 18 Jakarta"
@@ -1379,20 +1383,20 @@ function OfficialExamChamberContent() {
                                 }}
                             />
                         </div>
-                        <div className="flex-1 space-y-0.5">
-                            <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                        <div className="flex-1 space-y-0.5 text-center">
+                            <div className="text-[9.5px] sm:text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                                 MAJELIS PENDIDIKAN DASAR DAN MENENGAH
                             </div>
-                            <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                            <div className="text-[9.5px] sm:text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                                 PIMPINAN DAERAH MUHAMMADIYAH JAKARTA SELATAN
                             </div>
-                            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight uppercase">
+                            <h1 className="text-base sm:text-2xl font-black text-slate-900 tracking-tight uppercase">
                                 SMA MUHAMMADIYAH 18 JAKARTA
                             </h1>
-                            <div className="text-[10.5px] font-bold font-mono text-blue-900 uppercase">
+                            <div className="text-[9.5px] sm:text-[10.5px] font-bold font-mono text-blue-900 uppercase">
                                 TERAKREDITASI &quot;A&quot;
                             </div>
-                            <p className="text-[10px] text-slate-500">
+                            <p className="text-[8.5px] sm:text-[10px] text-slate-500">
                                 Jl. Panjang No. 19 RT.8/RW.9, Kel. Cipulir, Kec. Kebayoran Lama, Kota Jakarta Selatan, DKI Jakarta 12230
                             </p>
                         </div>
@@ -1400,31 +1404,31 @@ function OfficialExamChamberContent() {
 
                     {/* 3. IDENTITAS SISWA & JAM PELAKSANAAN */}
                     <div
-                        className="p-3.5 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm"
+                        className="p-3 sm:p-3.5 rounded-2xl text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs shadow-sm"
                         style={{ backgroundColor: "#1c4cb7" }}
                     >
-                        <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center font-bold">
-                                <GraduationCap className="w-5 h-5 text-blue-200" />
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center font-bold shrink-0">
+                                <GraduationCap className="w-4 h-4 text-blue-200" />
                             </div>
                             <div className="text-left">
-                                <div className="font-black text-sm uppercase tracking-wide">
+                                <div className="font-black text-xs sm:text-sm uppercase tracking-wide">
                                     {studentSession?.candidateName || "Peserta Ujian"}
                                 </div>
-                                <div className="text-[11px] text-blue-200 font-mono">
+                                <div className="text-[10px] sm:text-[11px] text-blue-200 font-mono">
                                     NISN: {studentSession?.nisn || "-"} &bull; KELAS: {studentSession?.kelas || "XII"} &bull; SMA MUHAMMADIYAH 18
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 text-right">
-                            <div>
-                                <span className="text-[9.5px] text-blue-300 font-mono block uppercase">WAKTU UJIAN</span>
-                                <span className="font-mono font-bold text-[11px]">
+                        <div className="flex items-center gap-3 text-left sm:text-right">
+                            <div className="text-[10px] sm:text-[11px] font-mono">
+                                <span className="text-blue-300 block text-[9px] uppercase">WAKTU UJIAN</span>
+                                <span className="font-bold">
                                     {currentDateStr}, {examStartTimeStr || "07:30"} - {examEndTimeStr || "10:45"}
                                 </span>
                             </div>
-                            <span className="px-3 py-1 rounded-full bg-emerald-500 text-white font-black text-[10.5px] font-mono uppercase tracking-wider">
+                            <span className="px-3 py-1 rounded-full bg-emerald-500 text-white font-black text-[10px] sm:text-[10.5px] font-mono uppercase tracking-wider">
                                 Selesai
                             </span>
                         </div>
@@ -1432,14 +1436,14 @@ function OfficialExamChamberContent() {
 
                     {/* 4. NILAI RATA-RATA KESELURUHAN BANNER */}
                     <div
-                        className="p-6 rounded-2xl text-white text-center space-y-1 shadow-md"
+                        className="p-5 sm:p-6 rounded-2xl text-white text-center space-y-1 shadow-md"
                         style={{ backgroundColor: "#1c4cb7" }}
                     >
-                        <div className="text-xs font-mono font-bold text-blue-100 uppercase tracking-wider">
+                        <div className="text-[10px] sm:text-xs font-mono font-bold text-blue-100 uppercase tracking-wider">
                             NILAI RATA-RATA KESELURUHAN (IRT 3-PARAMETER)
                         </div>
-                        <div className="text-6xl font-black tracking-tight text-white my-1">{scoreResults.scaledScore}</div>
-                        <div className="text-[11px] text-blue-100 font-mono">
+                        <div className="text-5xl sm:text-6xl font-black tracking-tight text-white my-1">{scoreResults.scaledScore}</div>
+                        <div className="text-[10px] sm:text-[11px] text-blue-100 font-mono">
                             Kalkulasi {scoreResults.total} Butir Soal Terstandarisasi Pemerintah &bull; Skala 200 s.d. 1000
                         </div>
                     </div>
@@ -1448,13 +1452,13 @@ function OfficialExamChamberContent() {
                     <div className="space-y-2 text-left">
                         <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
                             <Target className="w-4 h-4 text-blue-700" />
-                            <span className="uppercase font-mono text-[11px]">PILIHAN PROGRAM STUDI &amp; KELULUSAN</span>
+                            <span className="uppercase font-mono text-[10.5px] sm:text-[11px]">PILIHAN PROGRAM STUDI &amp; KELULUSAN</span>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
                             {/* KARTU PILIHAN 1 */}
-                            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
-                                <div className="text-[10px] font-mono font-bold text-slate-400 uppercase">PTN Pilihan 1:</div>
+                            <div className="p-3.5 sm:p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
+                                <div className="text-[9.5px] sm:text-[10px] font-mono font-bold text-slate-400 uppercase">PTN Pilihan 1:</div>
                                 <div className="text-sm font-black text-slate-900 leading-tight">
                                     {benchmarkData1?.kampus || pilihanKampus1?.split("-")[0] || "Pilihan 1 Belum Dipilih"}
                                 </div>
@@ -1491,8 +1495,8 @@ function OfficialExamChamberContent() {
                             </div>
 
                             {/* KARTU PILIHAN 2 */}
-                            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
-                                <div className="text-[10px] font-mono font-bold text-slate-400 uppercase">PTN Pilihan 2:</div>
+                            <div className="p-3.5 sm:p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
+                                <div className="text-[9.5px] sm:text-[10px] font-mono font-bold text-slate-400 uppercase">PTN Pilihan 2:</div>
                                 <div className="text-sm font-black text-slate-900 leading-tight">
                                     {benchmarkData2?.kampus || pilihanKampus2?.split("-")[0] || "Pilihan 2 Belum Dipilih"}
                                 </div>
@@ -1531,24 +1535,24 @@ function OfficialExamChamberContent() {
                     </div>
 
                     {/* 6. TABEL TES SKOLASTIK (4 SUBTES) */}
-                    <div className="space-y-1 text-left">
+                    <div className="space-y-1 text-left overflow-x-auto">
                         <div
-                            className="p-2.5 rounded-t-xl text-white flex items-center justify-between text-xs font-bold font-mono"
+                            className="p-2 sm:p-2.5 rounded-t-xl text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono"
                             style={{ backgroundColor: "#1c4cb7" }}
                         >
                             <span>TES SKOLASTIK (4 SUBTES)</span>
                             <span>Rerata: {scoreResults.tpsAvg}</span>
                         </div>
-                        <div className="border border-slate-200 rounded-b-xl overflow-hidden">
-                            <table className="w-full text-left text-xs">
-                                <thead className="bg-slate-50 text-[10px] font-mono font-bold text-slate-400 border-b">
+                        <div className="border border-slate-200 rounded-b-xl overflow-hidden min-w-[320px]">
+                            <table className="w-full text-left text-[11px] sm:text-xs">
+                                <thead className="bg-slate-50 text-[9.5px] font-mono font-bold text-slate-400 border-b">
                                     <tr>
-                                        <th className="p-2.5">SUBTES</th>
-                                        <th className="p-2.5 text-center">BENAR</th>
-                                        <th className="p-2.5 text-center">SALAH</th>
-                                        <th className="p-2.5 text-center">KOSONG</th>
-                                        <th className="p-2.5">PROGRESS CAPAIAN</th>
-                                        <th className="p-2.5 text-right">SKOR</th>
+                                        <th className="p-2 sm:p-2.5">SUBTES</th>
+                                        <th className="p-2 sm:p-2.5 text-center">BENAR</th>
+                                        <th className="p-2 sm:p-2.5 text-center">SALAH</th>
+                                        <th className="p-2 sm:p-2.5 text-center">KOSONG</th>
+                                        <th className="p-2 sm:p-2.5 hidden sm:table-cell">PROGRESS CAPAIAN</th>
+                                        <th className="p-2 sm:p-2.5 text-right">SKOR</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -1556,32 +1560,32 @@ function OfficialExamChamberContent() {
                                         const s = scoreResults.subtestBreakdown[st.code] || { correct: 0, incorrect: 0, unattempted: 0, percentage: 0, scoreIRT: 200 };
                                         return (
                                             <tr key={st.code} className="hover:bg-slate-50/50">
-                                                <td className="p-2.5 font-bold text-slate-900">{st.name}</td>
-                                                <td className="p-2.5 text-center font-mono text-emerald-700 font-bold">{s.correct}</td>
-                                                <td className="p-2.5 text-center font-mono text-rose-600 font-bold">{s.incorrect}</td>
-                                                <td className="p-2.5 text-center font-mono text-slate-400">{s.unattempted}</td>
-                                                <td className="p-2.5 w-44">
+                                                <td className="p-2 sm:p-2.5 font-bold text-slate-900">{st.name}</td>
+                                                <td className="p-2 sm:p-2.5 text-center font-mono text-emerald-700 font-bold">{s.correct}</td>
+                                                <td className="p-2 sm:p-2.5 text-center font-mono text-rose-600 font-bold">{s.incorrect}</td>
+                                                <td className="p-2 sm:p-2.5 text-center font-mono text-slate-400">{s.unattempted}</td>
+                                                <td className="p-2 sm:p-2.5 w-44 hidden sm:table-cell">
                                                     <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                                                         <div className="bg-blue-700 h-full rounded-full" style={{ width: `${Math.max(5, s.percentage)}%` }} />
                                                     </div>
                                                 </td>
-                                                <td className="p-2.5 text-right font-mono font-bold text-slate-900">{s.scoreIRT}.0</td>
+                                                <td className="p-2 sm:p-2.5 text-right font-mono font-bold text-slate-900">{s.scoreIRT}.0</td>
                                             </tr>
                                         );
                                     })}
                                     <tr className="bg-slate-50 font-bold text-slate-900 border-t">
-                                        <td className="p-2.5">Nilai Rata-rata Skolastik</td>
-                                        <td className="p-2.5 text-center font-mono text-emerald-700">
+                                        <td className="p-2 sm:p-2.5">Nilai Rata-rata Skolastik</td>
+                                        <td className="p-2 sm:p-2.5 text-center font-mono text-emerald-700">
                                             {tpsSubtests.reduce((a, b) => a + (scoreResults.subtestBreakdown[b.code]?.correct || 0), 0)}
                                         </td>
-                                        <td className="p-2.5 text-center font-mono text-rose-600">
+                                        <td className="p-2 sm:p-2.5 text-center font-mono text-rose-600">
                                             {tpsSubtests.reduce((a, b) => a + (scoreResults.subtestBreakdown[b.code]?.incorrect || 0), 0)}
                                         </td>
-                                        <td className="p-2.5 text-center font-mono text-slate-400">
+                                        <td className="p-2 sm:p-2.5 text-center font-mono text-slate-400">
                                             {tpsSubtests.reduce((a, b) => a + (scoreResults.subtestBreakdown[b.code]?.unattempted || 0), 0)}
                                         </td>
-                                        <td className="p-2.5"></td>
-                                        <td className="p-2.5 text-right font-mono text-blue-900 font-black">{scoreResults.tpsAvg}</td>
+                                        <td className="p-2 sm:p-2.5 hidden sm:table-cell"></td>
+                                        <td className="p-2 sm:p-2.5 text-right font-mono text-blue-900 font-black">{scoreResults.tpsAvg}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1589,24 +1593,24 @@ function OfficialExamChamberContent() {
                     </div>
 
                     {/* 7. TABEL TES LITERASI & PENALARAN MATEMATIKA (3 SUBTES) */}
-                    <div className="space-y-1 text-left">
+                    <div className="space-y-1 text-left overflow-x-auto">
                         <div
-                            className="p-2.5 rounded-t-xl text-white flex items-center justify-between text-xs font-bold font-mono"
+                            className="p-2 sm:p-2.5 rounded-t-xl text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono"
                             style={{ backgroundColor: "#6d28d9" }}
                         >
                             <span>TES LITERASI &amp; PENALARAN MATEMATIKA (3 SUBTES)</span>
                             <span>Rerata: {scoreResults.litAvg}</span>
                         </div>
-                        <div className="border border-slate-200 rounded-b-xl overflow-hidden">
-                            <table className="w-full text-left text-xs">
-                                <thead className="bg-slate-50 text-[10px] font-mono font-bold text-slate-400 border-b">
+                        <div className="border border-slate-200 rounded-b-xl overflow-hidden min-w-[320px]">
+                            <table className="w-full text-left text-[11px] sm:text-xs">
+                                <thead className="bg-slate-50 text-[9.5px] font-mono font-bold text-slate-400 border-b">
                                     <tr>
-                                        <th className="p-2.5">SUBTES</th>
-                                        <th className="p-2.5 text-center">BENAR</th>
-                                        <th className="p-2.5 text-center">SALAH</th>
-                                        <th className="p-2.5 text-center">KOSONG</th>
-                                        <th className="p-2.5">PROGRESS CAPAIAN</th>
-                                        <th className="p-2.5 text-right">SKOR</th>
+                                        <th className="p-2 sm:p-2.5">SUBTES</th>
+                                        <th className="p-2 sm:p-2.5 text-center">BENAR</th>
+                                        <th className="p-2 sm:p-2.5 text-center">SALAH</th>
+                                        <th className="p-2 sm:p-2.5 text-center">KOSONG</th>
+                                        <th className="p-2 sm:p-2.5 hidden sm:table-cell">PROGRESS CAPAIAN</th>
+                                        <th className="p-2 sm:p-2.5 text-right">SKOR</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -1614,32 +1618,32 @@ function OfficialExamChamberContent() {
                                         const s = scoreResults.subtestBreakdown[st.code] || { correct: 0, incorrect: 0, unattempted: 0, percentage: 0, scoreIRT: 200 };
                                         return (
                                             <tr key={st.code} className="hover:bg-slate-50/50">
-                                                <td className="p-2.5 font-bold text-slate-900">{st.name}</td>
-                                                <td className="p-2.5 text-center font-mono text-emerald-700 font-bold">{s.correct}</td>
-                                                <td className="p-2.5 text-center font-mono text-rose-600 font-bold">{s.incorrect}</td>
-                                                <td className="p-2.5 text-center font-mono text-slate-400">{s.unattempted}</td>
-                                                <td className="p-2.5 w-44">
+                                                <td className="p-2 sm:p-2.5 font-bold text-slate-900">{st.name}</td>
+                                                <td className="p-2 sm:p-2.5 text-center font-mono text-emerald-700 font-bold">{s.correct}</td>
+                                                <td className="p-2 sm:p-2.5 text-center font-mono text-rose-600 font-bold">{s.incorrect}</td>
+                                                <td className="p-2 sm:p-2.5 text-center font-mono text-slate-400">{s.unattempted}</td>
+                                                <td className="p-2 sm:p-2.5 w-44 hidden sm:table-cell">
                                                     <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                                                         <div className="bg-purple-700 h-full rounded-full" style={{ width: `${Math.max(5, s.percentage)}%` }} />
                                                     </div>
                                                 </td>
-                                                <td className="p-2.5 text-right font-mono font-bold text-slate-900">{s.scoreIRT}.0</td>
+                                                <td className="p-2 sm:p-2.5 text-right font-mono font-bold text-slate-900">{s.scoreIRT}.0</td>
                                             </tr>
                                         );
                                     })}
                                     <tr className="bg-slate-50 font-bold text-slate-900 border-t">
-                                        <td className="p-2.5">Nilai Rata-rata Literasi</td>
-                                        <td className="p-2.5 text-center font-mono text-emerald-700">
+                                        <td className="p-2 sm:p-2.5">Nilai Rata-rata Literasi</td>
+                                        <td className="p-2 sm:p-2.5 text-center font-mono text-emerald-700">
                                             {litSubtests.reduce((a, b) => a + (scoreResults.subtestBreakdown[b.code]?.correct || 0), 0)}
                                         </td>
-                                        <td className="p-2.5 text-center font-mono text-rose-600">
+                                        <td className="p-2 sm:p-2.5 text-center font-mono text-rose-600">
                                             {litSubtests.reduce((a, b) => a + (scoreResults.subtestBreakdown[b.code]?.incorrect || 0), 0)}
                                         </td>
-                                        <td className="p-2.5 text-center font-mono text-slate-400">
+                                        <td className="p-2 sm:p-2.5 text-center font-mono text-slate-400">
                                             {litSubtests.reduce((a, b) => a + (scoreResults.subtestBreakdown[b.code]?.unattempted || 0), 0)}
                                         </td>
-                                        <td className="p-2.5"></td>
-                                        <td className="p-2.5 text-right font-mono text-purple-900 font-black">{scoreResults.litAvg}</td>
+                                        <td className="p-2 sm:p-2.5 hidden sm:table-cell"></td>
+                                        <td className="p-2 sm:p-2.5 text-right font-mono text-purple-900 font-black">{scoreResults.litAvg}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1648,14 +1652,14 @@ function OfficialExamChamberContent() {
 
                     {/* 8. BLOCKING TIME & EVALUASI KECEPATAN PENGERJAAN */}
                     <div className="space-y-1 text-left">
-                        <div className="p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-xs font-bold font-mono">
+                        <div className="p-2 sm:p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono">
                             <span className="flex items-center gap-1.5">
                                 <Clock className="w-3.5 h-3.5 text-blue-400" />
                                 <span>BLOCKING TIME &amp; EVALUASI KECEPATAN PENGERJAAN</span>
                             </span>
                             <span className="text-[10px] text-slate-400 font-normal">Terdistribusi Presisi</span>
                         </div>
-                        <div className="border border-slate-200 rounded-b-xl p-4 divide-y divide-slate-100 bg-white">
+                        <div className="border border-slate-200 rounded-b-xl p-3.5 sm:p-4 divide-y divide-slate-100 bg-white">
                             {subtestsList.map((st) => {
                                 const s = scoreResults.subtestBreakdown[st.code] || { correct: 0, incorrect: 0, unattempted: 0, total: 20 };
                                 const spentSecs = timeSpentPerSubtest[st.code] || 15;
@@ -1670,10 +1674,10 @@ function OfficialExamChamberContent() {
                                     <div key={st.code} className="py-2.5 flex items-center justify-between gap-3 text-xs">
                                         <div className="space-y-0.5">
                                             <div className="font-bold text-slate-900">{st.name}</div>
-                                            <div className="text-[11px] text-slate-500 font-mono">
+                                            <div className="text-[10.5px] sm:text-[11px] text-slate-500 font-mono">
                                                 Dikerjakan {spentMin} menit {spentSecRemainder} detik dari {totalMin} menit ({pctTime}%) &bull; Benar: {s.correct}, Salah: {s.incorrect}, Kosong: {s.unattempted}
                                             </div>
-                                            <p className="text-[10.5px] text-slate-400 italic">
+                                            <p className="text-[10px] sm:text-[10.5px] text-slate-400 italic">
                                                 {isHasty
                                                     ? "Alokasi waktu tersisa banyak, tapi banyak jawaban yang terlewat. Majukan ritme soal!"
                                                     : "Ritme pengerjaan terjaga stabil, tingkatkan fokus ketelitian saat eliminasi opsi."}
@@ -1690,18 +1694,18 @@ function OfficialExamChamberContent() {
                     </div>
 
                     {/* 9. ANALISA PASSING SCORE PER SUBTES */}
-                    <div className="space-y-1 text-left">
-                        <div className="p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-xs font-bold font-mono">
+                    <div className="space-y-1 text-left overflow-x-auto">
+                        <div className="p-2 sm:p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono">
                             <span>ANALISA PASSING SCORE PER SUBTES TERHADAP PROGRAM STUDI PILIHAN</span>
                         </div>
-                        <div className="border border-slate-200 rounded-b-xl overflow-hidden">
-                            <table className="w-full text-left text-xs">
-                                <thead className="bg-slate-50 text-[10px] font-mono font-bold text-slate-400 border-b">
+                        <div className="border border-slate-200 rounded-b-xl overflow-hidden min-w-[320px]">
+                            <table className="w-full text-left text-[11px] sm:text-xs">
+                                <thead className="bg-slate-50 text-[9.5px] font-mono font-bold text-slate-400 border-b">
                                     <tr>
-                                        <th className="p-2.5">SUBTES</th>
-                                        <th className="p-2.5 text-center">SKOR KAMU</th>
-                                        <th className="p-2.5 text-center">PILIHAN 1 - {benchmarkData1?.prodi || "PILIHAN 1"}</th>
-                                        <th className="p-2.5 text-center">PILIHAN 2 - {benchmarkData2?.prodi || "PILIHAN 2"}</th>
+                                        <th className="p-2 sm:p-2.5">SUBTES</th>
+                                        <th className="p-2 sm:p-2.5 text-center">SKOR KAMU</th>
+                                        <th className="p-2 sm:p-2.5 text-center">PILIHAN 1 - {benchmarkData1?.prodi || "PILIHAN 1"}</th>
+                                        <th className="p-2 sm:p-2.5 text-center">PILIHAN 2 - {benchmarkData2?.prodi || "PILIHAN 2"}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -1715,16 +1719,16 @@ function OfficialExamChamberContent() {
 
                                         return (
                                             <tr key={st.code} className="hover:bg-slate-50/50">
-                                                <td className="p-2.5 font-bold text-slate-900">{st.name}</td>
-                                                <td className="p-2.5 text-center font-mono font-bold text-slate-900">{s.scoreIRT}.0</td>
-                                                <td className="p-2.5 text-center font-mono text-[11px]">
+                                                <td className="p-2 sm:p-2.5 font-bold text-slate-900">{st.name}</td>
+                                                <td className="p-2 sm:p-2.5 text-center font-mono font-bold text-slate-900">{s.scoreIRT}.0</td>
+                                                <td className="p-2 sm:p-2.5 text-center font-mono text-[10.5px] sm:text-[11px]">
                                                     {p1Passed ? (
                                                         <span className="text-emerald-700 font-bold">&radic; Memenuhi ({targetP1})</span>
                                                     ) : (
                                                         <span className="text-rose-600 font-bold">&times; Belum mencukupi ({targetP1})</span>
                                                     )}
                                                 </td>
-                                                <td className="p-2.5 text-center font-mono text-[11px]">
+                                                <td className="p-2 sm:p-2.5 text-center font-mono text-[10.5px] sm:text-[11px]">
                                                     {p2Passed ? (
                                                         <span className="text-emerald-700 font-bold">&radic; Memenuhi ({targetP2})</span>
                                                     ) : (
@@ -1740,17 +1744,17 @@ function OfficialExamChamberContent() {
                     </div>
 
                     {/* 10. DIAGRAM KOMPARASI CAPAIAN 7 SUBTES */}
-                    <div className="p-5 rounded-2xl border border-slate-200 bg-white text-left space-y-4">
-                        <div className="flex items-center justify-between border-b pb-2">
+                    <div className="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-white text-left space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-2 gap-2">
                             <div>
-                                <h3 className="font-mono font-bold text-xs uppercase text-slate-900">
+                                <h3 className="font-mono font-bold text-[11px] sm:text-xs uppercase text-slate-900">
                                     DIAGRAM KOMPARASI CAPAIAN 7 SUBTES (SKALA 200 - 1000)
                                 </h3>
-                                <p className="text-[10px] text-slate-400">
+                                <p className="text-[9.5px] sm:text-[10px] text-slate-400">
                                     Garis vertikal batas putus-putus menunjukkan ambang batas rata-rata kelulusan SNBT Target 650
                                 </p>
                             </div>
-                            <div className="flex items-center gap-2 text-[10px] font-mono">
+                            <div className="flex items-center gap-2 text-[9.5px] sm:text-[10px] font-mono">
                                 <span className="flex items-center gap-1">
                                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                                     &ge; 650 (Aman)
@@ -1768,7 +1772,7 @@ function OfficialExamChamberContent() {
 
                         <div className="space-y-3 relative pt-3">
                             <div className="absolute top-0 bottom-0 left-[65%] w-px border-l-2 border-dashed border-slate-400 z-10 pointer-events-none">
-                                <span className="absolute -top-3 -left-6 bg-slate-900 text-white font-mono text-[9px] font-black px-1.5 py-0.2 rounded">
+                                <span className="absolute -top-3 -left-6 bg-slate-900 text-white font-mono text-[8.5px] font-black px-1.5 py-0.2 rounded">
                                     TARGET 650
                                 </span>
                             </div>
@@ -1781,10 +1785,10 @@ function OfficialExamChamberContent() {
                                 return (
                                     <div key={st.code} className="space-y-1">
                                         <div className="flex justify-between text-xs font-mono">
-                                            <span className="font-semibold text-slate-800">{st.name}</span>
+                                            <span className="font-semibold text-slate-800 text-[11px] sm:text-xs truncate">{st.name}</span>
                                             <span className="font-bold text-slate-900">{s.scoreIRT}.0</span>
                                         </div>
-                                        <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                                        <div className="w-full bg-slate-100 h-2.5 sm:h-3 rounded-full overflow-hidden">
                                             <div className={`h-full rounded-full transition-all duration-700 ${barColor}`} style={{ width: `${pctWidth}%` }} />
                                         </div>
                                     </div>
@@ -1794,34 +1798,34 @@ function OfficialExamChamberContent() {
                     </div>
 
                     {/* 11. REKOMENDASI PTN LAIN */}
-                    <div className="space-y-1 text-left">
-                        <div className="p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-xs font-bold font-mono">
+                    <div className="space-y-1 text-left overflow-x-auto">
+                        <div className="p-2 sm:p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono">
                             <span>REKOMENDASI PTN LAIN - PROGRAM STUDI SERUPA DENGAN PILIHAN 1</span>
-                            <span className="text-[10px] text-slate-400 font-normal">Daya Tampung &amp; Keketatan</span>
+                            <span className="text-[10px] text-slate-400 font-normal hidden sm:inline">Daya Tampung &amp; Keketatan</span>
                         </div>
-                        <div className="border border-slate-200 rounded-b-xl overflow-hidden">
-                            <table className="w-full text-left text-xs">
-                                <thead className="bg-slate-50 text-[10px] font-mono font-bold text-slate-400 border-b">
+                        <div className="border border-slate-200 rounded-b-xl overflow-hidden min-w-[320px]">
+                            <table className="w-full text-left text-[11px] sm:text-xs">
+                                <thead className="bg-slate-50 text-[9.5px] font-mono font-bold text-slate-400 border-b">
                                     <tr>
-                                        <th className="p-2.5">#</th>
-                                        <th className="p-2.5">UNIVERSITAS</th>
-                                        <th className="p-2.5">PROGRAM STUDI</th>
-                                        <th className="p-2.5 text-center">DK (%)</th>
-                                        <th className="p-2.5 text-center">DAYA TAMPUNG</th>
-                                        <th className="p-2.5 text-center">PEMINAT</th>
-                                        <th className="p-2.5 text-right">PELUANG KELULUSAN</th>
+                                        <th className="p-2 sm:p-2.5">#</th>
+                                        <th className="p-2 sm:p-2.5">UNIVERSITAS</th>
+                                        <th className="p-2 sm:p-2.5">PROGRAM STUDI</th>
+                                        <th className="p-2 sm:p-2.5 text-center">DK (%)</th>
+                                        <th className="p-2 sm:p-2.5 text-center">DAYA TAMPUNG</th>
+                                        <th className="p-2 sm:p-2.5 text-center">PEMINAT</th>
+                                        <th className="p-2 sm:p-2.5 text-right">PELUANG KELULUSAN</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                                     {recommendedAlternativePTNs.map((rec, idx) => (
                                         <tr key={rec.id} className="hover:bg-slate-50/50">
-                                            <td className="p-2.5 font-mono text-slate-400">{idx + 1}</td>
-                                            <td className="p-2.5 font-bold text-slate-900">{rec.kampus}</td>
-                                            <td className="p-2.5">{rec.prodi} ({rec.jenjang || "S1"})</td>
-                                            <td className="p-2.5 text-center font-mono">{formatKeketatan(rec.keketatan)}</td>
-                                            <td className="p-2.5 text-center font-mono">{rec.dayaTampung}</td>
-                                            <td className="p-2.5 text-center font-mono">{rec.peminat}</td>
-                                            <td className={`p-2.5 text-right font-mono text-[11px] ${rec.kelulusanColor}`}>
+                                            <td className="p-2 sm:p-2.5 font-mono text-slate-400">{idx + 1}</td>
+                                            <td className="p-2 sm:p-2.5 font-bold text-slate-900">{rec.kampus}</td>
+                                            <td className="p-2 sm:p-2.5">{rec.prodi} ({rec.jenjang || "S1"})</td>
+                                            <td className="p-2 sm:p-2.5 text-center font-mono">{formatKeketatan(rec.keketatan)}</td>
+                                            <td className="p-2 sm:p-2.5 text-center font-mono">{rec.dayaTampung}</td>
+                                            <td className="p-2 sm:p-2.5 text-center font-mono">{rec.peminat}</td>
+                                            <td className={`p-2 sm:p-2.5 text-right font-mono text-[10.5px] sm:text-[11px] ${rec.kelulusanColor}`}>
                                                 {rec.kelulusanStatus}
                                             </td>
                                         </tr>
@@ -1832,19 +1836,19 @@ function OfficialExamChamberContent() {
                     </div>
 
                     {/* 12. BANNER SIMULATOR RASIONALISASI */}
-                    <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 text-white flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-left">
                         <div className="space-y-1">
                             <div className="flex items-center gap-1.5 text-xs font-bold">
-                                <TrendingUp className="w-4 h-4 text-emerald-400" />
+                                <TrendingUp className="w-4 h-4 text-emerald-400 shrink-0" />
                                 <span>Lanjutkan ke Aplikasi Analisis &amp; Rasionalisasi SNBT</span>
                             </div>
-                            <p className="text-[11px] text-blue-200">
+                            <p className="text-[10.5px] sm:text-[11px] text-blue-200">
                                 Skor rata-rata Anda ({scoreResults.scaledScore}) dapat langsung diuji ke simulator passing grade dengan data daya tampung seluruh PTN nasional.
                             </p>
                         </div>
                         <button
                             onClick={() => window.open("/simulation", "_blank")}
-                            className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-blue-950 font-bold text-xs shrink-0 cursor-pointer shadow-xs transition-all flex items-center gap-1.5"
+                            className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-blue-950 font-bold text-xs shrink-0 cursor-pointer shadow-xs transition-all flex items-center gap-1.5 w-full sm:w-auto justify-center"
                         >
                             <span>Buka Aplikasi Analisis</span>
                             <ExternalLink className="w-3.5 h-3.5" />
@@ -1852,14 +1856,14 @@ function OfficialExamChamberContent() {
                     </div>
 
                     {/* 13. TANDA TANGAN RESMI SEKOLAH */}
-                    <div className="pt-8 pb-4 grid grid-cols-2 gap-8 text-center text-xs font-serif text-slate-800">
-                        <div className="space-y-16">
+                    <div className="pt-6 sm:pt-8 pb-3 sm:pb-4 grid grid-cols-2 gap-4 sm:gap-8 text-center text-xs font-serif text-slate-800">
+                        <div className="space-y-12 sm:space-y-16">
                             <div>
-                                <p className="text-[11px]">Mengetahui,</p>
+                                <p className="text-[10px] sm:text-[11px]">Mengetahui,</p>
                                 <div
                                     contentEditable
                                     suppressContentEditableWarning
-                                    className="font-bold text-[11.5px] outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-600 px-1 transition-all inline-block"
+                                    className="font-bold text-[11px] sm:text-[11.5px] outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-600 px-1 transition-all inline-block"
                                     title="Klik untuk mengubah jabatan penandatangan"
                                 >
                                     Koordinator BK / Pembina KIR
@@ -1869,7 +1873,7 @@ function OfficialExamChamberContent() {
                                 <div
                                     contentEditable
                                     suppressContentEditableWarning
-                                    className="font-bold underline text-[12px] outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-600 px-1 transition-all inline-block"
+                                    className="font-bold underline text-[11.5px] sm:text-[12px] outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-600 px-1 transition-all inline-block"
                                     title="Klik untuk mengubah nama guru/pembina"
                                 >
                                     Fadhillah Umar, S.Pd.
@@ -1877,7 +1881,7 @@ function OfficialExamChamberContent() {
                                 <div
                                     contentEditable
                                     suppressContentEditableWarning
-                                    className="text-[10px] font-mono text-slate-500 outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-600 px-1 transition-all block"
+                                    className="text-[9.5px] sm:text-[10px] font-mono text-slate-500 outline-none border-b border-transparent hover:border-slate-300 focus:border-blue-600 px-1 transition-all block"
                                     title="Klik untuk mengubah NIP/NBM"
                                 >
                                     NIP: 121 2026 001
@@ -1885,13 +1889,13 @@ function OfficialExamChamberContent() {
                             </div>
                         </div>
 
-                        <div className="space-y-16">
+                        <div className="space-y-12 sm:space-y-16">
                             <div>
-                                <p className="text-[11px]">Jakarta, {currentDateStr}</p>
-                                <p className="font-bold text-[11.5px]">Peserta Ujian</p>
+                                <p className="text-[10px] sm:text-[11px]">Jakarta, {currentDateStr}</p>
+                                <p className="font-bold text-[11px] sm:text-[11.5px]">Peserta Ujian</p>
                             </div>
                             <div>
-                                <p className="font-bold underline text-[12px]">
+                                <p className="font-bold underline text-[11.5px] sm:text-[12px]">
                                     ( <span
                                         contentEditable
                                         suppressContentEditableWarning
@@ -1901,7 +1905,7 @@ function OfficialExamChamberContent() {
                                         {studentSession?.candidateName || "..............................."}
                                     </span> )
                                 </p>
-                                <p className="text-[10px] font-mono text-slate-500">
+                                <p className="text-[9.5px] sm:text-[10px] font-mono text-slate-500">
                                     NISN: {studentSession?.nisn || "-"}
                                 </p>
                             </div>
@@ -1944,16 +1948,71 @@ function OfficialExamChamberContent() {
         );
     }
 
-    // TAHAP 2 & 3: BILIK SOAL
+    // TAHAP 2 & 3: BILIK SOAL (RESPONSIF MOBILE / TABLET / DESKTOP)
     return (
-        <div className="min-h-screen bg-slate-100 flex flex-col font-sans select-none text-slate-800 relative">
+        <div className="min-h-screen bg-slate-100 flex flex-col font-sans select-none text-slate-800 relative pb-20 lg:pb-6">
+            {/* DRAWER MATRIX KISI-KISI KHUSUS TABLET & HP */}
+            {showMobileMatrix && (
+                <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex flex-col justify-end lg:hidden animate-in fade-in">
+                    <div className="bg-white rounded-t-3xl border-t border-slate-200 p-5 space-y-4 max-h-[80vh] flex flex-col shadow-2xl">
+                        <div className="flex items-center justify-between border-b pb-3">
+                            <div className="flex items-center gap-2">
+                                <LayoutGrid className="w-5 h-5 text-blue-700" />
+                                <span className="font-bold text-sm text-slate-900">
+                                    Daftar Soal Subtes {activeSubtestConfig.code} ({currentSubtestQuestions.length} Butir)
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => setShowMobileMatrix(false)}
+                                className="p-1.5 rounded-lg border border-slate-200 text-slate-500 cursor-pointer"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-5 gap-2 overflow-y-auto p-1 flex-1">
+                            {currentSubtestQuestions.map((q, idx) => {
+                                const isCurrent = currentQIndexInSubtest === idx;
+                                const isAnswered = Boolean(answers[q.id]);
+                                const isDoubt = Boolean(doubtfuls[q.id]);
+
+                                return (
+                                    <button
+                                        key={q.id}
+                                        onClick={() => {
+                                            setCurrentQIndexInSubtest(idx);
+                                            setShowMobileMatrix(false);
+                                        }}
+                                        className={`h-11 rounded-xl border font-mono text-xs font-bold cursor-pointer transition-all ${isCurrent ? "ring-2 ring-blue-700 border-blue-700" : "border-slate-200"
+                                            } ${isDoubt
+                                                ? "bg-amber-400 text-amber-950 border-amber-400"
+                                                : isAnswered
+                                                    ? "bg-blue-700 text-white border-blue-700"
+                                                    : "bg-slate-50 text-slate-700"
+                                            }`}
+                                    >
+                                        {idx + 1}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="pt-2 border-t grid grid-cols-3 gap-1 text-[10px] font-mono text-slate-500 text-center">
+                            <div><span className="w-2.5 h-2.5 rounded bg-blue-700 inline-block mr-1" /> Terjawab</div>
+                            <div><span className="w-2.5 h-2.5 rounded bg-amber-400 inline-block mr-1" /> Ragu</div>
+                            <div><span className="w-2.5 h-2.5 rounded bg-slate-200 inline-block mr-1" /> Kosong</div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {showViolationModal && (
                 <div className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
                     <div className="bg-white rounded-3xl border border-rose-200 max-w-md w-full p-6 text-center space-y-4 shadow-2xl">
                         <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
                             <ShieldAlert className="w-6 h-6" />
                         </div>
-                        <h3 className="text-lg font-black text-slate-900">
+                        <h3 className="text-base sm:text-lg font-black text-slate-900">
                             {isExamLockedPermanently ? "Ujian Dikunci Permanen!" : `Peringatan Pelanggaran (${violationCount}/3)`}
                         </h3>
                         <p className="text-xs text-slate-600 leading-relaxed">
@@ -1979,20 +2038,20 @@ function OfficialExamChamberContent() {
             )}
 
             {/* HEADER BILIK */}
-            <header className="bg-white border-b border-slate-200 px-4 sm:px-8 h-16 flex items-center justify-between sticky top-0 z-40 shadow-xs">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 font-black flex items-center justify-center text-xs">
+            <header className="bg-white border-b border-slate-200 px-3 sm:px-8 h-14 sm:h-16 flex items-center justify-between sticky top-0 z-40 shadow-xs">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 font-black flex items-center justify-center text-[11px] sm:text-xs shrink-0">
                         CBT
                     </div>
-                    <div>
-                        <div className="font-bold text-xs sm:text-sm text-slate-900">{activeSubtestConfig.name}</div>
-                        <div className="text-[11px] text-slate-500 font-mono">
-                            Subtes {currentSubtestIndex + 1} dari {subtestsList.length} &bull; {studentSession?.candidateName}
+                    <div className="min-w-0">
+                        <div className="font-bold text-xs sm:text-sm text-slate-900 truncate">{activeSubtestConfig.name}</div>
+                        <div className="text-[10px] sm:text-[11px] text-slate-500 font-mono truncate">
+                            Subtes {currentSubtestIndex + 1}/{subtestsList.length} &bull; {studentSession?.candidateName}
                         </div>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
                     <div className="hidden sm:flex items-center bg-slate-100 rounded-xl p-1 gap-1 border border-slate-200">
                         {(["normal", "large", "xlarge"] as const).map((mode) => (
                             <button
@@ -2006,72 +2065,81 @@ function OfficialExamChamberContent() {
                         ))}
                     </div>
 
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border font-mono font-bold text-xs sm:text-sm bg-blue-50 border-blue-200 text-blue-900">
-                        <Clock className="w-4 h-4" />
+                    {/* TOMBOL BUKA KISI-KISI DI HP & TABLET */}
+                    <button
+                        onClick={() => setShowMobileMatrix(true)}
+                        className="lg:hidden px-2.5 py-1.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1 cursor-pointer"
+                    >
+                        <LayoutGrid className="w-3.5 h-3.5 text-blue-700" />
+                        <span className="text-[11px]">Soal</span>
+                    </button>
+
+                    <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border font-mono font-bold text-xs sm:text-sm bg-blue-50 border-blue-200 text-blue-900">
+                        <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                         <span>{formatTime(subtestTimeLeft)}</span>
                     </div>
 
                     <button
                         onClick={() => setShowSubtestConfirmModal(true)}
-                        className="px-3.5 py-1.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
+                        className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white text-[11px] sm:text-xs font-bold flex items-center gap-1 cursor-pointer shadow-xs transition-all"
                     >
-                        <span>{currentSubtestIndex === subtestsList.length - 1 ? "Selesai Ujian" : "Lanjut Subtes"}</span>
+                        <span>{currentSubtestIndex === subtestsList.length - 1 ? "Selesai" : "Lanjut"}</span>
                         <FastForward className="w-3.5 h-3.5" />
                     </button>
                 </div>
             </header>
 
             {/* AREA SOAL & MATRIX */}
-            <div className="flex-1 max-w-[1600px] w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                <div className="lg:col-span-8 bg-white rounded-3xl border border-slate-200 p-5 sm:p-8 space-y-5 shadow-xs">
-                    <div className="font-mono text-xs font-bold text-blue-900 border-b border-slate-100 pb-3 flex justify-between items-center">
+            <div className="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
+                <div className="lg:col-span-8 bg-white rounded-3xl border border-slate-200 p-4 sm:p-8 space-y-4 sm:space-y-5 shadow-xs">
+                    <div className="font-mono text-[11px] sm:text-xs font-bold text-blue-900 border-b border-slate-100 pb-2.5 flex justify-between items-center">
                         <span>SOAL NOMOR {currentQIndexInSubtest + 1}</span>
                         <span className="text-slate-400 font-normal">Subtes: {activeSubtestConfig.code} ({currentQIndexInSubtest + 1} dari {currentSubtestQuestions.length})</span>
                     </div>
 
                     {currentQ?.stimulus && (
-                        <div className={`p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 whitespace-pre-line leading-relaxed ${fontClasses.stimulus}`}>
+                        <div className={`p-3.5 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 whitespace-pre-line leading-relaxed overflow-x-auto ${fontClasses.stimulus}`}>
                             <RenderLatex content={currentQ.stimulus} />
                         </div>
                     )}
 
                     {currentQ?.imageUrl && currentQ?.imagePosition === "above" && (
-                        <div className="flex justify-center p-3 bg-slate-50 rounded-2xl border border-slate-200">
-                            <img src={currentQ.imageUrl} alt="Diagram Soal" className="max-h-72 object-contain rounded-xl" />
+                        <div className="flex justify-center p-2.5 bg-slate-50 rounded-2xl border border-slate-200">
+                            <img src={currentQ.imageUrl} alt="Diagram Soal" className="max-h-60 sm:max-h-72 object-contain rounded-xl max-w-full" />
                         </div>
                     )}
 
-                    <div className={`text-slate-900 leading-snug ${fontClasses.question}`}>
+                    <div className={`text-slate-900 leading-snug overflow-x-auto py-1 ${fontClasses.question}`}>
                         <RenderLatex content={currentQ?.question} />
                     </div>
 
                     {currentQ?.imageUrl && currentQ?.imagePosition === "below" && (
-                        <div className="flex justify-center p-3 bg-slate-50 rounded-2xl border border-slate-200">
-                            <img src={currentQ.imageUrl} alt="Diagram Soal" className="max-h-72 object-contain rounded-xl" />
+                        <div className="flex justify-center p-2.5 bg-slate-50 rounded-2xl border border-slate-200">
+                            <img src={currentQ.imageUrl} alt="Diagram Soal" className="max-h-60 sm:max-h-72 object-contain rounded-xl max-w-full" />
                         </div>
                     )}
 
-                    <div className="space-y-2.5 pt-2">
+                    <div className="space-y-2 sm:space-y-2.5 pt-1">
                         {currentQ?.options?.map((opt) => {
                             const isSelected = answers[currentQ.id] === opt.id;
                             return (
                                 <button
                                     key={opt.id}
                                     onClick={() => handleSelectOption(opt.id)}
-                                    className={`w-full text-left p-3.5 rounded-2xl border flex items-center gap-3 transition-all cursor-pointer ${fontClasses.option} ${isSelected
+                                    className={`w-full text-left p-3 sm:p-3.5 rounded-2xl border flex items-center gap-2.5 sm:gap-3 transition-all cursor-pointer ${fontClasses.option} ${isSelected
                                         ? "bg-blue-50 border-blue-700 text-blue-950 font-bold ring-2 ring-blue-700/20"
                                         : "bg-white hover:bg-slate-50 border-slate-200 text-slate-800"
                                         }`}
                                 >
                                     <span
-                                        className={`w-7 h-7 rounded-xl border font-mono font-bold flex items-center justify-center shrink-0 ${isSelected ? "bg-blue-700 text-white border-blue-700" : "bg-slate-100 text-slate-600 border-slate-200"
+                                        className={`w-6 h-6 sm:w-7 sm:h-7 rounded-xl border font-mono font-bold flex items-center justify-center shrink-0 text-xs sm:text-sm ${isSelected ? "bg-blue-700 text-white border-blue-700" : "bg-slate-100 text-slate-600 border-slate-200"
                                             }`}
                                     >
                                         {opt.id}
                                     </span>
-                                    <div className="flex-1">
+                                    <div className="flex-1 overflow-x-auto">
                                         {opt.imageUrl ? (
-                                            <img src={opt.imageUrl} alt={`Opsi ${opt.id}`} className="max-h-24 object-contain rounded-lg" />
+                                            <img src={opt.imageUrl} alt={`Opsi ${opt.id}`} className="max-h-20 sm:max-h-24 object-contain rounded-lg" />
                                         ) : (
                                             <RenderLatex content={opt.text} />
                                         )}
@@ -2081,8 +2149,8 @@ function OfficialExamChamberContent() {
                         })}
                     </div>
 
-                    {/* BARIS TOMBOL NAVIGASI DENGAN WARNA TEGAS & KONTRAS */}
-                    <div className="pt-4 flex justify-between items-center border-t border-slate-100 gap-3">
+                    {/* BARIS TOMBOL NAVIGASI DI DALAM KARTU (DESKTOP) */}
+                    <div className="hidden lg:flex pt-4 justify-between items-center border-t border-slate-100 gap-3">
                         <button
                             onClick={() => setCurrentQIndexInSubtest((i) => Math.max(0, i - 1))}
                             disabled={currentQIndexInSubtest === 0}
@@ -2116,8 +2184,8 @@ function OfficialExamChamberContent() {
                     </div>
                 </div>
 
-                {/* MATRIX NOMOR SOAL KHUSUS SUBTES AKTIF */}
-                <div className="lg:col-span-4 bg-white rounded-3xl border border-slate-200 p-5 space-y-4 shadow-xs sticky top-24">
+                {/* MATRIX NOMOR SOAL KHUSUS DESKTOP */}
+                <div className="hidden lg:block lg:col-span-4 bg-white rounded-3xl border border-slate-200 p-5 space-y-4 shadow-xs sticky top-24">
                     <div className="font-bold text-xs text-slate-800 flex justify-between items-center border-b border-slate-100 pb-3">
                         <span>Daftar Soal Subtes {activeSubtestConfig.code}</span>
                         <span className="font-mono text-blue-700 font-bold">{currentSubtestQuestions.length} Butir</span>
@@ -2147,26 +2215,51 @@ function OfficialExamChamberContent() {
                         })}
                     </div>
 
-                    <div className="pt-3 border-t border-slate-100 grid grid-cols-3 gap-1 text-[10px] font-mono text-slate-500">
-                        <div className="flex items-center gap-1.5">
-                            <span className="w-3 h-3 rounded bg-blue-700 inline-block" />
-                            <span>Terjawab</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <span className="w-3 h-3 rounded bg-amber-400 inline-block" />
-                            <span>Ragu</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <span className="w-3 h-3 rounded bg-slate-100 border border-slate-300 inline-block" />
-                            <span>Kosong</span>
-                        </div>
+                    <div className="pt-3 border-t border-slate-100 grid grid-cols-3 gap-1 text-[10px] font-mono text-slate-500 text-center">
+                        <div><span className="w-2.5 h-2.5 rounded bg-blue-700 inline-block mr-1" /> Terjawab</div>
+                        <div><span className="w-2.5 h-2.5 rounded bg-amber-400 inline-block mr-1" /> Ragu</div>
+                        <div><span className="w-2.5 h-2.5 rounded bg-slate-200 inline-block mr-1" /> Kosong</div>
                     </div>
                 </div>
             </div>
 
+            {/* STICKY BOTTOM NAV BAR KHUSUS HP & TABLET */}
+            <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-2.5 px-3 z-40 flex items-center justify-between gap-2 shadow-lg">
+                <button
+                    onClick={() => setCurrentQIndexInSubtest((i) => Math.max(0, i - 1))}
+                    disabled={currentQIndexInSubtest === 0}
+                    className="flex-1 py-2.5 bg-slate-100 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold disabled:opacity-30 active:scale-95"
+                >
+                    &larr; Prev
+                </button>
+
+                <button
+                    onClick={handleToggleDoubtful}
+                    className={`flex-1 py-2.5 border rounded-xl text-xs font-bold active:scale-95 ${doubtfuls[currentQ?.id]
+                        ? "bg-amber-400 text-amber-950 border-amber-500 font-black"
+                        : "bg-amber-50 border-amber-300 text-amber-900"
+                        }`}
+                >
+                    {doubtfuls[currentQ?.id] ? "✓ Ragu" : "Ragu"}
+                </button>
+
+                <button
+                    onClick={() => {
+                        if (currentQIndexInSubtest < currentSubtestQuestions.length - 1) {
+                            setCurrentQIndexInSubtest((i) => i + 1);
+                        } else {
+                            setShowSubtestConfirmModal(true);
+                        }
+                    }}
+                    className="flex-1 py-2.5 bg-[#1e3a8a] text-white rounded-xl text-xs font-bold shadow-xs active:scale-95"
+                >
+                    {currentQIndexInSubtest < currentSubtestQuestions.length - 1 ? "Next →" : "Selesai"}
+                </button>
+            </div>
+
             {showSubtestConfirmModal && (
                 <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 text-center shadow-2xl border border-slate-100">
+                    <div className="bg-white rounded-3xl p-5 sm:p-6 max-w-sm w-full space-y-4 text-center shadow-2xl border border-slate-100">
                         <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-900 flex items-center justify-center mx-auto">
                             <FastForward className="w-6 h-6" />
                         </div>
