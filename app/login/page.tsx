@@ -18,7 +18,7 @@ import {
 const GOOGLE_SCRIPT_API_URL =
     "https://script.google.com/macros/s/AKfycbxXeMuz-VXgbdUOESiOOLL5NlLrSMVfrdvOCwhgBbjLWwOy3ASkTjnWJSAIONFDrdY7hg/exec";
 
-// KAMUS PESAN ERROR SEDERHANA (Bisa kamu edit langsung teksnya di sini)
+// KAMUS PESAN ERROR SEDERHANA
 function getPesanErrorSederhana(rawMsg: string): string {
     const msg = (rawMsg || "").toLowerCase();
 
@@ -99,7 +99,6 @@ export default function StudentLoginPage() {
         const cleanName = candidateName.trim();
         const cleanToken = examToken.trim().toUpperCase();
 
-        // Validasi cepat di frontend
         if (!cleanNisn) {
             setErrorMsg("NISN jangan dikosongkan ya!");
             return;
@@ -147,7 +146,6 @@ export default function StudentLoginPage() {
                 localStorage.setItem("cbt_student_session", JSON.stringify(sessionData));
                 router.push(`/exam?package=${targetPackage}`);
             } else {
-                // Di sini pesannya otomatis diterjemahkan jadi kata-kata simpel yang kamu tentukan
                 setErrorMsg(getPesanErrorSederhana(json.message));
                 setIsValidating(false);
             }
@@ -159,32 +157,32 @@ export default function StudentLoginPage() {
 
     return (
         <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-800">
-            {/* Header Minimalis Portal */}
-            <header className="bg-white border-b border-slate-200/90 py-3.5 px-4 sm:px-8">
-                <div className="max-w-6xl mx-auto flex items-center justify-between">
+            {/* Header Minimalis Portal Responsif */}
+            <header className="bg-white border-b border-slate-200/90 py-3 px-3.5 sm:px-8 sticky top-0 z-20 shadow-2xs">
+                <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
                     <Link
                         href="/"
-                        className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors"
                     >
-                        <ChevronLeft className="w-4 h-4" />
-                        <span>Kembali ke Laman Depan</span>
+                        <ChevronLeft className="w-4 h-4 shrink-0" />
+                        <span className="truncate">Laman Depan</span>
                     </Link>
 
-                    <div className="flex items-center gap-2 font-mono text-[11px] text-slate-500">
+                    <div className="flex items-center gap-1.5 font-mono text-[10px] sm:text-[11px] text-slate-500 shrink-0">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span>SERVER CBT RESMI AKTIF</span>
+                        <span>SERVER CBT AKTIF</span>
                     </div>
                 </div>
             </header>
 
-            {/* Konten Utama */}
-            <div className="flex-1 flex items-center justify-center p-4 sm:p-6 my-auto">
-                <div className="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 p-6 sm:p-9 space-y-6 relative overflow-hidden">
+            {/* Konten Utama Form Login */}
+            <div className="flex-1 flex items-center justify-center p-3.5 sm:p-6 my-auto">
+                <div className="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 p-5 sm:p-8 md:p-9 space-y-5 sm:space-y-6 relative overflow-hidden">
                     <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-600" />
 
                     {/* Logo & Judul Portal */}
                     <div className="text-center space-y-2">
-                        <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-center mx-auto overflow-hidden p-1">
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-center mx-auto overflow-hidden p-1">
                             <img
                                 src="/logo-timsim.jpg"
                                 alt="Logo SMA Muhammadiyah 18 Jakarta"
@@ -195,34 +193,34 @@ export default function StudentLoginPage() {
                             />
                         </div>
 
-                        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-blue-50 border border-blue-200 font-mono text-[10px] font-bold text-blue-900 uppercase tracking-wider">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-blue-50 border border-blue-200 font-mono text-[9.5px] sm:text-[10px] font-bold text-blue-900 uppercase tracking-wider">
                             <span>SMA MUHAMMADIYAH 18 JAKARTA</span>
                         </div>
 
-                        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
                             Bilik Masuk Siswa
                         </h1>
 
-                        <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+                        <p className="text-[11px] sm:text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
                             Silakan masukkan NISN, Nama Lengkap resmi, dan Token Ujian yang tertera di layar pengawas ruang.
                         </p>
                     </div>
 
                     {/* Banner Sesi Terpusat dari Proktor */}
                     {activeSession && (
-                        <div className="p-3 bg-blue-50/70 rounded-2xl border border-blue-200 flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2.5">
-                                <div className="p-2 bg-blue-600 text-white rounded-xl">
+                        <div className="p-3 bg-blue-50/70 rounded-2xl border border-blue-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="p-2 bg-blue-600 text-white rounded-xl shrink-0">
                                     <Layers className="w-4 h-4" />
                                 </div>
-                                <div className="text-left">
-                                    <span className="font-bold text-blue-950 block">{activeSession.nama_paket}</span>
-                                    <span className="text-[11px] font-mono text-blue-700 font-semibold">
+                                <div className="text-left min-w-0">
+                                    <span className="font-bold text-blue-950 block truncate">{activeSession.nama_paket}</span>
+                                    <span className="text-[10.5px] sm:text-[11px] font-mono text-blue-700 font-semibold truncate block">
                                         Target: {activeSession.paket_aktif} &bull; {activeSession.durasi_menit} Menit
                                     </span>
                                 </div>
                             </div>
-                            <span className={`px-2.5 py-1 rounded-full font-mono text-[10px] font-black uppercase ${activeSession.status_akses === "DIBUKA" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
+                            <span className={`self-start sm:self-auto px-2.5 py-0.5 rounded-full font-mono text-[9.5px] sm:text-[10px] font-black uppercase shrink-0 ${activeSession.status_akses === "DIBUKA" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
                                 }`}>
                                 {activeSession.status_akses}
                             </span>
@@ -230,16 +228,16 @@ export default function StudentLoginPage() {
                     )}
 
                     {errorMsg && (
-                        <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5 animate-in fade-in">
+                        <div className="p-3 sm:p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5 animate-in fade-in">
                             <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
                             <span className="font-semibold text-left leading-relaxed">{errorMsg}</span>
                         </div>
                     )}
 
-                    <form onSubmit={handleStartOfficialExam} className="space-y-4">
+                    <form onSubmit={handleStartOfficialExam} className="space-y-3.5 sm:space-y-4">
                         {/* 1. Input NISN */}
-                        <div className="space-y-1.5 text-left">
-                            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider font-mono block">
+                        <div className="space-y-1 text-left">
+                            <label className="text-[10.5px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider font-mono block">
                                 Nomor Induk Siswa Nasional (NISN):
                             </label>
                             <input
@@ -251,13 +249,13 @@ export default function StudentLoginPage() {
                                 placeholder="Contoh: 0078192831"
                                 value={nisn}
                                 onChange={(e) => setNisn(e.target.value.replace(/\D/g, ""))}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-sm font-mono tracking-wider font-bold text-slate-900 outline-none transition-all"
+                                className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-xs sm:text-sm font-mono tracking-wider font-bold text-slate-900 outline-none transition-all"
                             />
                         </div>
 
                         {/* 2. Input Nama Lengkap Siswa */}
-                        <div className="space-y-1.5 text-left">
-                            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider font-mono block">
+                        <div className="space-y-1 text-left">
+                            <label className="text-[10.5px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider font-mono block">
                                 Nama Lengkap Siswa (Sesuai Data Sekolah):
                             </label>
                             <input
@@ -266,17 +264,17 @@ export default function StudentLoginPage() {
                                 placeholder="Masukkan nama lengkap..."
                                 value={candidateName}
                                 onChange={(e) => setCandidateName(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-sm font-semibold text-slate-900 outline-none transition-all"
+                                className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-xs sm:text-sm font-semibold text-slate-900 outline-none transition-all"
                             />
                         </div>
 
                         {/* 3. Input Token Pengawas */}
-                        <div className="space-y-1.5 text-left pt-1">
+                        <div className="space-y-1 text-left pt-0.5">
                             <div className="flex items-center justify-between">
-                                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider font-mono">
+                                <label className="text-[10.5px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider font-mono">
                                     Token Resmi Ruang Ujian:
                                 </label>
-                                <span className="text-[11px] text-slate-400 italic">Diberikan oleh pengawas</span>
+                                <span className="text-[10px] sm:text-[11px] text-slate-400 italic">Dari pengawas</span>
                             </div>
                             <input
                                 type="text"
@@ -285,7 +283,7 @@ export default function StudentLoginPage() {
                                 placeholder="TOKEN..."
                                 value={examToken}
                                 onChange={(e) => setExamToken(e.target.value.toUpperCase())}
-                                className="w-full px-4 py-3 rounded-xl border-2 border-amber-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-base font-mono tracking-widest text-center uppercase font-black text-amber-700 bg-amber-50/30 outline-none transition-all"
+                                className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 border-amber-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-sm sm:text-base font-mono tracking-widest text-center uppercase font-black text-amber-700 bg-amber-50/30 outline-none transition-all"
                             />
                         </div>
 
@@ -294,7 +292,7 @@ export default function StudentLoginPage() {
                             <button
                                 type="submit"
                                 disabled={isValidating || activeSession?.status_akses === "TERKUNCI"}
-                                className={`w-full py-3.5 px-6 rounded-2xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ${activeSession?.status_akses === "TERKUNCI"
+                                className={`w-full py-3 sm:py-3.5 px-6 rounded-2xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ${activeSession?.status_akses === "TERKUNCI"
                                     ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
                                     : "bg-[#1e3a8a] hover:bg-blue-900 active:scale-[0.99] text-white shadow-blue-900/25"
                                     } disabled:opacity-50`}
@@ -320,7 +318,7 @@ export default function StudentLoginPage() {
                     </form>
 
                     {/* Footer Info Sistem */}
-                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-400">
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] sm:text-[11px] font-mono text-slate-400">
                         <span>Standar UTBK-SNBT 2026</span>
                         <span>Kiosk Security On</span>
                     </div>
