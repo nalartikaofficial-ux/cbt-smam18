@@ -218,8 +218,8 @@ export default function StudentLoginPage() {
                             </div>
                             <span
                                 className={`self-start sm:self-center px-2.5 py-0.5 rounded-full font-mono text-[9.5px] sm:text-[10px] font-black uppercase shrink-0 ${activeSession.status_akses === "DIBUKA"
-                                        ? "bg-emerald-100 text-emerald-800"
-                                        : "bg-rose-100 text-rose-800"
+                                    ? "bg-emerald-100 text-emerald-800"
+                                    : "bg-rose-100 text-rose-800"
                                     }`}
                             >
                                 {activeSession.status_akses}
@@ -281,9 +281,13 @@ export default function StudentLoginPage() {
                                 type="text"
                                 required
                                 maxLength={8}
+                                autoCapitalize="characters"
+                                autoCorrect="off"
+                                autoComplete="off"
+                                spellCheck={false}
                                 placeholder="TOKEN..."
                                 value={examToken}
-                                onChange={(e) => setExamToken(e.target.value.toUpperCase())}
+                                onChange={(e) => setExamToken(e.target.value)}
                                 className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 border-amber-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-base font-mono tracking-widest text-center uppercase font-black text-amber-700 bg-amber-50/30 outline-none transition-all"
                             />
                         </div>
@@ -293,8 +297,8 @@ export default function StudentLoginPage() {
                                 type="submit"
                                 disabled={isValidating || activeSession?.status_akses === "TERKUNCI"}
                                 className={`w-full py-3 sm:py-3.5 px-6 rounded-2xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ${activeSession?.status_akses === "TERKUNCI"
-                                        ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
-                                        : "bg-[#1e3a8a] hover:bg-blue-900 active:scale-[0.99] text-white shadow-blue-900/25"
+                                    ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
+                                    : "bg-[#1e3a8a] hover:bg-blue-900 active:scale-[0.99] text-white shadow-blue-900/25"
                                     } disabled:opacity-50`}
                             >
                                 {isValidating ? (

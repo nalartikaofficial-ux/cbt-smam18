@@ -58,6 +58,27 @@ export interface MasterSession {
     waktu_selesai: string;
 }
 
+function formatScheduleIndonesia(startStr: string, endStr: string): string {
+    try {
+        const start = new Date(startStr);
+        const end = new Date(endStr);
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return `${startStr.replace("T", " ")} s.d. ${endStr.replace("T", " ")} WIB`;
+        }
+        const dateStart = start.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+        const dateEnd = end.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+        const timeStart = start.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+        const timeEnd = end.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+
+        if (dateStart === dateEnd) {
+            return `${dateStart}, Pukul ${timeStart} s.d. ${timeEnd} WIB`;
+        }
+        return `${dateStart} (${timeStart}) s.d. ${dateEnd} (${timeEnd}) WIB`;
+    } catch {
+        return `${startStr.replace("T", " ")} s.d. ${endStr.replace("T", " ")} WIB`;
+    }
+}
+
 export default function ProctorMasterDashboard() {
     const router = useRouter();
 
@@ -81,8 +102,8 @@ export default function ProctorMasterDashboard() {
         nama_paket: "Simulasi Terstandarisasi SNBT 2026",
         token_resmi: "SM18UT",
         status_akses: "DIBUKA",
-        waktu_mulai: "2026-10-19T07:30",
-        waktu_selesai: "2026-10-19T11:30"
+        waktu_mulai: "2026-11-12T07:30",
+        waktu_selesai: "2026-11-12T11:30"
     });
     const [isSavingSchedule, setIsSavingSchedule] = useState(false);
     const [customMinutes, setCustomMinutes] = useState<number>(5);
@@ -126,8 +147,8 @@ export default function ProctorMasterDashboard() {
                 if (json.status === "success" && json.data) {
                     setMasterSession({
                         ...json.data,
-                        waktu_mulai: json.data.waktu_mulai ? String(json.data.waktu_mulai).substring(0, 16) : "2026-10-19T07:30",
-                        waktu_selesai: json.data.waktu_selesai ? String(json.data.waktu_selesai).substring(0, 16) : "2026-10-19T11:30"
+                        waktu_mulai: json.data.waktu_mulai ? String(json.data.waktu_mulai).substring(0, 16) : "2026-11-12T07:30",
+                        waktu_selesai: json.data.waktu_selesai ? String(json.data.waktu_selesai).substring(0, 16) : "2026-11-12T11:30"
                     });
                 }
             }
@@ -136,7 +157,6 @@ export default function ProctorMasterDashboard() {
         }
     };
 
-    // Ambil data siswa dengan status loading manual
     const fetchStudents = async () => {
         setIsLoading(true);
         try {
@@ -146,7 +166,6 @@ export default function ProctorMasterDashboard() {
         }
     };
 
-    // Auto-polling di latar belakang (tanpa memicu loading spinner layar)
     const fetchStudentsSilently = async () => {
         try {
             const res = await fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_students&_t=${Date.now()}`, {
@@ -202,7 +221,6 @@ export default function ProctorMasterDashboard() {
         }
     }, []);
 
-    // Background auto-refresh setiap 5 detik agar monitor sinkron otomatis
     useEffect(() => {
         if (!isAuthorized) return;
         const interval = setInterval(() => {
@@ -282,23 +300,19 @@ export default function ProctorMasterDashboard() {
         }
     };
 
-    // 1. BUKA AKSES (LANJUT): Membuka gembok pengerjaan siswa yang terkunci / ngelag / laptop mati
     const handleUnlockResumeStudent = async (student: StudentItem) => {
         const stLower = student.status.toLowerCase();
 
-        // JIKA SISWA BELUM PERNAH MULAI UJIAN
         if (stLower.includes("belum") || stLower.includes("hadir")) {
             alert(`Peserta ${student.nama} belum pernah memulai ujian. Akses akan otomatis aktif saat siswa login pertama kali menggunakan NISN dan Token resmi. Status tetap 'Belum Hadir'.`);
             return;
         }
 
-        // JIKA SISWA SUDAH MENYELESAIKAN UJIAN
         if (stLower.includes("selesai")) {
             alert(`Peserta ${student.nama} telah menyelesaikan ujian. Lembar jawaban sudah dikunci. Gunakan tombol 'Ujian Ulang' jika ingin mereset akun untuk paket baru.`);
             return;
         }
 
-        // UNTUK SISWA YANG SEDANG MENGERJAKAN ATAU TERKUNCI KIOSK
         setStudents((prev) =>
             prev.map((s) => (s.nisn === student.nisn ? { ...s, status: "Sedang Mengerjakan" } : s))
         );
@@ -316,7 +330,6 @@ export default function ProctorMasterDashboard() {
         }
     };
 
-    // 2. BLOKIR: Pengawas menindak siswa yang terindikasi curang (Kecurangan tetap sesuai angka aslinya)
     const handleBlockStudent = async (student: StudentItem) => {
         if (!confirm(`TINDAKAN PENGAWAS: Kunci/Blokir bilik ujian peserta ${student.nama} (${student.nisn})? Akses ujian akan langsung dihentikan sepihak tanpa mengubah jumlah catatan pelanggaran (${student.violations}x).`)) return;
 
@@ -332,7 +345,7 @@ export default function ProctorMasterDashboard() {
                 body: JSON.stringify({
                     action: "block_student",
                     nisn: student.nisn,
-                    violations: student.violations // Pertahankan jumlah pelanggaran yang ada
+                    violations: student.violations
                 })
             });
             alert(`Peserta ${student.nama} berhasil diblokir. Status sekarang 'Terkunci' dengan catatan pelanggaran tetap ${student.violations}x.`);
@@ -341,7 +354,6 @@ export default function ProctorMasterDashboard() {
         }
     };
 
-    // 3. UJIAN ULANG / RESET: Mereset akun siswa (siap dipakai untuk sesi/paket baru)
     const handleResetStudent = async (student: StudentItem) => {
         if (!confirm(`Reset ujian peserta ${student.nama} (${student.nisn})? Status akan dikembalikan ke 'Belum Hadir', nilai IRT di-nol-kan, dan pelanggaran dibersihkan kembali ke 0 untuk persiapan sesi baru.`)) return;
 
@@ -561,13 +573,28 @@ export default function ProctorMasterDashboard() {
         return Array.from(setClasses).sort();
     }, [students]);
 
+    // KALKULASI PRESISI: Peserta Terdaftar = Hadir (Mengerjakan + Selesai + Terkunci) + Belum Hadir
     const stats = useMemo(() => {
         const total = students.length;
-        const working = students.filter((s) => s.status.toLowerCase().includes("mengerjakan")).length;
-        const finished = students.filter((s) => s.status.toLowerCase().includes("selesai") || s.score > 0).length;
-        const locked = students.filter((s) => s.status.toLowerCase().includes("kunci") || s.violations >= 3).length;
-        const absent = total - (working + finished + locked);
-        return { total, working, finished, locked, absent: Math.max(0, absent) };
+        let working = 0;
+        let finished = 0;
+        let locked = 0;
+
+        students.forEach((s) => {
+            const st = s.status.toLowerCase();
+            if (st.includes("selesai") || s.score > 0) {
+                finished++;
+            } else if (st.includes("kunci") || s.violations >= 3) {
+                locked++;
+            } else if (st.includes("mengerjakan")) {
+                working++;
+            }
+        });
+
+        const present = working + finished + locked;
+        const absent = Math.max(0, total - present);
+
+        return { total, working, finished, locked, present, absent };
     }, [students]);
 
     const filteredStudents = useMemo(() => {
@@ -619,6 +646,9 @@ export default function ProctorMasterDashboard() {
                 background: #ffffff !important;
                 padding: 0 !important;
                 width: 100% !important;
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
                 page-break-inside: avoid !important;
               }
               .kop-divider-thick {
@@ -635,7 +665,7 @@ export default function ProctorMasterDashboard() {
               }
               table.print-table th, table.print-table td {
                 border: 1px solid #000000 !important;
-                padding: 4px 6px !important;
+                padding: 6px 10px !important;
                 color: #000000 !important;
               }
               table.print-table th {
@@ -649,37 +679,37 @@ export default function ProctorMasterDashboard() {
             />
 
             {/* HEADER PROKTOR */}
-            <header className="print-hidden bg-white border-b border-slate-200/90 py-3 px-4 sm:px-8 sticky top-0 z-30 shadow-2xs">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+            <header className="print-hidden bg-white border-b border-slate-200/90 py-3 px-3.5 sm:px-8 sticky top-0 z-30 shadow-2xs">
+                <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 w-full sm:w-auto">
                         <Link
                             href="/admin"
-                            className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors"
+                            className="p-1.5 sm:p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors shrink-0"
                             title="Kembali ke Hub Utama Admin"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </Link>
-                        <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 p-0.5 flex items-center justify-center overflow-hidden shrink-0">
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white border border-slate-200 p-0.5 flex items-center justify-center overflow-hidden shrink-0">
                             <img
                                 src="/logo-timsim.jpg"
                                 alt="Logo SMA Muhammadiyah 18 Jakarta"
                                 className="w-full h-full object-contain"
                                 onError={(e) => {
-                                    (e.target as any).src = "/images/logo-smam18.png";
+                                    (e.target as HTMLImageElement).src = "/images/logo-smam18.png";
                                 }}
                             />
                         </div>
-                        <div>
-                            <div className="text-xs sm:text-sm font-black text-slate-900 tracking-tight uppercase">
-                                PUSAT KENDALI PROKTOR &bull; SMA MUHAMMADIYAH 18
+                        <div className="min-w-0">
+                            <div className="text-xs sm:text-sm font-black text-slate-900 tracking-tight uppercase truncate">
+                                PUSAT KENDALI PROKTOR • SMA MUHAMMADIYAH 18
                             </div>
-                            <div className="text-[11px] text-slate-500 font-medium">
+                            <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
                                 Pengawas Aktif: <strong className="text-blue-700">{currentProctor.nama}</strong> ({currentProctor.role.toUpperCase()})
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 self-end sm:self-auto shrink-0 flex-wrap">
                         <button
                             type="button"
                             onClick={toggleSessionLock}
@@ -725,20 +755,20 @@ export default function ProctorMasterDashboard() {
                 </div>
             </header>
 
-            <div className="max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6 print:p-0 print:m-0 print:space-y-0 print:w-full print:max-w-none">
+            <div className="max-w-7xl w-full mx-auto p-3.5 sm:p-6 space-y-5 sm:space-y-6 print:p-0 print:m-0 print:space-y-0 print:w-full print:max-w-none">
                 {/* 1. MASTER PANEL TOKEN & PENJADWALAN REAL-TIME */}
-                <div className="print-hidden bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-3xl p-6 sm:p-7 text-white shadow-lg space-y-5">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                <div className="print-hidden bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-3xl p-5 sm:p-7 text-white shadow-lg space-y-5 text-left">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/10 pb-4">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold shrink-0">
-                                <KeyRound className="w-6 h-6" />
+                            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold shrink-0">
+                                <KeyRound className="w-5 h-5 sm:w-6 sm:h-6" />
                             </div>
                             <div>
                                 <div className="text-[10px] font-mono font-bold tracking-widest text-amber-300 uppercase">
                                     PENGATURAN RUANG UJIAN TERPUSAT
                                 </div>
-                                <h2 className="text-lg sm:text-xl font-black text-white">
-                                    Token Resmi &amp; Penjadwalan Waktu Nyata
+                                <h2 className="text-base sm:text-xl font-black text-white">
+                                    Token Resmi & Penjadwalan Waktu Nyata
                                 </h2>
                                 <p className="text-xs text-blue-200">
                                     Status Sesi: <strong className={`px-2 py-0.5 rounded font-mono text-[11px] ${masterSession.status_akses === "DIBUKA" ? "bg-emerald-500/30 text-emerald-300 border border-emerald-400/40" : "bg-rose-500/30 text-rose-300 border border-rose-400/40"
@@ -786,8 +816,8 @@ export default function ProctorMasterDashboard() {
                         </div>
                     </div>
 
-                    <form onSubmit={handleUpdateSchedule} className="grid grid-cols-1 sm:grid-cols-12 gap-3.5 text-xs">
-                        <div className="sm:col-span-3 space-y-1">
+                    <form onSubmit={handleUpdateSchedule} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 text-xs">
+                        <div className="lg:col-span-3 space-y-1">
                             <label className="text-[11px] font-bold text-slate-300 font-mono">PAKET SOAL AKTIF:</label>
                             <select
                                 value={masterSession.paket_aktif}
@@ -800,7 +830,7 @@ export default function ProctorMasterDashboard() {
                             </select>
                         </div>
 
-                        <div className="sm:col-span-3 space-y-1">
+                        <div className="lg:col-span-3 space-y-1">
                             <div className="flex items-center justify-between">
                                 <label className="text-[11px] font-bold text-slate-300 font-mono">TOKEN RESMI:</label>
                                 <button
@@ -830,7 +860,7 @@ export default function ProctorMasterDashboard() {
                             </div>
                         </div>
 
-                        <div className="sm:col-span-3 space-y-1">
+                        <div className="lg:col-span-3 space-y-1">
                             <label className="text-[11px] font-bold text-slate-300 font-mono">JAM MULAI UJIAN:</label>
                             <input
                                 type="datetime-local"
@@ -841,7 +871,7 @@ export default function ProctorMasterDashboard() {
                             />
                         </div>
 
-                        <div className="sm:col-span-3 space-y-1">
+                        <div className="lg:col-span-3 space-y-1">
                             <label className="text-[11px] font-bold text-slate-300 font-mono">JAM BATAS SELESAI UJIAN:</label>
                             <input
                                 type="datetime-local"
@@ -852,11 +882,11 @@ export default function ProctorMasterDashboard() {
                             />
                         </div>
 
-                        <div className="sm:col-span-12 flex justify-end pt-1">
+                        <div className="sm:col-span-2 lg:col-span-12 flex justify-end pt-1">
                             <button
                                 type="submit"
                                 disabled={isSavingSchedule}
-                                className="py-2.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center gap-1.5 cursor-pointer transition-all disabled:opacity-50 shadow-md"
+                                className="w-full sm:w-auto py-2.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all disabled:opacity-50 shadow-md"
                             >
                                 <Save className="w-4 h-4" />
                                 <span>{isSavingSchedule ? "Menyimpan ke Server..." : "Terapkan Jadwal Ujian"}</span>
@@ -866,7 +896,7 @@ export default function ProctorMasterDashboard() {
                 </div>
 
                 {/* 2. STATISTIK PESERTA */}
-                <div className="print-hidden grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+                <div className="print-hidden grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 text-left">
                     <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
                         <div className="flex items-center justify-between text-slate-500 text-xs font-bold font-mono">
                             <span>TERDAFTAR</span>
@@ -911,44 +941,44 @@ export default function ProctorMasterDashboard() {
                 </div>
 
                 {/* 3. TAB NAVIGASI RUANG PROKTOR */}
-                <div className="print-hidden flex items-center gap-2 bg-slate-200/80 p-1 rounded-2xl border border-slate-300">
+                <div className="print-hidden grid grid-cols-2 lg:flex items-center gap-1.5 sm:gap-2 bg-slate-200/80 p-1.5 rounded-2xl border border-slate-300">
                     <button
                         onClick={() => setActiveTab("students")}
-                        className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 cursor-pointer ${activeTab === "students" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                        className={`flex-1 py-2.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer ${activeTab === "students" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
                     >
-                        <PlusCircle className="w-4 h-4 text-emerald-600" />
-                        <span>Pendaftaran &amp; Daftar Peserta</span>
+                        <PlusCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span className="truncate">Pendaftaran & Peserta</span>
                     </button>
 
                     <button
                         onClick={() => setActiveTab("monitor")}
-                        className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 cursor-pointer ${activeTab === "monitor" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                        className={`flex-1 py-2.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer ${activeTab === "monitor" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
                     >
-                        <Activity className="w-4 h-4 text-blue-600" />
-                        <span>Live Monitor Bilik Siswa</span>
+                        <Activity className="w-4 h-4 text-blue-600 shrink-0" />
+                        <span className="truncate">Live Monitor Bilik</span>
                     </button>
 
                     <button
                         onClick={() => setActiveTab("bap")}
-                        className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 cursor-pointer ${activeTab === "bap" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                        className={`flex-1 py-2.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer ${activeTab === "bap" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
                     >
-                        <FileText className="w-4 h-4 text-indigo-600" />
-                        <span>Berita Acara Ujian (BAP)</span>
+                        <FileText className="w-4 h-4 text-indigo-600 shrink-0" />
+                        <span className="truncate">Berita Acara (BAP)</span>
                     </button>
 
                     <button
                         onClick={() => setActiveTab("scores")}
-                        className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 cursor-pointer ${activeTab === "scores" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                        className={`flex-1 py-2.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer ${activeTab === "scores" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
                     >
-                        <Award className="w-4 h-4 text-amber-500" />
-                        <span>Buku Nilai IRT</span>
+                        <Award className="w-4 h-4 text-amber-500 shrink-0" />
+                        <span className="truncate">Buku Nilai IRT</span>
                     </button>
                 </div>
 
                 {/* TAB 1: PENDAFTARAN & DAFTAR SISWA */}
                 {activeTab === "students" && (
-                    <div className="print-hidden space-y-6">
-                        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-5 shadow-sm">
+                    <div className="print-hidden space-y-6 text-left">
+                        <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-8 space-y-5 shadow-sm">
                             <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                 <div>
                                     <h3 className="text-base font-black text-slate-900">Input Data Peserta Ujian</h3>
@@ -1023,7 +1053,7 @@ export default function ProctorMasterDashboard() {
                             </form>
                         </div>
 
-                        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-4 shadow-sm">
+                        <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-8 space-y-4 shadow-sm">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                                 <div>
                                     <h3 className="text-base font-black text-slate-900">
@@ -1034,7 +1064,7 @@ export default function ProctorMasterDashboard() {
                                     </p>
                                 </div>
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-wrap">
                                     <div className="relative">
                                         <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                                         <input
@@ -1062,7 +1092,7 @@ export default function ProctorMasterDashboard() {
                             </div>
 
                             <div className="overflow-x-auto rounded-2xl border border-slate-200">
-                                <table className="w-full text-left text-xs border-collapse">
+                                <table className="w-full text-left text-xs border-collapse min-w-[640px]">
                                     <thead className="bg-slate-50 border-b border-slate-200 font-mono text-[11px] text-slate-600">
                                         <tr>
                                             <th className="p-3.5 w-12">No</th>
@@ -1130,12 +1160,12 @@ export default function ProctorMasterDashboard() {
                     </div>
                 )}
 
-                {/* TAB 2: LIVE MONITOR BILIK SISWA (TOMBOL LENGKAP DENGAN SINKRONISASI LOGIS & AUTO-POLLING) */}
+                {/* TAB 2: LIVE MONITOR BILIK SISWA */}
                 {activeTab === "monitor" && (
-                    <div className="print-hidden bg-white rounded-3xl border border-slate-200 p-5 sm:p-7 space-y-4 shadow-sm">
+                    <div className="print-hidden bg-white rounded-3xl border border-slate-200 p-5 sm:p-7 space-y-4 shadow-sm text-left">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                             <div>
-                                <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                                <h3 className="text-base font-black text-slate-900 flex items-center gap-2 flex-wrap">
                                     <span>Pemantauan Layar Kiosk Siswa</span>
                                     <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono text-[10px] font-bold inline-flex items-center gap-1">
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
@@ -1148,7 +1178,7 @@ export default function ProctorMasterDashboard() {
                                 </p>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                                 <div className="relative">
                                     <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                                     <input
@@ -1174,7 +1204,7 @@ export default function ProctorMasterDashboard() {
                         </div>
 
                         <div className="overflow-x-auto rounded-2xl border border-slate-200">
-                            <table className="w-full text-left text-xs border-collapse">
+                            <table className="w-full text-left text-xs border-collapse min-w-[760px]">
                                 <thead className="bg-slate-50 border-b border-slate-200 font-mono text-[11px] text-slate-600">
                                     <tr>
                                         <th className="p-3.5">NISN</th>
@@ -1231,9 +1261,7 @@ export default function ProctorMasterDashboard() {
                                                     )}
                                                 </td>
 
-                                                {/* BARIS TIGA TOMBOL KENDALI PENUH */}
                                                 <td className="p-3.5 text-right space-x-1.5 whitespace-nowrap">
-                                                    {/* 1. BUKA AKSES (LANJUT) */}
                                                     <button
                                                         onClick={() => handleUnlockResumeStudent(s)}
                                                         className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold cursor-pointer inline-flex items-center gap-1 shadow-2xs transition-all active:scale-95"
@@ -1243,17 +1271,15 @@ export default function ProctorMasterDashboard() {
                                                         <span>Buka Akses (Lanjut)</span>
                                                     </button>
 
-                                                    {/* 2. BLOKIR */}
                                                     <button
                                                         onClick={() => handleBlockStudent(s)}
                                                         className="px-2.5 py-1.5 rounded-xl border border-rose-300 hover:bg-rose-50 text-rose-700 text-[11px] font-bold cursor-pointer inline-flex items-center gap-1 transition-all active:scale-95"
-                                                        title="Kunci / Blokir bilik siswa ini secara manual (Pelanggaran tetap riil)"
+                                                        title="Kunci / Blokir bilik siswa ini secara manual"
                                                     >
                                                         <Ban className="w-3.5 h-3.5" />
                                                         <span>Blokir</span>
                                                     </button>
 
-                                                    {/* 3. UJIAN ULANG */}
                                                     <button
                                                         onClick={() => handleResetStudent(s)}
                                                         className="px-2.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 text-[11px] font-bold cursor-pointer inline-flex items-center gap-1 transition-all active:scale-95"
@@ -1272,14 +1298,14 @@ export default function ProctorMasterDashboard() {
                     </div>
                 )}
 
-                {/* TAB 3: BERITA ACARA UJIAN (BAP) */}
+                {/* TAB 3: BERITA ACARA UJIAN (BAP) - SUDAH DIPERBAIKI LOGIKA & TAMPILANNYA */}
                 {activeTab === "bap" && (
-                    <div className="space-y-6">
-                        <div className="print-hidden bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-5">
+                    <div className="space-y-6 text-left">
+                        <div className="print-hidden bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-5">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-3">
                                 <div>
                                     <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
-                                        <FileText className="w-5 h-5 text-blue-700" />
+                                        <FileText className="w-5 h-5 text-blue-700 shrink-0" />
                                         <span>Pengaturan Berita Acara Ujian (BAP)</span>
                                     </h3>
                                     <p className="text-xs text-slate-500">
@@ -1289,7 +1315,7 @@ export default function ProctorMasterDashboard() {
                                 <button
                                     type="button"
                                     onClick={() => window.print()}
-                                    className="px-5 py-2.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md transition-all shrink-0"
+                                    className="px-5 py-2.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all shrink-0"
                                 >
                                     <Printer className="w-4 h-4" />
                                     <span>Cetak Lembar BAP (PDF/A4)</span>
@@ -1330,7 +1356,7 @@ export default function ProctorMasterDashboard() {
                                                     setBapData({
                                                         ...bapData,
                                                         isManualHadir: e.target.checked,
-                                                        manualHadir: stats.working + stats.finished,
+                                                        manualHadir: stats.present,
                                                         manualTidakHadir: stats.absent
                                                     })
                                                 }
@@ -1358,8 +1384,8 @@ export default function ProctorMasterDashboard() {
                                         </div>
                                     ) : (
                                         <div className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 font-mono text-[11px] text-slate-600 flex justify-between items-center">
-                                            <span>Otomatis:</span>
-                                            <strong className="text-emerald-700">{stats.working + stats.finished} Hadir</strong>
+                                            <span>Otomatis ({stats.total} Total):</span>
+                                            <strong className="text-emerald-700">{stats.present} Hadir</strong>
                                             <span className="text-slate-400">/</span>
                                             <strong className="text-rose-700">{stats.absent} Absen</strong>
                                         </div>
@@ -1419,142 +1445,145 @@ export default function ProctorMasterDashboard() {
                         </div>
 
                         {/* LEMBAR CETAK DOKUMEN BAP ASLI RESMI */}
-                        <div className="print-sheet bg-white rounded-3xl border border-slate-200 p-8 sm:p-12 shadow-lg space-y-5 text-slate-950 font-serif leading-relaxed">
-                            <div className="text-center">
-                                <div className="flex items-center justify-between gap-4">
-                                    <div className="w-20 h-20 shrink-0 flex items-center justify-center">
-                                        <img
-                                            src="/logo-timsim.jpg"
-                                            alt="Logo SMA Muhammadiyah 18"
-                                            className="w-full h-full object-contain"
-                                            onError={(e) => {
-                                                (e.target as any).src = "/images/logo-smam18.png";
-                                            }}
-                                        />
+                        <div className="print-sheet bg-white rounded-3xl border border-slate-200 p-5 sm:p-12 shadow-lg space-y-5 text-slate-950 font-serif leading-relaxed overflow-x-auto">
+                            <div className="min-w-[540px] sm:min-w-0 space-y-5">
+                                {/* KOP SURAT RESMI LENGKAP */}
+                                <div className="text-center">
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="w-20 h-20 shrink-0 flex items-center justify-center">
+                                            <img
+                                                src="/logo-timsim.jpg"
+                                                alt="Logo SMA Muhammadiyah 18"
+                                                className="w-full h-full object-contain"
+                                                onError={(e) => {
+                                                    (e.target as HTMLImageElement).src = "/images/logo-smam18.png";
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="flex-1 text-center space-y-0.5">
+                                            <h3 className="text-xs font-bold tracking-wider uppercase leading-tight font-sans text-slate-800">
+                                                MAJELIS PENDIDIKAN DASAR DAN MENENGAH
+                                            </h3>
+                                            <h4 className="text-[11px] font-bold tracking-wide uppercase leading-tight font-sans text-slate-700">
+                                                PIMPINAN DAERAH MUHAMMADIYAH JAKARTA SELATAN
+                                            </h4>
+                                            <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight font-sans text-[#1e3a8a] py-0.5">
+                                                SMA MUHAMMADIYAH 18 JAKARTA
+                                            </h1>
+                                            <p className="text-[11px] font-bold tracking-widest font-mono uppercase text-slate-700">
+                                                STATUS: TERAKREDITASI "A"
+                                            </p>
+                                            <p className="text-[10px] text-slate-600 font-sans leading-tight">
+                                                Jl. Panjang No. 19, Cipulir, Kebayoran Lama, Jakarta Selatan 12230 | Telp: (021) 7235544
+                                            </p>
+                                            <p className="text-[9.5px] text-slate-500 font-mono">
+                                                Website: https://smamuh18jakarta.sch.id • Pos-el: smamuh18@gmail.com
+                                            </p>
+                                        </div>
+                                        <div className="w-20 shrink-0" />
                                     </div>
-                                    <div className="flex-1 text-center space-y-0.5">
-                                        <h3 className="text-xs font-bold tracking-wider uppercase leading-tight font-sans">
-                                            MAJELIS PENDIDIKAN DASAR DAN MENENGAH DAN PENDIDIKAN NONFORMAL
-                                        </h3>
-                                        <h4 className="text-[11px] font-bold tracking-wide uppercase leading-tight font-sans">
-                                            PIMPINAN DAERAH MUHAMMADIYAH JAKARTA SELATAN
-                                        </h4>
-                                        <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight font-sans text-[#1e3a8a] py-0.5">
-                                            SMA MUHAMMADIYAH 18 JAKARTA
-                                        </h1>
-                                        <p className="text-[11px] font-bold tracking-widest font-mono uppercase text-slate-700">
-                                            STATUS: TERAKREDITASI &quot;A&quot;
-                                        </p>
-                                        <p className="text-[10px] text-slate-600 font-sans leading-tight">
-                                            Jl. Panjang No. 19, Cipulir, Kebayoran Lama, Jakarta Selatan 12230 | Telp: (021) 7235544
-                                        </p>
-                                        <p className="text-[9.5px] text-slate-500 font-mono">
-                                            Website: https://smamuh18jakarta.sch.id &bull; Pos-el: smamuh18@gmail.com
-                                        </p>
-                                    </div>
-                                    <div className="w-20 shrink-0" />
-                                </div>
-                                <div className="kop-divider-thick" />
-                                <div className="kop-divider-thin" />
-                            </div>
-
-                            <div className="text-center space-y-1 pt-1">
-                                <h2 className="text-base font-bold underline uppercase tracking-wide">
-                                    BERITA ACARA PELAKSANAAN UJIAN SIMULASI UTBK-SNBT
-                                </h2>
-                                <p className="text-xs font-mono font-bold">
-                                    Nomor: {bapData.nomorSurat}
-                                </p>
-                            </div>
-
-                            <div className="text-xs leading-relaxed space-y-3.5 text-justify">
-                                <p>
-                                    Pada hari ini, <strong>{new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</strong>,
-                                    telah diselenggarakan Uji Coba Simulasi Terstandarisasi Asesmen UTBK-SNBT Tahun Pelajaran 2026/2027 berbasis Computer-Based Test (CBT) di lingkungan <strong>SMA Muhammadiyah 18 Jakarta</strong> dengan ketentuan pelaksanaan sebagai berikut:
-                                </p>
-
-                                <table className="print-table text-xs">
-                                    <tbody>
-                                        <tr>
-                                            <td className="w-1/4 font-semibold">Paket Soal Ujian</td>
-                                            <td className="w-3/4 font-bold font-mono">{masterSession.paket_aktif} &mdash; {masterSession.nama_paket}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="font-semibold">Ruang / Tempat Ujian</td>
-                                            <td>{bapData.ruangUjian}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="font-semibold">Waktu Pelaksanaan</td>
-                                            <td>{masterSession.waktu_mulai.replace("T", " ")} s.d. {masterSession.waktu_selesai.replace("T", " ")} WIB</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="font-semibold">Token Resmi Sesi</td>
-                                            <td className="font-mono font-bold">{masterSession.token_resmi}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="font-semibold">Jumlah Peserta Terdaftar</td>
-                                            <td className="font-bold">{stats.total} Orang</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="font-semibold">Jumlah Peserta Hadir</td>
-                                            <td className="font-bold text-emerald-800">
-                                                {bapData.isManualHadir ? bapData.manualHadir : stats.working + stats.finished} Orang
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="font-semibold">Jumlah Tidak Hadir</td>
-                                            <td className="font-bold text-rose-800">
-                                                {bapData.isManualHadir ? bapData.manualTidakHadir : stats.absent} Orang
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-
-                                <div>
-                                    <p className="font-bold mb-1">Catatan Khusus Selama Pelaksanaan Ujian:</p>
-                                    <div className="p-3 border border-black min-h-[45px] text-xs italic">
-                                        &ldquo;{bapData.catatanKhusus}&rdquo;
-                                    </div>
+                                    <div className="w-full border-b-2 border-slate-900 kop-divider-thick mt-2" />
+                                    <div className="w-full border-b border-slate-900 kop-divider-thin mt-[2px]" />
                                 </div>
 
-                                <p>
-                                    Demikian Berita Acara Pelaksanaan ini dibuat dengan sebenar-benarnya serta penuh rasa tanggung jawab untuk dipergunakan sebagaimana mestinya.
-                                </p>
-                            </div>
-
-                            <div className="pt-6 grid grid-cols-2 text-xs text-center font-sans">
-                                <div>
-                                    <p>Mengetahui,</p>
-                                    <p className="font-bold">Kepala SMA Muhammadiyah 18 Jakarta</p>
-                                    <div className="h-20" />
-                                    <p className="font-bold underline">{bapData.kepalaSekolahNama}</p>
-                                    <p className="font-mono text-[10px]">NBM. {bapData.kepalaSekolahNbm}</p>
+                                <div className="text-center space-y-1 pt-1">
+                                    <h2 className="text-base font-bold underline uppercase tracking-wide">
+                                        BERITA ACARA PELAKSANAAN UJIAN SIMULASI UTBK-SNBT
+                                    </h2>
+                                    <p className="text-xs font-mono font-bold">
+                                        Nomor: {bapData.nomorSurat}
+                                    </p>
                                 </div>
 
-                                <div>
-                                    <p>Jakarta, {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
-                                    <p className="font-bold">Proktor / Pengawas Ruang Ujian</p>
-                                    <div className="h-20" />
-                                    <p className="font-bold underline">{bapData.pengawasNama}</p>
-                                    <p className="font-mono text-[10px]">NBM/NIP. {bapData.pengawasNbm}</p>
+                                <div className="text-xs leading-relaxed space-y-4 text-justify">
+                                    <p>
+                                        Pada hari ini, <strong>{new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</strong>,
+                                        telah diselenggarakan Uji Coba Simulasi Terstandarisasi Asesmen UTBK-SNBT Tahun Pelajaran 2026/2027 berbasis Computer-Based Test (CBT) di lingkungan <strong>SMA Muhammadiyah 18 Jakarta</strong> dengan ketentuan pelaksanaan sebagai berikut:
+                                    </p>
+
+                                    <table className="print-table w-full text-xs border border-slate-300 border-collapse">
+                                        <tbody>
+                                            <tr className="border-b border-slate-200">
+                                                <td className="w-[30%] py-2 px-3 font-semibold bg-slate-50/70 border-r border-slate-200">Paket Soal Ujian</td>
+                                                <td className="w-[70%] py-2 px-3 font-bold font-mono">: {masterSession.paket_aktif} — {masterSession.nama_paket}</td>
+                                            </tr>
+                                            <tr className="border-b border-slate-200">
+                                                <td className="py-2 px-3 font-semibold bg-slate-50/70 border-r border-slate-200">Ruang / Tempat Ujian</td>
+                                                <td className="py-2 px-3">: {bapData.ruangUjian}</td>
+                                            </tr>
+                                            <tr className="border-b border-slate-200">
+                                                <td className="py-2 px-3 font-semibold bg-slate-50/70 border-r border-slate-200">Waktu Pelaksanaan</td>
+                                                <td className="py-2 px-3">: {formatScheduleIndonesia(masterSession.waktu_mulai, masterSession.waktu_selesai)}</td>
+                                            </tr>
+                                            <tr className="border-b border-slate-200">
+                                                <td className="py-2 px-3 font-semibold bg-slate-50/70 border-r border-slate-200">Token Resmi Sesi</td>
+                                                <td className="py-2 px-3 font-mono font-bold">: {masterSession.token_resmi}</td>
+                                            </tr>
+                                            <tr className="border-b border-slate-200">
+                                                <td className="py-2 px-3 font-semibold bg-slate-50/70 border-r border-slate-200">Jumlah Peserta Terdaftar</td>
+                                                <td className="py-2 px-3 font-bold">: {stats.total} Orang</td>
+                                            </tr>
+                                            <tr className="border-b border-slate-200">
+                                                <td className="py-2 px-3 font-semibold bg-slate-50/70 border-r border-slate-200">Jumlah Peserta Hadir</td>
+                                                <td className="py-2 px-3 font-bold text-emerald-800">
+                                                    : {bapData.isManualHadir ? bapData.manualHadir : stats.present} Orang
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="py-2 px-3 font-semibold bg-slate-50/70 border-r border-slate-200">Jumlah Tidak Hadir</td>
+                                                <td className="py-2 px-3 font-bold text-rose-800">
+                                                    : {bapData.isManualHadir ? bapData.manualTidakHadir : stats.absent} Orang
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <div>
+                                        <p className="font-bold mb-1.5">Catatan Khusus Selama Pelaksanaan Ujian:</p>
+                                        <div className="p-3.5 border border-slate-400 print:border-black min-h-[48px] text-xs italic bg-slate-50/40">
+                                            “{bapData.catatanKhusus}”
+                                        </div>
+                                    </div>
+
+                                    <p>
+                                        Demikian Berita Acara Pelaksanaan ini dibuat dengan sebenar-benarnya serta penuh rasa tanggung jawab untuk dipergunakan sebagaimana mestinya.
+                                    </p>
+                                </div>
+
+                                <div className="pt-8 grid grid-cols-2 text-xs text-center font-sans">
+                                    <div>
+                                        <p>Mengetahui,</p>
+                                        <p className="font-bold">Kepala SMA Muhammadiyah 18 Jakarta</p>
+                                        <div className="h-20" />
+                                        <p className="font-bold underline">{bapData.kepalaSekolahNama}</p>
+                                        <p className="font-mono text-[10px]">NBM. {bapData.kepalaSekolahNbm}</p>
+                                    </div>
+
+                                    <div>
+                                        <p>Jakarta, {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
+                                        <p className="font-bold">Proktor / Pengawas Ruang Ujian</p>
+                                        <div className="h-20" />
+                                        <p className="font-bold underline">{bapData.pengawasNama}</p>
+                                        <p className="font-mono text-[10px]">NBM/NIP. {bapData.pengawasNbm}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* TAB 4: REKAPITULASI NILAI IRT (DOKUMEN RESMI BERSIH TANPA TOMBOL RESET) */}
+                {/* TAB 4: REKAPITULASI NILAI IRT */}
                 {activeTab === "scores" && (
-                    <div className="space-y-6">
+                    <div className="space-y-6 text-left">
                         <div className="print-hidden bg-white rounded-3xl border border-slate-200 p-5 sm:p-7 space-y-4 shadow-sm">
-                            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                                 <div>
                                     <h3 className="text-base font-black text-slate-900">Buku Nilai Rekapitulasi IRT 3-Parameter</h3>
                                     <p className="text-xs text-slate-500">Skor terhitung otomatis pada skala resmi nasional (200 s.d. 1000).</p>
                                 </div>
                                 <button
                                     onClick={() => window.print()}
-                                    className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer flex items-center gap-1.5 shadow-md"
+                                    className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer flex items-center justify-center gap-1.5 shadow-md"
                                 >
                                     <Printer className="w-3.5 h-3.5" />
                                     <span>Cetak Rekap Nilai (A4)</span>
@@ -1562,7 +1591,7 @@ export default function ProctorMasterDashboard() {
                             </div>
 
                             <div className="overflow-x-auto rounded-2xl border border-slate-200">
-                                <table className="w-full text-left text-xs border-collapse">
+                                <table className="w-full text-left text-xs border-collapse min-w-[680px]">
                                     <thead className="bg-slate-50 border-b border-slate-200 font-mono text-[11px] text-slate-600">
                                         <tr>
                                             <th className="p-3.5">Peringkat</th>
@@ -1618,7 +1647,7 @@ export default function ProctorMasterDashboard() {
                                             alt="Logo SMA Muhammadiyah 18"
                                             className="w-full h-full object-contain"
                                             onError={(e) => {
-                                                (e.target as any).src = "/images/logo-smam18.png";
+                                                (e.target as HTMLImageElement).src = "/images/logo-smam18.png";
                                             }}
                                         />
                                     </div>
@@ -1693,7 +1722,7 @@ export default function ProctorMasterDashboard() {
             {/* MODAL BULK EXCEL */}
             {showBulkModal && (
                 <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full space-y-4 shadow-2xl border border-slate-200">
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full space-y-4 shadow-2xl border border-slate-200 text-left">
                         <div className="flex items-center justify-between border-b pb-3">
                             <h3 className="font-bold text-slate-900">Salin-Tempel Massal dari Excel</h3>
                             <button onClick={() => setShowBulkModal(false)}><X className="w-4 h-4" /></button>
@@ -1718,7 +1747,7 @@ export default function ProctorMasterDashboard() {
             {/* MODAL EDIT DATA */}
             {editingStudent && (
                 <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full space-y-4 shadow-2xl border border-slate-200">
+                    <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full space-y-4 shadow-2xl border border-slate-200 text-left">
                         <div className="flex items-center justify-between border-b pb-3">
                             <h3 className="font-bold text-slate-900">Perbarui Data Peserta</h3>
                             <button onClick={() => setEditingStudent(null)}><X className="w-4 h-4" /></button>
