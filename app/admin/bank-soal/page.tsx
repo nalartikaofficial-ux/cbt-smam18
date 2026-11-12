@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
-
+"use client";
 import * as XLSX from "xlsx";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
