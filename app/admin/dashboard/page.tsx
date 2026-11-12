@@ -157,6 +157,7 @@ export default function AdminAnalyticsPage() {
                 padding: 0 !important;
                 width: 100% !important;
                 color: #000000 !important;
+                font-family: 'Times New Roman', Times, serif !important;
                 font-size: 11pt !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
@@ -190,18 +191,18 @@ export default function AdminAnalyticsPage() {
                 }}
             />
 
-            {/* HEADER ATAS */}
-            <header className="print-hidden bg-white border-b border-slate-200/90 py-3.5 px-4 sm:px-8 sticky top-0 z-30 shadow-2xs">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+            {/* HEADER ATAS RESPONSIF */}
+            <header className="print-hidden bg-white border-b border-slate-200/90 py-3 sm:py-3.5 px-3.5 sm:px-8 sticky top-0 z-30 shadow-2xs">
+                <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 w-full sm:w-auto">
                         <Link
                             href="/admin"
-                            className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors"
+                            className="p-1.5 sm:p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors shrink-0 cursor-pointer"
                             title="Kembali ke Hub Utama Admin"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </Link>
-                        <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 p-0.5 flex items-center justify-center overflow-hidden shrink-0">
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white border border-slate-200 p-0.5 flex items-center justify-center overflow-hidden shrink-0">
                             <img
                                 src="/logo-timsim.jpg"
                                 alt="Logo SMA Muhammadiyah 18 Jakarta"
@@ -211,21 +212,21 @@ export default function AdminAnalyticsPage() {
                                 }}
                             />
                         </div>
-                        <div>
-                            <div className="text-xs sm:text-sm font-black text-slate-900 tracking-tight uppercase">
-                                PUSAT ANALITIK &amp; REKAPITULASI HASIL UJIAN
+                        <div className="min-w-0">
+                            <div className="text-xs sm:text-sm font-black text-slate-900 tracking-tight uppercase truncate">
+                                PUSAT ANALITIK & REKAPITULASI HASIL UJIAN
                             </div>
-                            <div className="text-[11px] text-slate-500 font-medium">
-                                SMA Muhammadiyah 18 Jakarta &bull; Data Terhubung Spreadsheet
+                            <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
+                                SMA Muhammadiyah 18 Jakarta • Data Terhubung Spreadsheet
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
                         <button
                             onClick={fetchStudents}
                             disabled={isLoading}
-                            className="px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                            className="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition-all"
                         >
                             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-blue-600" : ""}`} />
                             <span className="hidden sm:inline">Sinkronkan Nilai</span>
@@ -233,7 +234,7 @@ export default function AdminAnalyticsPage() {
 
                         <Link
                             href="/"
-                            className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors"
+                            className="p-1.5 sm:p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer"
                             title="Ke Halaman Utama"
                         >
                             <Home className="w-4 h-4" />
@@ -243,144 +244,144 @@ export default function AdminAnalyticsPage() {
             </header>
 
             {/* KONTEN UTAMA */}
-            <div className="max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+            <div className="max-w-7xl w-full mx-auto p-3.5 sm:p-6 space-y-4 sm:space-y-6 text-left">
                 {/* PANEL PENGATURAN PEJABAT PENANDATANGAN */}
-                <div className="print-hidden bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                <div className="print-hidden bg-white p-4 sm:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
                     <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                        <SlidersHorizontal className="w-4 h-4 text-blue-700" />
+                        <SlidersHorizontal className="w-4 h-4 text-blue-700 shrink-0" />
                         <div>
                             <h3 className="font-bold text-xs sm:text-sm text-slate-900">
                                 Pengaturan Pejabat Penandatangan Rapor
                             </h3>
-                            <p className="text-[11px] text-slate-500">
+                            <p className="text-[10.5px] sm:text-[11px] text-slate-500">
                                 Ketik nama kepala sekolah, nama koordinator, dan sesuaikan titel jabatannya agar tercetak otomatis pada rapor siswa.
                             </p>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5 text-xs">
                         <div className="space-y-1">
-                            <label className="font-bold font-mono text-slate-700">NAMA KEPALA SEKOLAH:</label>
+                            <label className="font-bold font-mono text-slate-700 text-[10.5px] sm:text-xs">NAMA KEPALA SEKOLAH:</label>
                             <input
                                 type="text"
                                 value={officials.kepalaSekolahNama}
                                 onChange={(e) => setOfficials({ ...officials, kepalaSekolahNama: e.target.value })}
-                                className="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold focus:border-blue-700 outline-none"
+                                className="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold focus:border-blue-700 outline-none text-xs"
                             />
                         </div>
 
                         <div className="space-y-1">
-                            <label className="font-bold font-mono text-slate-700">NIP / NBM KEPALA SEKOLAH:</label>
+                            <label className="font-bold font-mono text-slate-700 text-[10.5px] sm:text-xs">NIP / NBM KEPALA SEKOLAH:</label>
                             <input
                                 type="text"
                                 value={officials.kepalaSekolahNbm}
                                 onChange={(e) => setOfficials({ ...officials, kepalaSekolahNbm: e.target.value })}
-                                className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono focus:border-blue-700 outline-none"
+                                className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono focus:border-blue-700 outline-none text-xs"
                             />
                         </div>
 
                         <div className="space-y-1">
-                            <label className="font-bold font-mono text-slate-700">NAMA KOORDINATOR / GURU BK:</label>
+                            <label className="font-bold font-mono text-slate-700 text-[10.5px] sm:text-xs">NAMA KOORDINATOR / GURU BK:</label>
                             <input
                                 type="text"
                                 value={officials.koordinatorNama}
                                 onChange={(e) => setOfficials({ ...officials, koordinatorNama: e.target.value })}
-                                className="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold focus:border-blue-700 outline-none"
+                                className="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold focus:border-blue-700 outline-none text-xs"
                             />
                         </div>
 
                         <div className="space-y-1">
-                            <label className="font-bold font-mono text-slate-700">NIP / NBM KOORDINATOR:</label>
+                            <label className="font-bold font-mono text-slate-700 text-[10.5px] sm:text-xs">NIP / NBM KOORDINATOR:</label>
                             <input
                                 type="text"
                                 value={officials.koordinatorNbm}
                                 onChange={(e) => setOfficials({ ...officials, koordinatorNbm: e.target.value })}
-                                className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono focus:border-blue-700 outline-none"
+                                className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono focus:border-blue-700 outline-none text-xs"
                             />
                         </div>
 
                         <div className="sm:col-span-2 space-y-1">
-                            <label className="font-bold font-mono text-slate-700">TITEL JABATAN KOORDINATOR (BEBAS KETIK):</label>
+                            <label className="font-bold font-mono text-slate-700 text-[10.5px] sm:text-xs">TITEL JABATAN KOORDINATOR (BEBAS KETIK):</label>
                             <input
                                 type="text"
                                 value={officials.koordinatorJabatan}
                                 onChange={(e) => setOfficials({ ...officials, koordinatorJabatan: e.target.value })}
                                 placeholder="Contoh: Koordinator Kurikulum & Asesmen / Guru Bimbingan Konseling"
-                                className="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold focus:border-blue-700 outline-none text-blue-900"
+                                className="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold focus:border-blue-700 outline-none text-blue-900 text-xs"
                             />
                         </div>
                     </div>
                 </div>
 
                 {/* 4 INDIKATOR HASIL AGREGAT REAL DARI SPREADSHEET */}
-                <div className="print-hidden grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                        <div className="flex items-center justify-between text-slate-500 text-xs font-bold font-mono">
+                <div className="print-hidden grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+                    <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                        <div className="flex items-center justify-between text-slate-500 text-[11px] sm:text-xs font-bold font-mono">
                             <span>RERATA SKOR IRT</span>
-                            <Trophy className="w-4 h-4 text-amber-500" />
+                            <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />
                         </div>
-                        <div className="text-3xl font-black text-blue-900 mt-2">
+                        <div className="text-2xl sm:text-3xl font-black text-blue-900 mt-1 sm:mt-2 font-mono">
                             {overallStats.avgScore}
                         </div>
-                        <div className="text-[11px] text-slate-500 mt-1">
+                        <div className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5">
                             Dari {overallStats.totalSelesai} Siswa Selesai
                         </div>
                     </div>
 
-                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                        <div className="flex items-center justify-between text-emerald-700 text-xs font-bold font-mono">
-                            <span>TEMBUS TARGET (≥650)</span>
-                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                        <div className="flex items-center justify-between text-emerald-700 text-[11px] sm:text-xs font-bold font-mono">
+                            <span>TARGET (≥650)</span>
+                            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
                         </div>
-                        <div className="text-3xl font-black text-emerald-700 mt-2">
+                        <div className="text-2xl sm:text-3xl font-black text-emerald-700 mt-1 sm:mt-2 font-mono">
                             {overallStats.tembusTarget} <span className="text-xs font-normal text-slate-500">/ {overallStats.totalSelesai}</span>
                         </div>
-                        <div className="text-[11px] text-emerald-700 font-semibold mt-1">
-                            {overallStats.persentaseTarget}% Peserta Memiliki Peluang Tinggi
+                        <div className="text-[10px] sm:text-[11px] text-emerald-700 font-semibold mt-0.5 truncate">
+                            {overallStats.persentaseTarget}% Peluang Tinggi
                         </div>
                     </div>
 
-                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                        <div className="flex items-center justify-between text-slate-500 text-xs font-bold font-mono">
-                            <span>TOTAL TERDAFTAR</span>
-                            <Users className="w-4 h-4 text-blue-700" />
+                    <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                        <div className="flex items-center justify-between text-slate-500 text-[11px] sm:text-xs font-bold font-mono">
+                            <span>TERDAFTAR</span>
+                            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-700" />
                         </div>
-                        <div className="text-3xl font-black text-slate-900 mt-2">
+                        <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 sm:mt-2 font-mono">
                             {overallStats.totalTerdaftar}
                         </div>
-                        <div className="text-[11px] text-slate-500 mt-1">
+                        <div className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5">
                             Angkatan Kelas XII
                         </div>
                     </div>
 
-                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                        <div className="flex items-center justify-between text-slate-500 text-xs font-bold font-mono">
-                            <span>INDEKS INTEGRITAS</span>
-                            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                        <div className="flex items-center justify-between text-slate-500 text-[11px] sm:text-xs font-bold font-mono">
+                            <span>INTEGRITAS</span>
+                            <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
                         </div>
-                        <div className="text-3xl font-black text-slate-900 mt-2">
+                        <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 sm:mt-2 font-mono">
                             {overallStats.integritasRate}%
                         </div>
-                        <div className="text-[11px] text-slate-500 mt-1">
-                            Kepatuhan Layar Bilik Kiosk
+                        <div className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">
+                            Kepatuhan Layar Kiosk
                         </div>
                     </div>
                 </div>
 
                 {/* TABEL PERINGKAT HASIL SIMULASI DENGAN PILIHAN CETAK 1 MURID */}
-                <div className="print-hidden bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-4 shadow-sm">
+                <div className="print-hidden bg-white rounded-3xl border border-slate-200 p-4 sm:p-6 lg:p-8 space-y-4 shadow-sm">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                         <div>
-                            <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                                <Trophy className="w-4 h-4 text-amber-500" />
-                                <span>Peringkat &amp; Hasil Ujian Siswa ({filteredStudents.length} Peserta)</span>
+                            <h3 className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
+                                <Trophy className="w-4 h-4 text-amber-500 shrink-0" />
+                                <span>Peringkat & Hasil Ujian Siswa ({filteredStudents.length} Peserta)</span>
                             </h3>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-[11px] sm:text-xs text-slate-500">
                                 Pilih murid tertentu untuk melihat hasil diagnosis lengkap dan mencetak lembar rapor fisiknya.
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                             <div className="relative">
                                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                                 <input
@@ -388,7 +389,7 @@ export default function AdminAnalyticsPage() {
                                     placeholder="Cari Nama / NISN..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs outline-none"
+                                    className="w-full sm:w-auto pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs outline-none focus:border-blue-700"
                                 />
                             </div>
 
@@ -408,8 +409,8 @@ export default function AdminAnalyticsPage() {
                     </div>
 
                     <div className="overflow-x-auto rounded-2xl border border-slate-200">
-                        <table className="w-full text-left text-xs border-collapse">
-                            <thead className="bg-slate-50 border-b border-slate-200 font-mono text-[11px] text-slate-600">
+                        <table className="w-full text-left text-xs border-collapse min-w-[760px]">
+                            <thead className="bg-slate-50 border-b border-slate-200 font-mono text-[10.5px] sm:text-[11px] text-slate-600">
                                 <tr>
                                     <th className="p-3">Rank</th>
                                     <th className="p-3">NISN</th>
@@ -425,7 +426,6 @@ export default function AdminAnalyticsPage() {
                             <tbody className="divide-y divide-slate-100 font-medium">
                                 {filteredStudents.map((s, idx) => {
                                     const numScore = Number(s.score) || 0;
-                                    const isPeluangTinggi = numScore >= 650;
 
                                     return (
                                         <tr key={s.nisn} className="hover:bg-slate-50/70">
@@ -433,7 +433,7 @@ export default function AdminAnalyticsPage() {
                                             <td className="p-3 font-mono text-slate-700">{s.nisn}</td>
                                             <td className="p-3 font-bold text-slate-900">{s.nama}</td>
                                             <td className="p-3 font-mono text-slate-600">{s.kelas}</td>
-                                            <td className="p-3 font-mono font-black text-sm text-center text-blue-900">
+                                            <td className="p-3 font-mono font-black text-xs sm:text-sm text-center text-blue-900">
                                                 {numScore.toFixed(1)}
                                             </td>
                                             <td className="p-3 text-slate-700 text-[11px]">
@@ -452,10 +452,10 @@ export default function AdminAnalyticsPage() {
                                             <td className="p-3 text-right">
                                                 <button
                                                     onClick={() => setSelectedStudentForReport(s)}
-                                                    className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 text-[11px] font-bold flex items-center gap-1.5 cursor-pointer ml-auto transition-colors"
+                                                    className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 text-[10.5px] sm:text-[11px] font-bold flex items-center gap-1.5 cursor-pointer ml-auto transition-colors shadow-2xs"
                                                 >
                                                     <Printer className="w-3.5 h-3.5 text-blue-700" />
-                                                    <span>Rapor &amp; Cetak</span>
+                                                    <span>Rapor & Cetak</span>
                                                 </button>
                                             </td>
                                         </tr>
@@ -481,29 +481,29 @@ export default function AdminAnalyticsPage() {
             {/* MODAL RAPOR DIAGNOSTIK INDIVIDUAL 1 MURID (SIAP CETAK A4)     */}
             {/* ============================================================== */}
             {selectedStudentForReport && (
-                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-                    <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 animate-in zoom-in-95 my-auto">
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
+                    <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 animate-in zoom-in-95 my-auto text-left">
                         {/* Action Bar Modal (Hanya di layar, tidak tercetak) */}
-                        <div className="print-hidden p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-3xl">
-                            <div className="flex items-center gap-2.5">
-                                <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-bold">
-                                    <GraduationCap className="w-5 h-5" />
+                        <div className="print-hidden p-3.5 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-50 rounded-t-3xl">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-bold shrink-0">
+                                    <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </div>
-                                <div>
-                                    <h3 className="font-bold text-sm text-slate-900">
+                                <div className="min-w-0">
+                                    <h3 className="font-bold text-xs sm:text-sm text-slate-900 truncate">
                                         Lembar Rapor Individual: {selectedStudentForReport.nama}
                                     </h3>
-                                    <p className="text-[11px] text-slate-500">
-                                        NISN: {selectedStudentForReport.nisn} &bull; Kelas {selectedStudentForReport.kelas}
+                                    <p className="text-[10px] sm:text-[11px] text-slate-500 font-mono truncate">
+                                        NISN: {selectedStudentForReport.nisn} • Kelas {selectedStudentForReport.kelas}
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
                                 <button
                                     type="button"
                                     onClick={() => window.print()}
-                                    className="px-4 py-2 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-md transition-all"
+                                    className="px-3.5 sm:px-4 py-2 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-md transition-all"
                                 >
                                     <Printer className="w-3.5 h-3.5" />
                                     <span>Cetak Lembar Rapor (A4)</span>
@@ -519,11 +519,11 @@ export default function AdminAnalyticsPage() {
                         </div>
 
                         {/* AREA DOKUMEN CETAK RESMI A4 */}
-                        <div className="p-6 sm:p-9 overflow-y-auto flex-1 text-slate-900 space-y-5 print-sheet">
+                        <div className="p-4 sm:p-8 lg:p-9 overflow-y-auto flex-1 text-slate-900 space-y-4 sm:space-y-5 print-sheet">
                             {/* KOP SURAT STANDAR RESMI SIMETRIS */}
-                            <div className="pb-1">
-                                <div className="flex items-center justify-between gap-3">
-                                    <div className="w-20 h-20 shrink-0 flex items-center justify-center overflow-hidden">
+                            <div className="pb-1 overflow-x-auto">
+                                <div className="flex items-center justify-between gap-3 min-w-[540px] sm:min-w-0">
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 flex items-center justify-center overflow-hidden">
                                         <img
                                             src="/logo-timsim.jpg"
                                             alt="Logo SMA Muhammadiyah 18 Jakarta"
@@ -534,55 +534,53 @@ export default function AdminAnalyticsPage() {
                                         />
                                     </div>
 
-                                    <div className="flex-1 text-center px-2 space-y-0.5">
-                                        <h3 className="text-[11px] font-bold tracking-wider text-slate-800 uppercase leading-none">
+                                    <div className="flex-1 text-center px-1 sm:px-2 space-y-0.5">
+                                        <h3 className="text-[10px] sm:text-[11px] font-bold tracking-wider text-slate-800 uppercase leading-none font-sans">
                                             MAJELIS PENDIDIKAN DASAR DAN MENENGAH
                                         </h3>
-                                        <h4 className="text-[10.5px] font-bold tracking-wide text-slate-700 uppercase leading-tight">
+                                        <h4 className="text-[9.5px] sm:text-[10.5px] font-bold tracking-wide text-slate-700 uppercase leading-tight font-sans">
                                             PIMPINAN DAERAH MUHAMMADIYAH JAKARTA SELATAN
                                         </h4>
-                                        <h1 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight uppercase leading-tight pt-0.5">
+                                        <h1 className="text-lg sm:text-2xl font-black text-slate-950 tracking-tight uppercase leading-tight pt-0.5 font-sans">
                                             SMA MUHAMMADIYAH 18 JAKARTA
                                         </h1>
-                                        <p className="text-xs font-black text-[#1e3a8a] tracking-widest font-mono uppercase leading-none">
-                                            TERAKREDITASI &quot;A&quot;
+                                        <p className="text-[11px] sm:text-xs font-black text-[#1e3a8a] tracking-widest font-mono uppercase leading-none">
+                                            TERAKREDITASI "A"
                                         </p>
-                                        <p className="text-[10px] text-slate-600 leading-tight pt-1">
+                                        <p className="text-[9px] sm:text-[10px] text-slate-600 leading-tight pt-0.5 font-sans">
                                             Jl. Panjang No.19, RT.8/RW.9, Cipulir, Kebayoran Lama, Jakarta Selatan, DKI Jakarta 12230
                                         </p>
-                                        <p className="text-[9.5px] font-mono text-slate-600 leading-normal pt-1 pb-2">
-                                            Website: https://smamuh18jakarta.sch.id &bull; E-mail: smamuh18@gmail.com
+                                        <p className="text-[8.5px] sm:text-[9.5px] font-mono text-slate-600 leading-normal pt-0.5 pb-1">
+                                            Website: https://smamuh18jakarta.sch.id • E-mail: smamuh18@gmail.com
                                         </p>
                                     </div>
 
-                                    <div className="w-20 shrink-0 flex items-center justify-center">
-                                        <div className="w-20 h-20" />
-                                    </div>
+                                    <div className="w-16 sm:w-20 shrink-0" />
                                 </div>
 
-                                <div className="w-full kop-divider-thick mt-2" />
+                                <div className="w-full kop-divider-thick mt-1.5" />
                                 <div className="w-full kop-divider-thin mt-[2px]" />
                             </div>
 
                             {/* JUDUL DOKUMEN RAPOR */}
-                            <div className="text-center space-y-0.5 pt-1">
-                                <h2 className="text-base font-black tracking-tight underline uppercase">
+                            <div className="text-center space-y-0.5 pt-0.5">
+                                <h2 className="text-sm sm:text-base font-black tracking-tight underline uppercase">
                                     LEMBAR HASIL EVALUASI DIAGNOSTIK SIMULASI UTBK-SNBT
                                 </h2>
-                                <p className="text-xs font-mono text-slate-700 font-semibold">
-                                    Tahun Pelajaran 2026/2027 &bull; Penilaian Terstandarisasi IRT 3-Parameter
+                                <p className="text-[10.5px] sm:text-xs font-mono text-slate-700 font-semibold">
+                                    Tahun Pelajaran 2026/2027 • Penilaian Terstandarisasi IRT 3-Parameter
                                 </p>
                             </div>
 
                             {/* BIODATA SISWA */}
-                            <div className="border border-slate-900 p-3 bg-slate-50/50">
-                                <table className="w-full text-xs">
+                            <div className="border border-slate-900 p-2.5 sm:p-3 bg-slate-50/50 overflow-x-auto">
+                                <table className="w-full text-[11px] sm:text-xs min-w-[500px] sm:min-w-0">
                                     <tbody>
                                         <tr>
                                             <td className="py-1 w-[20%] text-slate-600">Nama Siswa</td>
                                             <td className="py-1 w-[35%] font-bold text-slate-900">: {selectedStudentForReport.nama}</td>
                                             <td className="py-1 w-[22%] text-slate-600">Pilihan Kampus 1</td>
-                                            <td className="py-1 w-[23%] font-bold text-blue-900">
+                                            <td className="py-1 w-[23%] font-bold text-blue-900 truncate">
                                                 : {selectedStudentForReport.pilihan_ptn_1 || "IPB - Teknologi Pangan"}
                                             </td>
                                         </tr>
@@ -590,7 +588,7 @@ export default function AdminAnalyticsPage() {
                                             <td className="py-1 text-slate-600">NISN Peserta</td>
                                             <td className="py-1 font-mono font-bold">: {selectedStudentForReport.nisn}</td>
                                             <td className="py-1 text-slate-600">Pilihan Kampus 2</td>
-                                            <td className="py-1 font-bold text-blue-900">
+                                            <td className="py-1 font-bold text-blue-900 truncate">
                                                 : {selectedStudentForReport.pilihan_ptn_2 || "UI - Ilmu Hukum"}
                                             </td>
                                         </tr>
@@ -607,15 +605,15 @@ export default function AdminAnalyticsPage() {
                             </div>
 
                             {/* RINGKASAN SKOR TOTAL */}
-                            <div className="p-4 rounded-xl border border-slate-900 text-center bg-slate-50 space-y-1">
-                                <div className="text-[11px] font-mono tracking-widest text-slate-600 uppercase font-bold">
+                            <div className="p-3.5 sm:p-4 rounded-xl border border-slate-900 text-center bg-slate-50 space-y-1">
+                                <div className="text-[10px] sm:text-[11px] font-mono tracking-widest text-slate-600 uppercase font-bold">
                                     SKOR AKHIR IRT (ITEM RESPONSE THEORY)
                                 </div>
-                                <div className="text-4xl font-black text-slate-900">
+                                <div className="text-3xl sm:text-4xl font-black text-slate-900">
                                     {(Number(selectedStudentForReport.score) || 0).toFixed(1)}
                                 </div>
-                                <div className="text-[10.5px] text-slate-600 font-mono">
-                                    Ambang Kelulusan PTN Target: 650.0 &bull; Status:{" "}
+                                <div className="text-[10px] sm:text-[10.5px] text-slate-600 font-mono">
+                                    Ambang Kelulusan PTN Target: 650.0 • Status:{" "}
                                     <strong className={Number(selectedStudentForReport.score) >= 650 ? "text-emerald-700" : "text-amber-700"}>
                                         {Number(selectedStudentForReport.score) >= 650 ? "Peluang Sangat Tinggi" : "Perlu Pendalaman Materi"}
                                     </strong>
@@ -623,21 +621,21 @@ export default function AdminAnalyticsPage() {
                             </div>
 
                             {/* TABEL ESTIMASI 7 SUBTES */}
-                            <div className="space-y-1.5">
-                                <div className="font-bold font-mono text-[11px] uppercase tracking-wide">
+                            <div className="space-y-1.5 overflow-x-auto">
+                                <div className="font-bold font-mono text-[10.5px] sm:text-[11px] uppercase tracking-wide">
                                     RINCIAN CAPAIAN 7 SUBTES NASIONAL:
                                 </div>
-                                <table className="w-full text-xs border border-slate-900 text-left border-collapse">
-                                    <thead className="bg-slate-100 border-b border-slate-900 font-mono text-[10px]">
+                                <table className="w-full text-xs border border-slate-900 text-left border-collapse min-w-[540px]">
+                                    <thead className="bg-slate-100 border-b border-slate-900 font-mono text-[9.5px] sm:text-[10px]">
                                         <tr>
                                             <th className="p-2 border-r border-slate-900 w-10 text-center">NO</th>
-                                            <th className="p-2 border-r border-slate-900">KOMPONEN &amp; SUBTES UJIAN</th>
+                                            <th className="p-2 border-r border-slate-900">KOMPONEN & SUBTES UJIAN</th>
                                             <th className="p-2 border-r border-slate-900 text-center w-24">AMBANG (PG)</th>
                                             <th className="p-2 border-r border-slate-900 text-center w-24">SKOR SISWA</th>
                                             <th className="p-2 text-center w-28">DIAGNOSIS</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-300 font-medium">
+                                    <tbody className="divide-y divide-slate-300 font-medium text-[11px] sm:text-xs">
                                         {[
                                             { no: 1, name: "Penalaran Umum (PU)", target: 650, est: Number(selectedStudentForReport.score) + 8 },
                                             { no: 2, name: "Pengetahuan & Pemahaman Umum (PPU)", target: 650, est: Number(selectedStudentForReport.score) - 4 },
@@ -658,7 +656,7 @@ export default function AdminAnalyticsPage() {
                                                     <td className="p-2 text-center font-mono font-bold text-blue-900 border-r border-slate-300">
                                                         {roundedScore.toFixed(1)}
                                                     </td>
-                                                    <td className="p-2 text-center font-bold text-[10.5px]">
+                                                    <td className="p-2 text-center font-bold text-[10px] sm:text-[10.5px]">
                                                         <span className={isLulus ? "text-emerald-700" : "text-amber-700"}>
                                                             {isLulus ? "Memenuhi" : "Perlu Bimbingan"}
                                                         </span>
@@ -672,10 +670,10 @@ export default function AdminAnalyticsPage() {
 
                             {/* CATATAN DAN REKOMENDASI GURU BK */}
                             <div className="space-y-1">
-                                <div className="font-bold font-mono text-[11px] uppercase tracking-wide">
-                                    CATATAN &amp; REKOMENDASI PEMBINAAN:
+                                <div className="font-bold font-mono text-[10.5px] sm:text-[11px] uppercase tracking-wide">
+                                    CATATAN & REKOMENDASI PEMBINAAN:
                                 </div>
-                                <div className="p-3 border border-slate-900 bg-white min-h-[50px] text-xs leading-relaxed italic text-slate-800">
+                                <div className="p-2.5 sm:p-3 border border-slate-900 bg-white min-h-[45px] text-xs leading-relaxed italic text-slate-800">
                                     {Number(selectedStudentForReport.score) >= 650
                                         ? `"Siswa menunjukkan penguasaan materi yang sangat baik pada literasi dan penalaran. Pertahankan konsistensi latihan soal berkala pada subtes kuantitatif dan penalaran matematika untuk mengamankan tiket PTN Pilihan 1."`
                                         : `"Diperlukan penguatan konsep mendalam pada subtes penalaran matematika dan pemahaman bacaan. Disarankan mengikuti klinik pembelajaran dan bimbingan intensif berkala bersama guru mata pelajaran."`}
@@ -683,21 +681,21 @@ export default function AdminAnalyticsPage() {
                             </div>
 
                             {/* TANDA TANGAN PEJABAT MANUAL */}
-                            <div className="pt-6 grid grid-cols-2 text-xs text-center border-t border-slate-300">
+                            <div className="pt-4 sm:pt-6 grid grid-cols-2 text-xs text-center border-t border-slate-300">
                                 <div>
                                     <p>Mengetahui,</p>
                                     <p className="font-semibold mt-0.5">Kepala SMA Muhammadiyah 18 Jakarta</p>
-                                    <div className="h-16" />
+                                    <div className="h-14 sm:h-16" />
                                     <p className="font-bold underline text-slate-900">{officials.kepalaSekolahNama}</p>
-                                    <p className="text-[10px] text-slate-600 font-mono">NIP/NBM. {officials.kepalaSekolahNbm}</p>
+                                    <p className="text-[9.5px] sm:text-[10px] text-slate-600 font-mono">NIP/NBM. {officials.kepalaSekolahNbm}</p>
                                 </div>
 
                                 <div>
                                     <p>Jakarta, {new Date().toLocaleDateString("id-ID", { dateStyle: "long" })}</p>
                                     <p className="font-semibold mt-0.5">{officials.koordinatorJabatan}</p>
-                                    <div className="h-16" />
+                                    <div className="h-14 sm:h-16" />
                                     <p className="font-bold underline text-slate-900">{officials.koordinatorNama}</p>
-                                    <p className="text-[10px] text-slate-600 font-mono">NIP/NBM. {officials.koordinatorNbm}</p>
+                                    <p className="text-[9.5px] sm:text-[10px] text-slate-600 font-mono">NIP/NBM. {officials.koordinatorNbm}</p>
                                 </div>
                             </div>
                         </div>

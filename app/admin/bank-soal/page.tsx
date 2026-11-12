@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
-"use client";
 
 import * as XLSX from "xlsx";
 import React, { useState, useEffect, useMemo, useRef } from "react";
@@ -459,7 +458,6 @@ function WordImporterSection({
                 return;
             }
 
-            // Sanitasi kuota mutlak 160 butir SNBT (PU 30, PPU 20, dst)
             const getSubtestMetaByQuota = (idx: number) => {
                 let accumulated = 0;
                 for (const sub of SNBT_STRUCTURE) {
@@ -502,13 +500,13 @@ function WordImporterSection({
     };
 
     return (
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-6 shadow-sm text-left">
-            <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 shadow-sm text-left">
+            <div className="border-b border-slate-100 pb-3.5 sm:pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                    <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                    <h2 className="text-sm sm:text-base font-black text-slate-900 tracking-tight">
                         Import Naskah Word (.docx) Otomatis
                     </h2>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-[11px] sm:text-xs text-slate-500">
                         Mendukung tag baku: <code className="text-indigo-600 font-bold font-mono">[WACANA]</code>, <code className="text-indigo-600 font-bold font-mono">[SOAL: 1]</code>, <code className="text-indigo-600 font-bold font-mono">[KUNCI: A]</code>, <code className="text-indigo-600 font-bold font-mono">[PEMBAHASAN]</code>.
                     </p>
                 </div>
@@ -516,14 +514,14 @@ function WordImporterSection({
                 <button
                     type="button"
                     onClick={handleDownloadWordTemplate}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition-all cursor-pointer shadow-xs active:scale-95"
+                    className="inline-flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
                 >
                     <Download className="w-3.5 h-3.5" />
                     <span>Unduh Panduan Template Word</span>
                 </button>
             </div>
 
-            <div className="border-2 border-dashed border-indigo-300 hover:border-indigo-600 bg-indigo-50/20 hover:bg-indigo-50/40 rounded-3xl p-8 text-center transition-all">
+            <div className="border-2 border-dashed border-indigo-300 hover:border-indigo-600 bg-indigo-50/20 hover:bg-indigo-50/40 rounded-3xl p-6 sm:p-8 text-center transition-all">
                 <input
                     type="file"
                     id="docx-file-input"
@@ -537,10 +535,10 @@ function WordImporterSection({
                         <UploadCloud className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-sm font-bold text-slate-800">
+                        <p className="text-xs sm:text-sm font-bold text-slate-800">
                             {isParsing ? "Sedang Mengurai Naskah Word..." : "Klik untuk Memilih File Dokumen Word (.docx)"}
                         </p>
-                        <p className="text-xs text-slate-400 mt-0.5">
+                        <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
                             Target Paket: <strong>{selectedPaket.replace("_", " ")}</strong>
                         </p>
                     </div>
@@ -548,25 +546,25 @@ function WordImporterSection({
             </div>
 
             {stagedList.length > 0 && (
-                <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
-                    <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
+                <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-2xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 shadow-md">
+                    <div className="space-y-0.5 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
                             <span className="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-xs font-mono">
                                 {stagedList.length} Soal Berhasil Dipisahkan
                             </span>
                             <span className="text-xs text-slate-300">Siap disimpan ke {selectedPaket.replace("_", " ")}</span>
                         </div>
-                        <p className="text-[11px] text-slate-400">
+                        <p className="text-[10.5px] sm:text-[11px] text-slate-400">
                             Nomor soal dimulai dari No. 1 di masing-masing subtes (PU 1–30, PPU 1–20, dst).
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="flex items-center gap-2 flex-wrap w-full lg:w-auto justify-end">
                         <button
                             type="button"
                             onClick={() => setStagedList([])}
                             disabled={isSubmittingServer}
-                            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs"
+                            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs cursor-pointer"
                         >
                             Batalkan
                         </button>
@@ -582,9 +580,9 @@ function WordImporterSection({
                                 downloadAnchor.click();
                                 downloadAnchor.remove();
                             }}
-                            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
+                            className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
                         >
-                            <Download className="w-4 h-4" />
+                            <Download className="w-3.5 h-3.5" />
                             <span>Download JSON</span>
                         </button>
 
@@ -595,7 +593,7 @@ function WordImporterSection({
                                 setStagedList([]);
                             }}
                             disabled={isSubmittingServer}
-                            className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
+                            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
                         >
                             <Send className="w-3.5 h-3.5" />
                             <span>Terapkan ke Server</span>
@@ -704,7 +702,6 @@ export default function AdminBankSoalPage() {
         }
     };
 
-    // SELALU PRIORITASKAN DATA DARI FILE JSON SERVER AGAR TIDAK TERTAHAN CACHE LAMA
     const fetchServerQuestions = async (pkg = selectedPaket) => {
         setIsLoadingServerQuestions(true);
         try {
@@ -992,26 +989,26 @@ export default function AdminBankSoalPage() {
 
     return (
         <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-800">
-            <header className="bg-white border-b border-slate-200/90 py-3 px-4 sm:px-8 sticky top-0 z-30 shadow-2xs">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <Link href="/admin" className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600">
+            <header className="bg-white border-b border-slate-200/90 py-3 px-3.5 sm:px-8 sticky top-0 z-30 shadow-2xs">
+                <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 w-full sm:w-auto">
+                        <Link href="/admin" className="p-1.5 sm:p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 shrink-0">
                             <ChevronLeft className="w-4 h-4" />
                         </Link>
-                        <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 p-0.5 flex items-center justify-center overflow-hidden shrink-0">
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white border border-slate-200 p-0.5 flex items-center justify-center overflow-hidden shrink-0">
                             <img src="/logo-timsim.jpg" alt="Logo SMA Muhammadiyah 18" className="w-full h-full object-contain" />
                         </div>
-                        <div>
-                            <div className="text-xs sm:text-sm font-black text-slate-900 uppercase">
+                        <div className="min-w-0">
+                            <div className="text-xs sm:text-sm font-black text-slate-900 uppercase truncate">
                                 BANK SOAL &bull; SMA MUHAMMADIYAH 18
                             </div>
-                            <div className="text-[11px] text-slate-500 font-medium">
+                            <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
                                 Penyusun Soal: <strong className="text-blue-700">{loggedTeacher.nama}</strong> ({loggedTeacher.mapel || "Guru Mapel"})
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
                         <button
                             onClick={() => {
                                 fetchServerQuestions(selectedPaket);
@@ -1023,40 +1020,40 @@ export default function AdminBankSoalPage() {
                             <RefreshCw className={`w-3.5 h-3.5 ${isLoadingServerQuestions ? "animate-spin text-blue-600" : ""}`} />
                             <span className="hidden sm:inline">Refresh Data</span>
                         </button>
-                        <Link href="/" className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600">
+                        <Link href="/" className="p-1.5 sm:p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600">
                             <Home className="w-4 h-4" />
                         </Link>
                     </div>
                 </div>
             </header>
 
-            <div className="max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-5">
+            <div className="max-w-6xl w-full mx-auto p-3.5 sm:p-6 space-y-4 sm:space-y-5 text-left">
                 {/* Banner Status Database & Pemilihan Paket */}
                 <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
                             <Database className="w-5 h-5" />
                         </div>
-                        <div>
-                            <div className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2">
-                                <span>Penyimpanan Lokal Edge JSON (7 Subtes SNBT)</span>
-                                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono text-[10px]">
+                        <div className="min-w-0">
+                            <div className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2 flex-wrap">
+                                <span className="truncate">Penyimpanan Lokal Edge JSON (7 Subtes SNBT)</span>
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono text-[10px] shrink-0">
                                     Aktif &bull; {serverQuestions.length} Butir Soal
                                 </span>
                             </div>
-                            <div className="text-[11px] text-slate-500 mt-0.5">
+                            <div className="text-[10.5px] sm:text-[11px] text-slate-500 mt-0.5 truncate">
                                 Target Aktif: <strong className="text-blue-700 font-bold">{selectedPaket.replace("_", " ")}</strong> &bull; Respon Cepat (&lt;50ms)
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200 self-stretch sm:self-auto">
+                    <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200 w-full sm:w-auto shrink-0">
                         {(["PAKET_1", "PAKET_2", "PAKET_3"] as const).map((pkt) => (
                             <button
                                 key={pkt}
                                 type="button"
                                 onClick={() => setSelectedPaket(pkt)}
-                                className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${selectedPaket === pkt
+                                className={`flex-1 sm:flex-none px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${selectedPaket === pkt
                                     ? "bg-[#1e3a8a] text-white shadow-xs"
                                     : "text-slate-600 hover:text-slate-900"
                                     }`}
@@ -1068,7 +1065,7 @@ export default function AdminBankSoalPage() {
                 </div>
 
                 {/* KARTU STATISTIK 7 SUBTES SNBT */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
                     {SNBT_STRUCTURE.map((s) => {
                         const count = subtestCounts[s.code] || 0;
                         const isComplete = count >= s.count;
@@ -1079,21 +1076,21 @@ export default function AdminBankSoalPage() {
                                     setFilterSubtestView(s.code);
                                     setInputMode("list");
                                 }}
-                                className={`p-3 rounded-2xl border cursor-pointer transition-all text-center ${filterSubtestView === s.code
+                                className={`p-2.5 sm:p-3 rounded-2xl border cursor-pointer transition-all text-center ${filterSubtestView === s.code
                                     ? "bg-blue-900 text-white border-blue-900 shadow-sm"
                                     : "bg-white hover:bg-slate-50 border-slate-200 text-slate-800"
                                     }`}
                             >
-                                <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${filterSubtestView === s.code
+                                <span className={`text-[9.5px] sm:text-[10px] font-mono font-bold px-1.5 sm:px-2 py-0.2 rounded ${filterSubtestView === s.code
                                     ? "bg-white/20 text-white"
                                     : "bg-indigo-50 text-indigo-800 border border-indigo-200"
                                     }`}>
                                     {s.code}
                                 </span>
-                                <div className="text-[11px] font-bold mt-1.5 truncate" title={s.name}>
+                                <div className="text-[10.5px] sm:text-[11px] font-bold mt-1 truncate" title={s.name}>
                                     {s.name}
                                 </div>
-                                <div className="text-[11px] font-mono mt-0.5 font-bold">
+                                <div className="text-[10.5px] sm:text-[11px] font-mono mt-0.5 font-bold">
                                     <span className={filterSubtestView === s.code ? "text-emerald-300" : isComplete ? "text-emerald-600" : "text-amber-600"}>
                                         {count}
                                     </span>
@@ -1105,60 +1102,60 @@ export default function AdminBankSoalPage() {
                 </div>
 
                 {/* Tab Navigasi Mode Input Soal */}
-                <div className="flex items-center gap-2 bg-slate-200/80 p-1 rounded-2xl border border-slate-300">
+                <div className="flex flex-col sm:flex-row items-center gap-1.5 bg-slate-200/80 p-1 rounded-2xl border border-slate-300">
                     <button
                         type="button"
                         onClick={() => setInputMode("list")}
-                        className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${inputMode === "list" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                        className={`w-full sm:flex-1 py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${inputMode === "list" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
                     >
-                        <ListFilter className="w-4 h-4 text-indigo-600" />
-                        <span>Koleksi Soal Terbagi ({serverQuestions.length})</span>
+                        <ListFilter className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                        <span className="truncate">Koleksi Soal ({serverQuestions.length})</span>
                     </button>
 
                     <button
                         type="button"
                         onClick={() => setInputMode("docx_upload")}
-                        className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${inputMode === "docx_upload" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                        className={`w-full sm:flex-1 py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${inputMode === "docx_upload" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
                     >
-                        <FileText className="w-4 h-4 text-indigo-600" />
-                        <span>Import Naskah Word (.docx) Otomatis</span>
+                        <FileText className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                        <span className="truncate">Import Naskah Word (.docx)</span>
                     </button>
 
                     <button
                         type="button"
                         onClick={() => setInputMode("csv")}
-                        className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${inputMode === "csv" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                        className={`w-full sm:flex-1 py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${inputMode === "csv" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
                     >
-                        <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-                        <span>Import Massal CSV / Excel</span>
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span className="truncate">Import Massal CSV / Excel</span>
                     </button>
                 </div>
 
                 {statusMsg && (
-                    <div className={`p-4 rounded-2xl border text-xs flex items-center gap-2.5 ${statusMsg.type === "success" ? "bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold" : "bg-rose-50 border-rose-300 text-rose-900 font-semibold"}`}>
-                        {statusMsg.type === "success" ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <AlertCircle className="w-4 h-4 text-rose-600" />}
-                        <span>{statusMsg.text}</span>
+                    <div className={`p-3.5 rounded-2xl border text-xs flex items-center gap-2.5 ${statusMsg.type === "success" ? "bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold" : "bg-rose-50 border-rose-300 text-rose-900 font-semibold"}`}>
+                        {statusMsg.type === "success" ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />}
+                        <span className="leading-relaxed">{statusMsg.text}</span>
                     </div>
                 )}
 
                 {/* TAB 0: DAFTAR SOAL BERKAS */}
                 {inputMode === "list" && (
-                    <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-5 shadow-sm">
+                    <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-5 shadow-sm">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-3">
-                            <div>
-                                <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                            <div className="min-w-0">
+                                <h2 className="text-sm sm:text-base font-black text-slate-900 tracking-tight truncate">
                                     Koleksi Soal {selectedPaket.replace("_", " ")} ({filterSubtestView === "ALL" ? "Semua Subtes" : filterSubtestView})
                                 </h2>
-                                <p className="text-xs text-slate-500">
+                                <p className="text-[11px] sm:text-xs text-slate-500 truncate">
                                     {filterSubtestView === "ALL" ? "Menampilkan seluruh koleksi 7 subtes." : `Menampilkan khusus subtes ${filterSubtestView}.`}
                                 </p>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                                 <select
                                     value={filterSubtestView}
                                     onChange={(e) => setFilterSubtestView(e.target.value)}
-                                    className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold outline-none bg-white"
+                                    className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold outline-none bg-white cursor-pointer"
                                 >
                                     <option value="ALL">Semua Subtes ({serverQuestions.length})</option>
                                     {SNBT_STRUCTURE.map((s) => (
@@ -1168,7 +1165,6 @@ export default function AdminBankSoalPage() {
                                     ))}
                                 </select>
 
-                                {/* TOMBOL DOWNLOAD JSON PERMANEN */}
                                 {serverQuestions.length > 0 && (
                                     <button
                                         type="button"
@@ -1181,10 +1177,10 @@ export default function AdminBankSoalPage() {
                                             downloadAnchor.click();
                                             downloadAnchor.remove();
                                         }}
-                                        className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+                                        className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1 cursor-pointer shadow-xs"
                                     >
                                         <Download className="w-3.5 h-3.5" />
-                                        <span>Download JSON</span>
+                                        <span className="hidden sm:inline">JSON</span>
                                     </button>
                                 )}
 
@@ -1193,7 +1189,7 @@ export default function AdminBankSoalPage() {
                                         type="button"
                                         onClick={handleClearAllQuestions}
                                         disabled={isLoadingServerQuestions}
-                                        className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+                                        className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-700 font-bold text-xs flex items-center gap-1 cursor-pointer shadow-xs"
                                     >
                                         <Trash2 className="w-3.5 h-3.5 text-rose-600" />
                                         <span>Hapus Semua</span>
@@ -1215,9 +1211,9 @@ export default function AdminBankSoalPage() {
                         ) : (
                             <div className="space-y-4 max-h-[600px] overflow-y-auto pr-1">
                                 {filteredServerQuestions.map((q, idx) => (
-                                    <div key={idx} className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 text-left">
+                                    <div key={idx} className="p-3.5 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 text-left">
                                         <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200">
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2 flex-wrap">
                                                 <span className="px-2 py-0.5 rounded bg-[#1e3a8a] text-white font-mono font-bold text-[10px]">
                                                     NO. {q.no_soal}
                                                 </span>
@@ -1232,30 +1228,30 @@ export default function AdminBankSoalPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => handleDeleteServerQuestion(q.no_soal, q.subtes_code || "")}
-                                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"
+                                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
 
                                         {q.stimulus && (
-                                            <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed italic">
+                                            <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed italic overflow-x-auto">
                                                 <MathRenderer content={q.stimulus} />
                                             </div>
                                         )}
 
                                         {q.image_url && (
-                                            <div className="p-3 my-2 bg-white rounded-xl border border-slate-200 flex flex-col items-center justify-center">
+                                            <div className="p-3 my-2 bg-white rounded-xl border border-slate-200 flex flex-col items-center justify-center overflow-x-auto">
                                                 <img
                                                     src={convertToDirectImageUrl(q.image_url)}
                                                     alt={`Gambar Soal No. ${q.no_soal}`}
                                                     referrerPolicy="no-referrer"
-                                                    className="max-h-64 max-w-full rounded-lg object-contain shadow-xs"
+                                                    className="max-h-60 sm:max-h-64 object-contain rounded-lg shadow-xs max-w-full"
                                                 />
                                             </div>
                                         )}
 
-                                        <div className="text-xs font-semibold text-slate-900 leading-relaxed">
+                                        <div className="text-xs font-semibold text-slate-900 leading-relaxed overflow-x-auto py-1">
                                             <MathRenderer content={q.pertanyaan} />
                                         </div>
 
@@ -1274,8 +1270,10 @@ export default function AdminBankSoalPage() {
                                                         : "bg-white border-slate-200 text-slate-700"
                                                         }`}
                                                 >
-                                                    <span className="font-mono font-bold">{opt.label}.</span>
-                                                    <span><MathRenderer content={opt.text || "-"} /></span>
+                                                    <span className="font-mono font-bold shrink-0">{opt.label}.</span>
+                                                    <div className="flex-1 overflow-x-auto">
+                                                        <MathRenderer content={opt.text || "-"} />
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -1303,13 +1301,13 @@ export default function AdminBankSoalPage() {
 
                 {/* TAB 2: UPLOAD MASSAL FILE CSV / EXCEL */}
                 {inputMode === "csv" && (
-                    <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 space-y-6 shadow-sm">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 shadow-sm">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3.5 sm:pb-4">
                             <div>
-                                <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                                <h2 className="text-sm sm:text-base font-black text-slate-900 tracking-tight">
                                     Upload Massal Soal via File CSV / Excel
                                 </h2>
-                                <p className="text-xs text-slate-500">
+                                <p className="text-[11px] sm:text-xs text-slate-500">
                                     Mendukung formula KaTeX serta link Google Drive langsung pada kolom stimulus maupun pilihan A–E.
                                 </p>
                             </div>
@@ -1317,16 +1315,16 @@ export default function AdminBankSoalPage() {
                             <button
                                 type="button"
                                 onClick={handleDownloadExcelTemplate}
-                                className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-400 rounded-full transition-all duration-200 shadow-sm hover:shadow active:scale-95 cursor-pointer"
+                                className="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-400 rounded-xl transition-all shadow-xs cursor-pointer shrink-0"
                             >
-                                <Download className="w-4 h-4 text-emerald-700" />
+                                <Download className="w-3.5 h-3.5 text-emerald-700" />
                                 <span>Unduh Template Lengkap (Excel .xlsx)</span>
                             </button>
                         </div>
 
                         <div
                             onClick={() => fileInputRef.current?.click()}
-                            className="border-2 border-dashed border-slate-300 hover:border-blue-600 hover:bg-blue-50/40 rounded-3xl p-8 text-center cursor-pointer transition-all space-y-3"
+                            className="border-2 border-dashed border-slate-300 hover:border-blue-600 hover:bg-blue-50/40 rounded-3xl p-6 sm:p-8 text-center cursor-pointer transition-all space-y-3"
                         >
                             <input
                                 ref={fileInputRef}
@@ -1339,8 +1337,8 @@ export default function AdminBankSoalPage() {
                                 <UploadCloud className="w-6 h-6" />
                             </div>
                             <div>
-                                <p className="text-sm font-bold text-slate-800">Klik untuk Memilih File CSV atau Excel dari Komputer</p>
-                                <p className="text-xs text-slate-400 mt-0.5">Mendukung format .csv atau .xlsx standar Excel dan Google Sheets</p>
+                                <p className="text-xs sm:text-sm font-bold text-slate-800">Klik untuk Memilih File CSV atau Excel dari Komputer</p>
+                                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">Mendukung format .csv atau .xlsx standar Excel dan Google Sheets</p>
                             </div>
                         </div>
 
@@ -1359,7 +1357,7 @@ export default function AdminBankSoalPage() {
                                         </span>
                                     </button>
 
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 flex-wrap">
                                         <button
                                             type="button"
                                             onClick={() => setBatchQuestions([])}

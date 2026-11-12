@@ -148,23 +148,23 @@ export default function CBTEngineLandingPage() {
                 alt="Logo TIM S.I.M."
                 className="w-full h-full object-contain"
                 onError={(e) => {
-                  (e.target as any).style.display = "none";
+                  (e.target as HTMLImageElement).style.display = "none";
                 }}
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <div className="font-mono text-[11px] font-bold text-blue-600 tracking-widest uppercase flex items-center justify-center gap-1.5">
-              <span className="relative flex h-2 w-2">
+            <div className="font-mono text-[10px] sm:text-[11px] font-bold text-blue-600 tracking-widest uppercase flex items-center justify-center gap-1.5">
+              <span className="relative flex h-2 w-2 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600" />
               </span>
               <span>IN-HOUSE ENGINE INITIALIZING</span>
             </div>
 
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 uppercase">
-              TIM SISTEM INFORMASI &amp; MANAJEMEN
+            <h2 className="text-lg sm:text-2xl font-black tracking-tight text-slate-900 uppercase">
+              TIM SISTEM INFORMASI & MANAJEMEN
             </h2>
 
             <p className="text-xs sm:text-sm text-slate-500 font-semibold tracking-wide">
@@ -180,7 +180,7 @@ export default function CBTEngineLandingPage() {
           </div>
 
           <div className="font-mono text-[9.5px] sm:text-[10px] text-slate-400 tracking-widest pt-1">
-            VERIFYING KIOSK &bull; CALIBRATING IRT 3PL &bull; READY
+            VERIFYING KIOSK • CALIBRATING IRT 3PL • READY
           </div>
         </div>
       </div>
@@ -194,31 +194,31 @@ export default function CBTEngineLandingPage() {
             : "opacity-100 translate-y-0 filter-none"
           }`}
       >
-        {/* HEADER / NAVBAR RESPONSIF (ANTI-TABRAKAN DI HP) */}
+        {/* HEADER / NAVBAR RESPONSIF */}
         <header className="relative z-40 w-full border-b border-slate-200/90 bg-white/95 backdrop-blur-md shadow-xs sticky top-0">
-          <div className="max-w-7xl mx-auto px-3.5 sm:px-6 py-2.5 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+          <div className="max-w-7xl mx-auto px-3.5 sm:px-6 py-2.5 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4">
             {/* Branding Sisi Kiri */}
-            <div className="flex items-center gap-3 sm:gap-4 text-left w-full sm:w-auto">
+            <div className="flex items-center gap-3 sm:gap-4 text-left w-full sm:w-auto min-w-0">
               <div className="relative group shrink-0">
                 <div className="absolute -inset-1 rounded-full bg-blue-500/30 blur-xs animate-pulse" />
-                <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white p-0.5 shadow-xs border border-slate-200/80 flex items-center justify-center overflow-hidden">
+                <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white p-0.5 shadow-xs border border-slate-200/80 flex items-center justify-center overflow-hidden">
                   <img
                     src="/logo-timsim.jpg"
                     alt="Logo TIM S.I.M."
                     className="w-full h-full object-contain scale-[1.02]"
                     onError={(e) => {
-                      (e.target as any).style.display = "none";
+                      (e.target as HTMLImageElement).style.display = "none";
                     }}
                   />
                 </div>
               </div>
 
-              <div className="space-y-0.5 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                   <span className="text-xs sm:text-base font-black tracking-tight text-[#1e3a8a] uppercase truncate">
-                    TIM SISTEM INFORMASI &amp; MANAJEMEN
+                    TIM SISTEM INFORMASI & MANAJEMEN
                   </span>
-                  <div className="relative inline-flex items-center gap-1 rounded-full bg-blue-600 px-1.5 py-0.2 sm:px-2 sm:py-0.5 text-[9px] sm:text-[10px] font-black tracking-wider text-white shadow-xs shadow-blue-500/40">
+                  <div className="relative inline-flex items-center gap-1 rounded-full bg-blue-600 px-1.5 py-0.2 sm:px-2 sm:py-0.5 text-[9px] sm:text-[10px] font-black tracking-wider text-white shadow-xs shadow-blue-500/40 shrink-0">
                     <span className="relative flex h-1.5 w-1.5 shrink-0">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-200 opacity-75" />
                       <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
@@ -228,7 +228,7 @@ export default function CBTEngineLandingPage() {
                 </div>
 
                 <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-medium text-slate-600 truncate">
-                  <span className="inline-flex items-center rounded-md border border-amber-300 bg-amber-50/90 px-1.5 py-0.2 font-mono text-[9px] sm:text-[10px] font-bold text-amber-800 shadow-2xs">
+                  <span className="inline-flex items-center rounded-md border border-amber-300 bg-amber-50/90 px-1.5 py-0.2 font-mono text-[9px] sm:text-[10px] font-bold text-amber-800 shadow-2xs shrink-0">
                     OFFICIAL PROPRIETARY
                   </span>
                   <span className="font-semibold text-slate-700 truncate">
@@ -239,37 +239,37 @@ export default function CBTEngineLandingPage() {
             </div>
 
             {/* Aksi Navbar Sisi Kanan */}
-            <div className="flex items-center justify-end gap-2 sm:gap-3 w-full sm:w-auto shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+            <div className="flex items-center justify-end gap-2 sm:gap-3 w-full sm:w-auto shrink-0 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-slate-100">
               <Link
                 href="/admin"
-                className="h-8 sm:h-10 px-3 sm:px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-300 transition shadow-xs flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold cursor-pointer"
+                className="flex-1 sm:flex-none justify-center h-9 sm:h-10 px-3 sm:px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-300 transition shadow-xs flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold cursor-pointer"
               >
                 <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-700 shrink-0" />
-                <span className="hidden md:inline">Portal Pengawas &amp; Guru</span>
+                <span className="hidden md:inline">Portal Pengawas & Guru</span>
                 <span className="md:hidden">Portal Guru</span>
               </Link>
 
               <button
                 type="button"
                 onClick={() => setShowStudentAuthModal(true)}
-                className="h-8 sm:h-10 px-3.5 sm:px-5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white transition shadow-sm shadow-blue-700/20 flex items-center gap-1.5 text-[11px] sm:text-xs font-bold shrink-0 cursor-pointer"
+                className="flex-1 sm:flex-none justify-center h-9 sm:h-10 px-3.5 sm:px-5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white transition shadow-sm shadow-blue-700/20 flex items-center gap-1.5 text-[11px] sm:text-xs font-bold shrink-0 cursor-pointer"
               >
                 <span>Ruang Ujian Siswa</span>
-                <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
               </button>
             </div>
           </div>
         </header>
 
         {/* HERO SECTION */}
-        <section className="relative z-10 bg-gradient-to-b from-[#F8FAFC] via-[#F1F5F9] to-[#E2E8F0]/40 border-b border-slate-200/90 pt-6 sm:pt-8 pb-6 sm:pb-7">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <section className="relative z-10 bg-gradient-to-b from-[#F8FAFC] via-[#F1F5F9] to-[#E2E8F0]/40 border-b border-slate-200/90 pt-5 sm:pt-8 pb-6 sm:pb-7">
+          <div className="max-w-7xl mx-auto px-3.5 sm:px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 items-stretch">
 
               {/* Kolom Kiri */}
               <div className="lg:col-span-6 flex flex-col justify-between text-left py-1">
                 <div className="space-y-3 sm:space-y-3.5">
-                  <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white text-[10px] sm:text-xs font-bold tracking-wider uppercase shadow-sm shadow-blue-900/20 border border-blue-500/30">
+                  <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white text-[9.5px] sm:text-xs font-bold tracking-wider uppercase shadow-sm shadow-blue-900/20 border border-blue-500/30">
                     <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
                     <span className="tracking-wide">SISTEM UJIAN TERSTANDARISASI NASIONAL</span>
                   </div>
@@ -284,64 +284,70 @@ export default function CBTEngineLandingPage() {
                     Hadirkan pengalaman <strong className="font-bold text-slate-900">Simulasi SNBT</strong> yang sesungguhnya langsung di sekolah Anda. Sistem penilaian akurat dan stabil digunakan ratusan siswa sekaligus.
                   </p>
 
-                  <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-1">
+                  <div className="flex flex-col xs:flex-row sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1">
                     <Link
                       href="/simulation"
-                      className="h-10 sm:h-11 px-4 sm:px-5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs sm:text-sm transition shadow-md shadow-blue-700/20 flex items-center gap-2 cursor-pointer"
+                      className="h-10 sm:h-11 px-4 sm:px-5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs sm:text-sm transition shadow-md shadow-blue-700/20 flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white" />
+                      <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white shrink-0" />
                       <span>Uji Coba Simulasi</span>
                     </Link>
 
                     <a
                       href="#silabus"
-                      className="h-10 sm:h-11 px-4 sm:px-5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-xs sm:text-sm transition shadow-2xs flex items-center gap-2"
+                      className="h-10 sm:h-11 px-4 sm:px-5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-xs sm:text-sm transition shadow-2xs flex items-center justify-center gap-2"
                     >
-                      <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-700" />
+                      <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-700 shrink-0" />
                       <span>Silabus SNBT</span>
                     </a>
                   </div>
                 </div>
 
-                {/* 3 Kotak Metrik Hero */}
-                <div ref={metricsRef} className="grid grid-cols-3 gap-2 sm:gap-3 pt-4 sm:pt-6">
-                  <div className="group relative p-2.5 sm:p-3.5 rounded-2xl bg-white border border-slate-200 text-center transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-lg hover:shadow-blue-900/5 hover:border-blue-300 overflow-hidden cursor-default flex flex-col items-center justify-center">
-                    <div className="flex items-center justify-center gap-1 font-mono text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1">
-                      <Wifi className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-600 animate-pulse transition-transform duration-300 group-hover:scale-110 shrink-0" />
+                {/* 3 Kotak Metrik Hero (1 Kolom di HP sempit, 3 Kolom di Tablet/Desktop) */}
+                <div ref={metricsRef} className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 pt-4 sm:pt-6">
+                  <div className="group relative p-3 sm:p-3.5 rounded-2xl bg-white border border-slate-200 text-center transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-900/5 hover:border-blue-300 overflow-hidden cursor-default flex sm:flex-col items-center justify-between sm:justify-center px-4 sm:px-3">
+                    <div className="flex items-center justify-center gap-1.5 font-mono text-[10px] font-bold text-slate-500 uppercase tracking-wider sm:mb-1">
+                      <Wifi className="w-3.5 h-3.5 text-blue-600 animate-pulse shrink-0" />
                       <span>KONKURENSI</span>
                     </div>
-                    <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-mono">
-                      {metricCount}<span className="text-blue-600">+</span>
+                    <div className="text-right sm:text-center">
+                      <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-mono">
+                        {metricCount}<span className="text-blue-600">+</span>
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-medium">Uji simultan stabil</div>
                     </div>
-                    <div className="text-[9px] sm:text-[10px] text-slate-500 font-medium mt-0.5">Uji simultan stabil</div>
                   </div>
 
-                  <div className="group relative p-2.5 sm:p-3.5 rounded-2xl bg-white border border-slate-200 text-center transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-lg hover:shadow-indigo-900/5 hover:border-indigo-300 overflow-hidden cursor-default flex flex-col items-center justify-center">
-                    <div className="flex items-center justify-center gap-1 font-mono text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1">
-                      <BarChart3 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-600 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-110 shrink-0" />
+                  <div className="group relative p-3 sm:p-3.5 rounded-2xl bg-white border border-slate-200 text-center transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-900/5 hover:border-indigo-300 overflow-hidden cursor-default flex sm:flex-col items-center justify-between sm:justify-center px-4 sm:px-3">
+                    <div className="flex items-center justify-center gap-1.5 font-mono text-[10px] font-bold text-slate-500 uppercase tracking-wider sm:mb-1">
+                      <BarChart3 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                       <span>PSIKOMETRI</span>
                     </div>
-                    <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-mono">
-                      IRT <span className="text-blue-600">3PL</span>
+                    <div className="text-right sm:text-center">
+                      <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-mono">
+                        IRT <span className="text-blue-600">3PL</span>
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-medium">Kalibrasi standar SNBT</div>
                     </div>
-                    <div className="text-[9px] sm:text-[10px] text-slate-500 font-medium mt-0.5">Kalibrasi standar SNBT</div>
                   </div>
 
-                  <div className="group relative p-2.5 sm:p-3.5 rounded-2xl bg-white border border-slate-200 text-center transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-lg hover:shadow-emerald-900/5 hover:border-emerald-300 overflow-hidden cursor-default flex flex-col items-center justify-center">
-                    <div className="flex items-center justify-center gap-1 font-mono text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1">
-                      <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600 animate-pulse transition-transform duration-300 group-hover:scale-110 shrink-0" />
+                  <div className="group relative p-3 sm:p-3.5 rounded-2xl bg-white border border-slate-200 text-center transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-900/5 hover:border-emerald-300 overflow-hidden cursor-default flex sm:flex-col items-center justify-between sm:justify-center px-4 sm:px-3">
+                    <div className="flex items-center justify-center gap-1.5 font-mono text-[10px] font-bold text-slate-500 uppercase tracking-wider sm:mb-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 animate-pulse shrink-0" />
                       <span>INTEGRITAS</span>
                     </div>
-                    <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-mono">
-                      {metricCount}<span className="text-emerald-600">%</span>
+                    <div className="text-right sm:text-center">
+                      <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-mono">
+                        {metricCount}<span className="text-emerald-600">%</span>
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-medium">Kiosk & proteksi data</div>
                     </div>
-                    <div className="text-[9px] sm:text-[10px] text-slate-500 font-medium mt-0.5">Kiosk &amp; proteksi data</div>
                   </div>
                 </div>
               </div>
 
               {/* Kolom Kanan: Mockup Soal Hero */}
-              <div className="lg:col-span-6 flex flex-col justify-between mt-2 lg:mt-0">
+              <div className="lg:col-span-6 flex flex-col justify-between mt-1 lg:mt-0">
                 <div className="w-full bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-200/60 p-2 sm:p-3 transition duration-300">
                   <div className="h-9 px-2.5 sm:px-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-2 sm:gap-3">
                     <div className="flex items-center gap-1.5 shrink-0">
@@ -350,7 +356,7 @@ export default function CBTEngineLandingPage() {
                       <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                     </div>
 
-                    <div className="flex-1 max-w-xs mx-auto h-6 px-2 bg-white border border-slate-200/90 rounded-lg flex items-center justify-center gap-1.5 shadow-2xs">
+                    <div className="flex-1 max-w-xs mx-auto h-6 px-2 bg-white border border-slate-200/90 rounded-lg flex items-center justify-center gap-1.5 shadow-2xs min-w-0">
                       <Lock className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                       <span className="font-mono text-[9px] sm:text-[10px] text-slate-600 font-medium truncate select-none">
                         tim-sim.id/cbt-engine/simulasi-snbt/live
@@ -359,14 +365,14 @@ export default function CBTEngineLandingPage() {
 
                     <div className="flex items-center gap-1 text-blue-800 font-bold text-[8.5px] sm:text-[9px] bg-blue-50/90 px-1.5 sm:px-2 py-0.5 rounded-md border border-blue-200 shrink-0">
                       <ShieldCheck className="w-3 h-3 text-blue-700 animate-pulse" />
-                      <span className="tracking-wide">TERPROTEKSI</span>
+                      <span className="tracking-wide hidden xs:inline">TERPROTEKSI</span>
                     </div>
                   </div>
 
                   <div className="p-3 sm:p-4 bg-slate-50/70 rounded-2xl mt-2 border border-slate-100 space-y-2.5">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-200 text-xs">
-                      <div className="flex items-center gap-1.5 sm:gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-blue-700 text-white font-mono font-bold text-[9.5px] sm:text-[10px]">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200 text-xs gap-2">
+                      <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                        <span className="px-2 py-0.5 rounded-md bg-blue-700 text-white font-mono font-bold text-[9.5px] sm:text-[10px] shrink-0">
                           SOAL NO. 15
                         </span>
                         <span className="text-slate-700 font-semibold text-[10px] sm:text-[11px] truncate">
@@ -383,7 +389,7 @@ export default function CBTEngineLandingPage() {
                       <p className="text-[11.5px] sm:text-[12px] text-slate-700 leading-snug font-normal">
                         {"Diberikan simpangan gelombang y(t) = A sin(ωt + φ). Jika frekuensi sudut ω = 4π rad/s dan energi kinetik maksimum tercapai saat:"}
                       </p>
-                      <div className="py-1.5 px-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-mono text-[10px] sm:text-[11px] font-semibold text-center shadow-2xs tracking-tight">
+                      <div className="py-1.5 px-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-mono text-[10px] sm:text-[11px] font-semibold text-center shadow-2xs tracking-tight overflow-x-auto">
                         {"Ek = (1/2) · m · ω² · A² cos²(ωt + φ)"}
                       </div>
                     </div>
@@ -432,7 +438,7 @@ export default function CBTEngineLandingPage() {
                     </div>
 
                     {/* Sensor Bawah */}
-                    <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between text-[9.5px] sm:text-[10.5px] font-mono text-slate-500">
+                    <div className="pt-2 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-2 text-[9.5px] sm:text-[10.5px] font-mono text-slate-500">
                       <div className="flex items-center gap-1">
                         <span className="relative flex h-2 w-2">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -457,17 +463,17 @@ export default function CBTEngineLandingPage() {
 
             {/* Trust Strip */}
             <div className="mt-3 sm:mt-2 pt-3 sm:pt-4 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4 text-xs text-slate-500 text-center sm:text-left">
-              <div className="flex items-center gap-1.5 sm:gap-2 font-medium justify-center sm:justify-start">
+              <div className="flex items-center gap-1.5 sm:gap-2 font-medium justify-center sm:justify-start flex-wrap">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                 <span className="text-slate-700 font-semibold">Kompatibilitas Sistem:</span>
-                <span>Dioptimalkan untuk Laptop, Chromebook, Tablet &amp; Smartphone</span>
+                <span>Dioptimalkan untuk Laptop, Chromebook, Tablet & Smartphone</span>
               </div>
               <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-[11px] font-mono text-slate-400 flex-wrap justify-center">
-                <span>LATENCY: &lt; 45MS</span>
-                <span>&bull;</span>
+                <span>LATENCY: 45MS</span>
+                <span>•</span>
                 <span>OFFLINE RESILIENCE: AKTIF</span>
-                <span>&bull;</span>
-                <span>STANDAR: BSNP / PUSMENDIK</span>
+                <span>•</span>
+                <span>STANDAR: BPPP / PUSMENDIK</span>
               </div>
             </div>
           </div>
@@ -475,14 +481,14 @@ export default function CBTEngineLandingPage() {
 
         {/* SECTION 2: 4 PILAR TEKNOLOGI */}
         <section className="relative z-10 bg-slate-50/60 border-b border-slate-200/90 py-10 sm:py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto px-3.5 sm:px-6">
             <div className="text-center max-w-3xl mx-auto space-y-2.5 sm:space-y-3 mb-8 sm:mb-12">
               <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white text-[10px] sm:text-[11px] font-bold tracking-wider uppercase shadow-sm border border-blue-500/30">
                 <Cpu className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 shrink-0" />
                 <span>ARSITEKTUR CBT ENGINE</span>
               </div>
               <h2 className="text-2xl sm:text-4xl lg:text-[40px] font-black text-slate-900 tracking-tight leading-tight">
-                Standar Keamanan &amp;{" "}
+                Standar Keamanan &{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900">
                   Presisi Asesmen
                 </span>
@@ -494,7 +500,7 @@ export default function CBTEngineLandingPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5">
               {/* Pilar 1 */}
-              <div className="group p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:border-blue-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+              <div className="group p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:border-blue-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between text-left">
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-3.5">
                     <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 border border-blue-150 flex items-center justify-center text-blue-700 group-hover:scale-105 transition-transform">
@@ -521,7 +527,7 @@ export default function CBTEngineLandingPage() {
               </div>
 
               {/* Pilar 2 */}
-              <div className="group p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:border-blue-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+              <div className="group p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:border-blue-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between text-left">
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-3.5">
                     <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 border border-blue-150 flex items-center justify-center text-blue-700 group-hover:scale-105 transition-transform">
@@ -545,10 +551,10 @@ export default function CBTEngineLandingPage() {
               </div>
 
               {/* Pilar 3 */}
-              <div className="group p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:border-blue-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+              <div className="group p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:border-blue-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between text-left">
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-150 flex items-center justify-center text-indigo-700 group-hover:scale-105 transition-transform">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 border border-indigo-150 flex items-center justify-center text-indigo-700 group-hover:scale-105 transition-transform">
                       <Cpu className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-700" />
                     </div>
                     <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[9.5px] font-bold uppercase tracking-wider font-mono">
@@ -556,7 +562,7 @@ export default function CBTEngineLandingPage() {
                     </span>
                   </div>
                   <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight mb-1.5">
-                    LaTeX &amp; Formula Parser
+                    LaTeX & Formula Parser
                   </h3>
                   <p className="text-[11.5px] sm:text-xs text-slate-600 leading-relaxed">
                     Render matematis, persamaan kalkulus, vektor, dan simbol ilmiah presisi tinggi tanpa distorsi resolusi di semua variasi peramban siswa.
@@ -569,7 +575,7 @@ export default function CBTEngineLandingPage() {
               </div>
 
               {/* Pilar 4 */}
-              <div className="group p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:border-blue-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+              <div className="group p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:border-blue-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between text-left">
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-3.5">
                     <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 border border-emerald-150 flex items-center justify-center text-emerald-700 group-hover:scale-105 transition-transform">
@@ -597,15 +603,15 @@ export default function CBTEngineLandingPage() {
 
         {/* SECTION 3: SILABUS & CAKUPAN SUBTES (8 KARTU LENGKAP) */}
         <section id="silabus" className="relative z-10 bg-slate-50/70 border-b border-slate-200/90 py-10 sm:py-14">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto px-3.5 sm:px-6">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 sm:pb-7 mb-6 sm:mb-8 border-b border-slate-200/80">
               <div className="space-y-2 text-left">
                 <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white text-[10px] sm:text-[10.5px] font-bold tracking-wider uppercase shadow-sm border border-blue-500/30">
                   <BarChart3 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 shrink-0" />
-                  <span>STANDARISASI PUSMENDIK &amp; BPPP</span>
+                  <span>STANDARISASI PUSMENDIK & BPPP</span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-slate-900 tracking-tight leading-tight">
-                  Cakupan Materi &amp;{" "}
+                  Cakupan Materi &{" "}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900">
                     Subtes SNBT
                   </span>
@@ -615,13 +621,13 @@ export default function CBTEngineLandingPage() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-3 bg-white border border-slate-250/90 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl shadow-2xs shrink-0 self-start md:self-auto">
+              <div className="flex items-center justify-between md:justify-end gap-3 bg-white border border-slate-250/90 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl shadow-2xs shrink-0 self-stretch md:self-auto">
                 <div className="text-left md:text-right">
                   <div className="text-[9px] sm:text-[9.5px] font-bold font-mono text-slate-400 uppercase tracking-wider">Total Evaluasi</div>
-                  <div className="text-xs font-black text-slate-900">160 Soal &bull; 195 Menit</div>
+                  <div className="text-xs font-black text-slate-900">160 Soal • 195 Menit</div>
                 </div>
                 <div className="h-7 w-[1px] bg-slate-200" />
-                <div className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-blue-50 text-blue-800 border border-blue-200/80 font-mono font-bold text-[11px] sm:text-xs">
+                <div className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 border border-blue-200/80 font-mono font-bold text-[11px] sm:text-xs">
                   7 Subtes
                 </div>
               </div>
@@ -634,7 +640,7 @@ export default function CBTEngineLandingPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
                     <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200/60 text-[9.5px] sm:text-[10px] font-mono font-bold">
-                      TPS &bull; 01
+                      TPS • 01
                     </span>
                     <div className="flex items-center gap-1 font-mono text-[10.5px] sm:text-[11px] text-slate-600 font-semibold bg-slate-100/80 px-2 py-0.5 rounded-md">
                       <Clock className="w-3 h-3 text-slate-500" /> 30m
@@ -658,14 +664,14 @@ export default function CBTEngineLandingPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
                     <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200/60 text-[9.5px] sm:text-[10px] font-mono font-bold">
-                      TPS &bull; 02
+                      TPS • 02
                     </span>
                     <div className="flex items-center gap-1 font-mono text-[10.5px] sm:text-[11px] text-slate-600 font-semibold bg-slate-100/80 px-2 py-0.5 rounded-md">
                       <Clock className="w-3 h-3 text-slate-500" /> 15m
                     </div>
                   </div>
                   <h4 className="text-[13.5px] sm:text-[14px] font-bold text-slate-900 tracking-tight mb-1 group-hover:text-blue-700 transition-colors">
-                    Pengetahuan &amp; Pemahaman Umum (PPU)
+                    Pengetahuan & Pemahaman Umum (PPU)
                   </h4>
                   <p className="text-[11px] sm:text-[11.5px] text-slate-500 leading-relaxed min-h-[34px] line-clamp-2">
                     Kelugasan wacana, padanan konteks kata, dan relasi semantik.
@@ -682,14 +688,14 @@ export default function CBTEngineLandingPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
                     <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200/60 text-[9.5px] sm:text-[10px] font-mono font-bold">
-                      TPS &bull; 03
+                      TPS • 03
                     </span>
                     <div className="flex items-center gap-1 font-mono text-[10.5px] sm:text-[11px] text-slate-600 font-semibold bg-slate-100/80 px-2 py-0.5 rounded-md">
                       <Clock className="w-3 h-3 text-slate-500" /> 25m
                     </div>
                   </div>
                   <h4 className="text-[13.5px] sm:text-[14px] font-bold text-slate-900 tracking-tight mb-1 group-hover:text-blue-700 transition-colors">
-                    Pemahaman Bacaan &amp; Menulis (PBM)
+                    Pemahaman Bacaan & Menulis (PBM)
                   </h4>
                   <p className="text-[11px] sm:text-[11.5px] text-slate-500 leading-relaxed min-h-[34px] line-clamp-2">
                     Struktur ejaan PUEBI, kelayakan kalimat baku, dan koherensi paragraf.
@@ -706,7 +712,7 @@ export default function CBTEngineLandingPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
                     <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200/60 text-[9.5px] sm:text-[10px] font-mono font-bold">
-                      TPS &bull; 04
+                      TPS • 04
                     </span>
                     <div className="flex items-center gap-1 font-mono text-[10.5px] sm:text-[11px] text-slate-600 font-semibold bg-slate-100/80 px-2 py-0.5 rounded-md">
                       <Clock className="w-3 h-3 text-slate-500" /> 20m
@@ -730,7 +736,7 @@ export default function CBTEngineLandingPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
                     <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-800 border border-indigo-200/60 text-[9.5px] sm:text-[10px] font-mono font-bold">
-                      LIT &bull; 01
+                      LIT • 01
                     </span>
                     <div className="flex items-center gap-1 font-mono text-[10.5px] sm:text-[11px] text-indigo-900 font-semibold bg-indigo-50/80 px-2 py-0.5 rounded-md border border-indigo-100">
                       <Clock className="w-3 h-3 text-indigo-600" /> 42.5m
@@ -754,7 +760,7 @@ export default function CBTEngineLandingPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
                     <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-800 border border-indigo-200/60 text-[9.5px] sm:text-[10px] font-mono font-bold">
-                      LIT &bull; 02
+                      LIT • 02
                     </span>
                     <div className="flex items-center gap-1 font-mono text-[10.5px] sm:text-[11px] text-indigo-900 font-semibold bg-indigo-50/80 px-2 py-0.5 rounded-md border border-indigo-100">
                       <Clock className="w-3 h-3 text-indigo-600" /> 20m
@@ -778,7 +784,7 @@ export default function CBTEngineLandingPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
                     <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-250 text-[9.5px] sm:text-[10px] font-mono font-bold">
-                      PM &bull; 01
+                      PM • 01
                     </span>
                     <div className="flex items-center gap-1 font-mono text-[10.5px] sm:text-[11px] text-emerald-950 font-semibold bg-emerald-50/90 px-2 py-0.5 rounded-md border border-emerald-200">
                       <Clock className="w-3 h-3 text-emerald-600" /> 42.5m
@@ -827,7 +833,7 @@ export default function CBTEngineLandingPage() {
 
         {/* SECTION 4: KOMITMEN ARSITEKTUR & LEAD ARCHITECT */}
         <section className="relative z-10 bg-slate-50/70 border-b border-slate-200/90 py-10 sm:py-16 overflow-hidden">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
+          <div className="max-w-4xl mx-auto px-3.5 sm:px-6 relative">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-gradient-to-tr from-blue-400/15 via-indigo-300/10 to-transparent blur-3xl pointer-events-none rounded-full" />
 
             <div className="relative rounded-3xl bg-gradient-to-br from-white via-slate-50/80 to-blue-50/50 border border-blue-200/60 shadow-xl shadow-blue-900/5 p-5 sm:p-10 text-left overflow-hidden backdrop-blur-xs">
@@ -836,14 +842,14 @@ export default function CBTEngineLandingPage() {
                 “
               </span>
 
-              <div className="flex flex-wrap items-center justify-between gap-2.5 pb-4 sm:pb-5 border-b border-blue-150/60">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-4 sm:pb-5 border-b border-blue-150/60">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-900 text-white text-[9.5px] sm:text-[10px] font-mono font-bold tracking-wider uppercase shadow-xs">
                   <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 shrink-0" />
                   <span>KOMITMEN STANDARISASI SISTEM</span>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] sm:text-[10.5px] font-mono font-bold text-slate-500">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[9.5px] sm:text-[10.5px] font-mono font-bold text-slate-500">
                   <span className="px-1.5 sm:px-2 py-0.5 rounded-md bg-white border border-slate-200 shadow-2xs">FULL-CLIENT RESILIENT</span>
-                  <span className="text-slate-300">&bull;</span>
+                  <span className="text-slate-300 hidden xs:inline">•</span>
                   <span className="px-1.5 sm:px-2 py-0.5 rounded-md bg-white border border-slate-200 shadow-2xs text-blue-800">IRT 3PL VERIFIED</span>
                 </div>
               </div>
@@ -856,8 +862,8 @@ export default function CBTEngineLandingPage() {
 
               <div className="pt-4 sm:pt-6 border-t border-blue-150/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3 sm:gap-3.5">
-                  <div className="relative">
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-950 text-white flex items-center justify-center font-mono font-black text-xs sm:text-sm shadow-md shadow-blue-900/20 shrink-0 border border-blue-400/40">
+                  <div className="relative shrink-0">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-950 text-white flex items-center justify-center font-mono font-black text-xs sm:text-sm shadow-md shadow-blue-900/20 border border-blue-400/40">
                       FU
                     </div>
                     <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-emerald-500 ring-2 ring-white flex items-center justify-center">
@@ -875,12 +881,12 @@ export default function CBTEngineLandingPage() {
                       </span>
                     </div>
                     <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
-                      SMA Muhammadiyah 18 Jakarta &bull; <span className="text-blue-800 font-semibold">School of Champions</span>
+                      SMA Muhammadiyah 18 Jakarta • <span className="text-blue-800 font-semibold">School of Champions</span>
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 self-start sm:self-center px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-xl bg-white border border-blue-200/80 shadow-2xs text-[10px] sm:text-[11px] font-mono">
+                <div className="flex items-center gap-2 self-start sm:self-center px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-xl bg-white border border-blue-200/80 shadow-2xs text-[10px] sm:text-[11px] font-mono shrink-0">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
@@ -894,7 +900,7 @@ export default function CBTEngineLandingPage() {
 
         {/* FOOTER */}
         <footer className="relative z-10 bg-white border-t border-slate-200/90 py-6 sm:py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto px-3.5 sm:px-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-5">
               <div className="flex items-center gap-3 sm:gap-3.5 text-left w-full sm:w-auto">
                 <div className="relative h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-xl bg-white border border-slate-200/90 p-1 shadow-2xs flex items-center justify-center">
@@ -903,7 +909,7 @@ export default function CBTEngineLandingPage() {
                     alt="Logo TIM S.I.M."
                     className="h-full w-full object-contain"
                     onError={(e) => {
-                      (e.target as any).style.display = "none";
+                      (e.target as HTMLImageElement).style.display = "none";
                     }}
                   />
                 </div>
@@ -917,7 +923,7 @@ export default function CBTEngineLandingPage() {
                     </span>
                   </div>
                   <p className="text-[11px] sm:text-[11.5px] text-slate-500 font-normal">
-                    <strong className="font-semibold text-slate-700">&copy; 2026</strong>{" "}
+                    <strong className="font-semibold text-slate-700">© 2026</strong>{" "}
                     <strong className="font-semibold text-slate-700">TIM S.I.M.</strong>{" "}
                     <strong className="font-semibold text-slate-700">SMA Muhammadiyah 18 Jakarta</strong>.
                   </p>
@@ -931,12 +937,12 @@ export default function CBTEngineLandingPage() {
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                   </span>
                   <span className="font-mono text-[10px] sm:text-[11px] font-bold tracking-tight text-slate-800">
-                    SISTEM AKTIF &amp; TERKALIBRASI
+                    SISTEM AKTIF & TERKALIBRASI
                   </span>
                 </div>
                 <div className="font-mono text-[9px] sm:text-[9.5px] text-slate-400 font-medium tracking-tight flex items-center justify-center flex-wrap">
                   <span>ENKRIPSI TLS 1.3</span>
-                  <span className="mx-1.5 text-slate-300">&bull;</span>
+                  <span className="mx-1.5 text-slate-300">•</span>
                   <span>STANDAR BPPP / PUSMENDIK</span>
                 </div>
               </div>
@@ -949,7 +955,7 @@ export default function CBTEngineLandingPage() {
       {/* C. MODAL DIALOG RESMI UNTUK "RUANG UJIAN SISWA"                */}
       {/* ============================================================== */}
       {showStudentAuthModal && (
-        <div className="fixed inset-0 z-[99999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[99999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3.5 sm:p-4">
           <div className="bg-white rounded-3xl border border-slate-200 max-w-md w-full p-5 sm:p-7 space-y-4 sm:space-y-5 shadow-2xl relative animate-in zoom-in-95 text-left">
             <button
               onClick={() => setShowStudentAuthModal(false)}
@@ -974,15 +980,15 @@ export default function CBTEngineLandingPage() {
             </div>
 
             <div className="rounded-2xl bg-slate-50 border border-slate-200 p-3.5 sm:p-4 space-y-2 text-xs text-slate-600">
-              <div className="flex items-center justify-between pb-1.5 border-b border-slate-200/80 font-mono text-[10.5px] sm:text-[11px]">
-                <span className="text-slate-400">Database Siswa:</span>
-                <span className="font-bold text-slate-700">SMA Muhammadiyah 18 Jakarta</span>
+              <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-200/80 font-mono text-[10.5px] sm:text-[11px]">
+                <span className="text-slate-400 shrink-0">Database Siswa:</span>
+                <span className="font-bold text-slate-700 text-right truncate">SMA Muhammadiyah 18 Jakarta</span>
               </div>
-              <div className="flex items-center justify-between pt-0.5 font-mono text-[10.5px] sm:text-[11px]">
-                <span className="text-slate-400">Status Sesi:</span>
-                <span className="font-bold text-amber-600 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                  Menunggu Token Pengawas
+              <div className="flex items-center justify-between gap-2 pt-0.5 font-mono text-[10.5px] sm:text-[11px]">
+                <span className="text-slate-400 shrink-0">Status Sesi:</span>
+                <span className="font-bold text-amber-600 flex items-center gap-1 text-right">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                  <span>Menunggu Token Pengawas</span>
                 </span>
               </div>
             </div>
@@ -993,8 +999,8 @@ export default function CBTEngineLandingPage() {
                 onClick={() => setShowStudentAuthModal(false)}
                 className="w-full py-3 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-700/20 cursor-pointer transition-all"
               >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Masuk ke Lembar Pemilihan Paket &amp; Token</span>
+                <LogIn className="w-3.5 h-3.5 shrink-0" />
+                <span>Masuk ke Lembar Pemilihan Paket & Token</span>
               </Link>
               <button
                 type="button"

@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
-  Clock, CheckCircle2, ChevronLeft, ChevronRight, BarChart2, Award,
+  Clock, CheckCircle2, BarChart2, Award,
   BookOpen, Printer, X, FastForward, Maximize2, ShieldAlert, Play, Lock, Compass,
   TrendingUp, AlertCircle, Timer, GraduationCap, ExternalLink, User,
-  Home, RotateCcw, ArrowLeft
+  Home, RotateCcw, ArrowLeft, LayoutGrid
 } from "lucide-react";
 
 import {
@@ -59,8 +59,8 @@ export default function SimulationPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showSubtestConfirmModal, setShowSubtestConfirmModal] = useState(false);
 
-  // LOGO FALLBACK SAFE
-  const [logoLoadError, setLogoLoadError] = useState(false);
+  // Laci kisi-kisi nomor soal untuk HP & Tablet
+  const [showMobileMatrix, setShowMobileMatrix] = useState(false);
 
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewFilter, setReviewFilter] = useState<"ALL" | "CORRECT" | "INCORRECT" | "BLANK">("ALL");
@@ -152,8 +152,6 @@ export default function SimulationPage() {
     setIsInExam(true);
     setShowViolationModal(false);
   };
-
-  const handleStartSimulation = enterChamber;
 
   const currentQ = currentSubtestQuestions[currentQIndexInSubtest] || currentSubtestQuestions[0];
 
@@ -334,42 +332,50 @@ export default function SimulationPage() {
   // 1. GERBANG AWAL KARANTINA
   if (!isInExam) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans text-slate-800">
-        <div className="w-full max-w-xl bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-10 space-y-6">
-          <div className="flex items-center gap-4 border-b pb-4">
-            <div className="w-16 h-16 rounded-2xl p-1 bg-white border border-slate-200 shadow-2xs flex items-center justify-center shrink-0 overflow-hidden">
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-3.5 sm:p-6 font-sans text-slate-800">
+        <div className="w-full max-w-xl bg-white rounded-3xl border border-slate-200 shadow-xl p-5 sm:p-9 space-y-5 sm:space-y-6 text-left">
+          <div className="flex items-center gap-3 sm:gap-4 border-b pb-4">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl p-1 bg-white border border-slate-200 shadow-2xs flex items-center justify-center shrink-0 overflow-hidden">
               <img
                 src="/logo-timsim.jpg"
                 alt="Logo SMA Muhammadiyah 18 Jakarta"
                 className="w-full h-full object-contain"
                 onError={(e) => {
-                  (e.target as any).src = "/images/logo-smam18.png";
+                  (e.target as HTMLImageElement).src = "/images/logo-smam18.png";
                 }}
               />
             </div>
-            <div>
-              <div className="text-[10px] font-mono font-bold tracking-widest text-[#1e3a8a] uppercase">SMA MUHAMMADIYAH 18 JAKARTA</div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Simulasi Uji Coba Mandiri SNBT</h1>
-              <p className="text-xs text-slate-500">Standarisasi Instrumen UTBK (145 Butir Soal • 195 Menit)</p>
+            <div className="min-w-0">
+              <div className="text-[9.5px] sm:text-[10px] font-mono font-bold tracking-widest text-[#1e3a8a] uppercase truncate">
+                SMA MUHAMMADIYAH 18 JAKARTA
+              </div>
+              <h1 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight leading-tight">
+                Simulasi Uji Coba Mandiri SNBT
+              </h1>
+              <p className="text-[11px] sm:text-xs text-slate-500">
+                Standarisasi Instrumen UTBK (145 Butir Soal • 195 Menit)
+              </p>
             </div>
           </div>
 
-          <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs">
-            <div className="font-bold text-slate-800 flex items-center gap-1.5">
-              <Compass className="w-4 h-4 text-blue-700" />
+          <div className="space-y-3 bg-slate-50 p-3.5 sm:p-4 rounded-2xl border border-slate-200 text-xs">
+            <div className="font-bold text-slate-800 flex items-center gap-1.5 text-xs sm:text-sm">
+              <Compass className="w-4 h-4 text-blue-700 shrink-0" />
               <span>Pilih Dua Program Studi Sasaran Anda:</span>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <div>
-                <label className="text-[11px] font-semibold text-slate-500 block mb-1">Pilihan 1 (Prioritas Utama):</label>
+                <label className="text-[10.5px] sm:text-[11px] font-semibold text-slate-500 block mb-1">
+                  Pilihan 1 (Prioritas Utama):
+                </label>
                 <select
                   value={targetPtn1.id}
                   onChange={(e) => {
                     const found = PTN_BENCHMARK_DATABASE.find((item) => item.id === e.target.value);
                     if (found) setTargetPtn1(found);
                   }}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white font-medium text-xs text-slate-800"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white font-medium text-xs sm:text-sm text-slate-800 outline-none truncate cursor-pointer"
                 >
                   {PTN_BENCHMARK_DATABASE.map((item) => (
                     <option key={item.id} value={item.id}>
@@ -380,14 +386,16 @@ export default function SimulationPage() {
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-slate-500 block mb-1">Pilihan 2 (Alternatif):</label>
+                <label className="text-[10.5px] sm:text-[11px] font-semibold text-slate-500 block mb-1">
+                  Pilihan 2 (Alternatif):
+                </label>
                 <select
                   value={targetPtn2.id}
                   onChange={(e) => {
                     const found = PTN_BENCHMARK_DATABASE.find((item) => item.id === e.target.value);
                     if (found) setTargetPtn2(found);
                   }}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white font-medium text-xs text-slate-800"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white font-medium text-xs sm:text-sm text-slate-800 outline-none truncate cursor-pointer"
                 >
                   {PTN_BENCHMARK_DATABASE.map((item) => (
                     <option key={item.id} value={item.id}>
@@ -399,21 +407,21 @@ export default function SimulationPage() {
             </div>
           </div>
 
-          <div className="space-y-2.5 pt-1">
+          <div className="space-y-2 pt-1">
             <button
               onClick={enterChamber}
-              className="w-full py-3.5 px-6 rounded-2xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+              className="w-full py-3.5 px-6 rounded-2xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
             >
-              <Maximize2 className="w-4 h-4" />
+              <Maximize2 className="w-4 h-4 shrink-0" />
               <span>Mulai Uji Coba Simulasi</span>
             </button>
 
             <Link
               href="/"
-              className="w-full py-3 px-6 rounded-2xl border border-slate-200 hover:bg-slate-50 text-slate-600 hover:text-slate-900 font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center"
+              className="w-full py-2.5 sm:py-3 px-6 rounded-2xl border border-slate-200 hover:bg-slate-50 text-slate-600 hover:text-slate-900 font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Batal &amp; Kembali ke Halaman Utama</span>
+              <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
+              <span>Batal & Kembali ke Halaman Utama</span>
             </Link>
           </div>
         </div>
@@ -427,40 +435,42 @@ export default function SimulationPage() {
     const nextSubtest = OFFICIAL_SUBTESTS[currentSubtestIndex + 1];
 
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans text-slate-800">
-        <div className="w-full max-w-xl bg-white rounded-3xl border-2 border-blue-200 shadow-2xl p-6 sm:p-9 space-y-6 animate-in zoom-in-95">
-          <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto">
-              <CheckCircle2 className="w-8 h-8" />
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-3.5 sm:p-4 font-sans text-slate-800">
+        <div className="w-full max-w-xl bg-white rounded-3xl border-2 border-blue-200 shadow-2xl p-5 sm:p-9 space-y-5 sm:space-y-6 animate-in zoom-in-95 text-center">
+          <div className="space-y-1.5 sm:space-y-2">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto">
+              <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8" />
             </div>
-            <div className="font-mono text-xs font-bold text-slate-500 uppercase">Subtes {currentSubtestIndex + 1} dari 7 Selesai</div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900">{finishedSubtest.name} Telah Terkunci</h2>
+            <div className="font-mono text-[10.5px] sm:text-xs font-bold text-slate-500 uppercase">
+              Subtes {currentSubtestIndex + 1} dari 7 Selesai
+            </div>
+            <h2 className="text-lg sm:text-2xl font-black text-slate-900">{finishedSubtest.name} Telah Terkunci</h2>
             <p className="text-xs text-slate-500">Lembar jawaban subtes ini sudah disimpan permanen.</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-center font-mono text-xs">
+          <div className="grid grid-cols-3 gap-2 p-3 sm:p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-center font-mono text-xs">
             <div className="p-2 rounded-xl bg-white border border-slate-200">
-              <div className="text-[10px] text-slate-400 font-bold">DIJAWAB</div>
-              <div className="text-lg font-black text-blue-700">{currentSubtestSummary.answered}</div>
+              <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold">DIJAWAB</div>
+              <div className="text-base sm:text-lg font-black text-blue-700">{currentSubtestSummary.answered}</div>
             </div>
             <div className="p-2 rounded-xl bg-white border border-slate-200">
-              <div className="text-[10px] text-slate-400 font-bold">RAGU-RAGU</div>
-              <div className="text-lg font-black text-amber-600">{currentSubtestSummary.doubtful}</div>
+              <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold">RAGU-RAGU</div>
+              <div className="text-base sm:text-lg font-black text-amber-600">{currentSubtestSummary.doubtful}</div>
             </div>
             <div className="p-2 rounded-xl bg-white border border-slate-200">
-              <div className="text-[10px] text-slate-400 font-bold">KOSONG</div>
-              <div className="text-lg font-black text-rose-600">{currentSubtestSummary.empty}</div>
+              <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold">KOSONG</div>
+              <div className="text-base sm:text-lg font-black text-rose-600">{currentSubtestSummary.empty}</div>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-blue-50/80 border border-blue-200 space-y-2 text-xs">
-            <div className="flex items-center gap-2 font-bold text-blue-900 text-sm">
-              <Clock className="w-4 h-4 text-blue-700" />
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-blue-50/80 border border-blue-200 space-y-1.5 text-xs text-left">
+            <div className="flex items-center gap-2 font-bold text-blue-900 text-xs sm:text-sm">
+              <Clock className="w-4 h-4 text-blue-700 shrink-0" />
               <span>Subtes Berikutnya: {nextSubtest.name}</span>
             </div>
-            <div className="text-slate-600 leading-relaxed pl-6 space-y-1">
-              <div>&bull; Alokasi Waktu: <strong>{nextSubtest.defaultDurationMinutes} Menit</strong></div>
-              <div>&bull; Jumlah Butir: <strong>{allQuestions.filter((q) => q.subtest === nextSubtest.code).length} Butir Soal</strong></div>
+            <div className="text-slate-600 leading-relaxed pl-6 space-y-0.5 text-[11px] sm:text-xs">
+              <div>• Alokasi Waktu: <strong>{nextSubtest.defaultDurationMinutes} Menit</strong></div>
+              <div>• Jumlah Butir: <strong>{allQuestions.filter((q) => q.subtest === nextSubtest.code).length} Butir Soal</strong></div>
             </div>
           </div>
 
@@ -470,9 +480,9 @@ export default function SimulationPage() {
               setCurrentQIndexInSubtest(0);
               setIsWaitingNextSubtest(false);
             }}
-            className="w-full py-3.5 px-6 rounded-2xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-sm shadow-lg shadow-blue-900/25 cursor-pointer flex items-center justify-center gap-2"
+            className="w-full py-3 sm:py-3.5 px-6 rounded-2xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-900/25 cursor-pointer flex items-center justify-center gap-2"
           >
-            <Play className="w-4 h-4 fill-white" />
+            <Play className="w-4 h-4 fill-white shrink-0" />
             <span>Mulai Mengerjakan Subtes {currentSubtestIndex + 2}: {nextSubtest.code}</span>
           </button>
         </div>
@@ -486,7 +496,7 @@ export default function SimulationPage() {
     const p2Pass = detailedAnalysis.totalAverage >= targetPtn2.passingScore;
 
     return (
-      <div className="min-h-screen bg-[#edf1f7] py-8 px-4 font-sans text-slate-800">
+      <div className="min-h-screen bg-[#edf1f7] py-4 sm:py-8 px-2.5 sm:px-4 font-sans text-slate-800 text-left">
         <style dangerouslySetInnerHTML={{
           __html: `
             @media print {
@@ -518,125 +528,122 @@ export default function SimulationPage() {
           `
         }} />
 
-        <div className="max-w-4xl mx-auto space-y-5">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-5">
           {/* ACTION BAR ATAS */}
-          <div className="print-hidden bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex items-center justify-between flex-wrap gap-3">
+          <div className="print-hidden bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-2xs flex items-center justify-between flex-wrap gap-2.5">
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-              <Award className="w-4 h-4 text-emerald-600" />
-              <span>Hasil Asesmen Terkalibrasi &bull; Evaluasi Diagnostik Siap Cetak</span>
+              <Award className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span className="text-[11px] sm:text-xs">Hasil Asesmen Terkalibrasi • Evaluasi Diagnostik Siap Cetak</span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-end">
               <Link
                 href="/"
-                className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all"
+                className="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-[11px] sm:text-xs flex items-center gap-1 cursor-pointer transition-all"
               >
                 <Home className="w-3.5 h-3.5 text-slate-500" />
-                <span>Halaman Utama</span>
+                <span>Utama</span>
               </Link>
 
               <button
                 onClick={() => setShowReviewModal(true)}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[11px] sm:text-xs flex items-center gap-1 cursor-pointer"
               >
                 <BookOpen className="w-3.5 h-3.5" />
-                <span>Review Pembahasan</span>
+                <span>Review</span>
               </button>
 
               <button
                 onClick={() => window.print()}
-                className="px-4 py-2 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-[11px] sm:text-xs flex items-center gap-1 cursor-pointer shadow-sm"
               >
                 <Printer className="w-3.5 h-3.5" />
-                <span>Cetak Lembar Rapor</span>
+                <span>Cetak Rapor</span>
               </button>
             </div>
           </div>
 
           {/* DOKUMEN CETAK UTAMA */}
           <div className="print-sheet bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden text-slate-900">
-            {/* KOP RESMI SIMETRIS & RAPAT SMA MUHAMMADIYAH 18 JAKARTA */}
-            <div className="pt-4 pb-2 px-6 sm:px-8 bg-white border-b-2 border-slate-900">
-              <div className="flex items-center justify-between">
-                {/* 1. LOGO SEKOLAH KIRI */}
-                <div className="w-20 h-20 shrink-0 flex items-center justify-center p-0.5 bg-white rounded-xl border border-slate-100 shadow-2xs overflow-hidden">
+            {/* KOP RESMI SIMETRIS SMA MUHAMMADIYAH 18 JAKARTA */}
+            <div className="pt-4 pb-2 px-4 sm:px-8 bg-white border-b-2 border-slate-900 overflow-x-auto">
+              <div className="flex items-center justify-between min-w-[540px] sm:min-w-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 flex items-center justify-center p-0.5 bg-white rounded-xl border border-slate-100 shadow-2xs overflow-hidden">
                   <img
                     src="/logo-timsim.jpg"
                     alt="Logo SMA Muhammadiyah 18 Jakarta"
                     className="w-full h-full object-contain"
                     onError={(e) => {
-                      (e.target as any).src = "/images/logo-smam18.png";
+                      (e.target as HTMLImageElement).src = "/images/logo-smam18.png";
                     }}
                   />
                 </div>
 
-                {/* 2. TEKS KOP DINAS (SPASI RAPAT & RATA TENGAH) */}
-                <div className="flex-1 text-center px-4 space-y-0.5">
-                  <h3 className="text-[11px] font-bold tracking-wider text-slate-800 uppercase leading-none">
+                <div className="flex-1 text-center px-2 sm:px-4 space-y-0.5">
+                  <h3 className="text-[10px] sm:text-[11px] font-bold tracking-wider text-slate-800 uppercase leading-none font-sans">
                     MAJELIS PENDIDIKAN DASAR DAN MENENGAH
                   </h3>
-                  <h4 className="text-[10.5px] font-bold tracking-wide text-slate-700 uppercase leading-tight">
+                  <h4 className="text-[9.5px] sm:text-[10.5px] font-bold tracking-wide text-slate-700 uppercase leading-tight font-sans">
                     PIMPINAN DAERAH MUHAMMADIYAH JAKARTA SELATAN
                   </h4>
-                  <h1 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight uppercase leading-none pt-0.5">
+                  <h1 className="text-lg sm:text-2xl font-black text-slate-950 tracking-tight uppercase leading-none pt-0.5 font-sans">
                     SMA MUHAMMADIYAH 18 JAKARTA
                   </h1>
-                  <p className="text-xs font-black text-[#1e3a8a] tracking-widest font-mono uppercase leading-tight">
-                    TERAKREDITASI &quot;A&quot;
+                  <p className="text-[11px] sm:text-xs font-black text-[#1e3a8a] tracking-widest font-mono uppercase leading-none">
+                    TERAKREDITASI "A"
                   </p>
-                  <p className="text-[10px] text-slate-600 leading-tight pt-0.5">
+                  <p className="text-[9.5px] sm:text-[10px] text-slate-600 leading-tight pt-0.5 font-sans">
                     Jl. Panjang No.19, RT.8/RW.9, Cipulir, Kebayoran Lama, Jakarta Selatan, DKI Jakarta 12230
                   </p>
-                  <p className="text-[10px] font-mono text-slate-600 leading-none">
-                    https://smamuh18jakarta.sch.id &bull; smamuh18@gmail.com
+                  <p className="text-[9px] sm:text-[10px] font-mono text-slate-600 leading-none">
+                    https://smamuh18jakarta.sch.id • smamuh18@gmail.com
                   </p>
                 </div>
 
-                {/* 3. SPACER PENYEIMBANG KANAN AGAR TEKS 100% DI TENGAH */}
-                <div className="w-20 shrink-0 hidden sm:block" />
+                <div className="w-16 sm:w-20 shrink-0" />
               </div>
 
               {/* Garis Ganda Standar Surat Dinas */}
-              <div className="w-full border-b-2 border-slate-900 mt-2.5" />
+              <div className="w-full border-b-2 border-slate-900 mt-2" />
               <div className="w-full border-b border-slate-900 mt-0.5" />
             </div>
 
             {/* HEADER IDENTITAS UJIAN */}
-            <div className="bg-[#1845a7] text-white p-5 sm:p-6 flex items-center justify-between flex-wrap gap-4" style={{ backgroundColor: "#1845a7" }}>
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center text-white font-bold">
-                  <User className="w-5 h-5" />
+            <div className="bg-[#1845a7] text-white p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3" style={{ backgroundColor: "#1845a7" }}>
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center text-white font-bold shrink-0">
+                  <User className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold tracking-wide uppercase">PESERTA SIMULASI MANDIRI</div>
-                  <div className="text-[11px] text-blue-100 font-mono">NISN: 0078926118 &bull; KELAS XII SMA MUHAMMADIYAH 18</div>
+                  <div className="text-xs sm:text-sm font-bold tracking-wide uppercase">PESERTA SIMULASI MANDIRI</div>
+                  <div className="text-[10px] sm:text-[11px] text-blue-100 font-mono">NISN: 0078926118 • KELAS XII SMA MUHAMMADIYAH 18</div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <div className="bg-white/20 border border-white/30 px-3.5 py-1.5 rounded-xl text-right">
-                  <div className="text-[9px] uppercase tracking-wider text-blue-100 font-semibold">WAKTU UJIAN</div>
-                  <div className="text-xs font-mono font-bold">{examDateStr || "14 Oktober 2026"}, {examStartTime || "08:00"} - {examEndTime || "11:15"}</div>
+              <div className="flex items-center gap-2 self-end sm:self-auto">
+                <div className="bg-white/20 border border-white/30 px-3 py-1 rounded-xl text-right">
+                  <div className="text-[8.5px] sm:text-[9px] uppercase tracking-wider text-blue-100 font-semibold">WAKTU UJIAN</div>
+                  <div className="text-[10.5px] sm:text-xs font-mono font-bold">{examDateStr || "14 Oktober 2026"}, {examStartTime || "08:00"} - {examEndTime || "11:15"}</div>
                 </div>
-                <div className="bg-emerald-500 text-white font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1 shadow-xs" style={{ backgroundColor: "#10b981" }}>
+                <div className="bg-emerald-500 text-white font-bold text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 shadow-xs" style={{ backgroundColor: "#10b981" }}>
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>Selesai</span>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 sm:p-8 space-y-6">
-              {/* HERO BANNER SKOR TOTAL (SKOR REALISTIS 200 - 1000) */}
+            <div className="p-4 sm:p-8 space-y-5 sm:space-y-6">
+              {/* HERO BANNER SKOR TOTAL */}
               <div
-                className="rounded-2xl p-6 text-white text-center shadow-sm"
+                className="rounded-2xl p-5 sm:p-6 text-white text-center shadow-sm"
                 style={{ backgroundColor: "#1c4cb7" }}
               >
-                <div className="text-xs font-mono tracking-widest text-blue-100 uppercase font-semibold">
+                <div className="text-[10px] sm:text-xs font-mono tracking-widest text-blue-100 uppercase font-semibold">
                   NILAI RATA-RATA KESELURUHAN (IRT 3-PARAMETER)
                 </div>
                 <div className="text-5xl sm:text-6xl font-black my-1 text-white">{detailedAnalysis.totalAverage}</div>
-                <div className="text-[11px] text-blue-100 font-mono">
-                  Kalkulasi 145 Butir Soal Terstandarisasi Pusmendik &bull; Skala 200 s.d. 1000
+                <div className="text-[10px] sm:text-[11px] text-blue-100 font-mono">
+                  Kalkulasi 145 Butir Soal Terstandarisasi Pusmendik • Skala 200 s.d. 1000
                 </div>
               </div>
 
@@ -647,60 +654,56 @@ export default function SimulationPage() {
                   <span>Pilihan Program Studi Saat Ujian:</span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {/* Pilihan 1 */}
-                  <div className="p-4 rounded-2xl border border-slate-200 bg-white space-y-3">
-                    <div className="flex items-center justify-between border-b pb-2">
-                      <div>
-                        <div className="text-[10px] font-mono text-slate-400 font-bold uppercase">PILIHAN 1</div>
-                        <div className="font-bold text-sm text-slate-900">{targetPtn1.ptn}</div>
-                        <div className="font-semibold text-xs text-blue-700">{targetPtn1.prodi}</div>
-                      </div>
+                  <div className="p-3.5 sm:p-4 rounded-2xl border border-slate-200 bg-white space-y-2.5 sm:space-y-3">
+                    <div className="border-b pb-2">
+                      <div className="text-[9.5px] sm:text-[10px] font-mono text-slate-400 font-bold uppercase">PILIHAN 1</div>
+                      <div className="font-bold text-xs sm:text-sm text-slate-900 leading-tight">{targetPtn1.ptn}</div>
+                      <div className="font-semibold text-xs text-blue-700">{targetPtn1.prodi}</div>
                     </div>
 
-                    <div className="flex items-center gap-2 text-[10px] font-mono">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-[9.5px] sm:text-[10px] font-mono flex-wrap">
                       <span className="bg-rose-50 text-rose-700 font-bold px-2 py-0.5 rounded border border-rose-200">IK {targetPtn1.ik}</span>
                       <span className="bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded border border-blue-200">DT {targetPtn1.dt}</span>
                       <span className="bg-purple-50 text-purple-700 font-bold px-2 py-0.5 rounded border border-purple-200">Peminat {targetPtn1.peminat}</span>
                     </div>
 
-                    <div className="bg-amber-50 p-2 rounded-lg text-[10.5px] text-amber-900 border border-amber-200">
+                    <div className="bg-amber-50 p-2 rounded-lg text-[10px] sm:text-[10.5px] text-amber-900 border border-amber-200">
                       <strong>Subtes Utama:</strong> {targetPtn1.subtesUtama}
                     </div>
 
-                    <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1">
-                      <div className="text-[10px] text-slate-500 font-mono">PASSING SCORE TARGET: <strong>{targetPtn1.passingScore}</strong></div>
-                      <div className={`text-xs font-bold flex items-center gap-1 ${p1Pass ? "text-emerald-700" : "text-rose-700"}`}>
-                        {p1Pass ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                    <div className="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-100 space-y-0.5">
+                      <div className="text-[9.5px] sm:text-[10px] text-slate-500 font-mono">PASSING SCORE TARGET: <strong>{targetPtn1.passingScore}</strong></div>
+                      <div className={`text-[11px] sm:text-xs font-bold flex items-center gap-1 ${p1Pass ? "text-emerald-700" : "text-rose-700"}`}>
+                        {p1Pass ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
                         <span>{p1Pass ? `Skor kamu (${detailedAnalysis.totalAverage}) memenuhi passing score` : `Skor kamu (${detailedAnalysis.totalAverage}) belum memenuhi passing score`}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Pilihan 2 */}
-                  <div className="p-4 rounded-2xl border border-slate-200 bg-white space-y-3">
-                    <div className="flex items-center justify-between border-b pb-2">
-                      <div>
-                        <div className="text-[10px] font-mono text-slate-400 font-bold uppercase">PILIHAN 2</div>
-                        <div className="font-bold text-sm text-slate-900">{targetPtn2.ptn}</div>
-                        <div className="font-semibold text-xs text-blue-700">{targetPtn2.prodi}</div>
-                      </div>
+                  <div className="p-3.5 sm:p-4 rounded-2xl border border-slate-200 bg-white space-y-2.5 sm:space-y-3">
+                    <div className="border-b pb-2">
+                      <div className="text-[9.5px] sm:text-[10px] font-mono text-slate-400 font-bold uppercase">PILIHAN 2</div>
+                      <div className="font-bold text-xs sm:text-sm text-slate-900 leading-tight">{targetPtn2.ptn}</div>
+                      <div className="font-semibold text-xs text-blue-700">{targetPtn2.prodi}</div>
                     </div>
 
-                    <div className="flex items-center gap-2 text-[10px] font-mono">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-[9.5px] sm:text-[10px] font-mono flex-wrap">
                       <span className="bg-rose-50 text-rose-700 font-bold px-2 py-0.5 rounded border border-rose-200">IK {targetPtn2.ik}</span>
                       <span className="bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded border border-blue-200">DT {targetPtn2.dt}</span>
                       <span className="bg-purple-50 text-purple-700 font-bold px-2 py-0.5 rounded border border-purple-200">Peminat {targetPtn2.peminat}</span>
                     </div>
 
-                    <div className="bg-amber-50 p-2 rounded-lg text-[10.5px] text-amber-900 border border-amber-200">
+                    <div className="bg-amber-50 p-2 rounded-lg text-[10px] sm:text-[10.5px] text-amber-900 border border-amber-200">
                       <strong>Subtes Utama:</strong> {targetPtn2.subtesUtama}
                     </div>
 
-                    <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1">
-                      <div className="text-[10px] text-slate-500 font-mono">PASSING SCORE TARGET: <strong>{targetPtn2.passingScore}</strong></div>
-                      <div className={`text-xs font-bold flex items-center gap-1 ${p2Pass ? "text-emerald-700" : "text-rose-700"}`}>
-                        {p2Pass ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                    <div className="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-100 space-y-0.5">
+                      <div className="text-[9.5px] sm:text-[10px] text-slate-500 font-mono">PASSING SCORE TARGET: <strong>{targetPtn2.passingScore}</strong></div>
+                      <div className={`text-[11px] sm:text-xs font-bold flex items-center gap-1 ${p2Pass ? "text-emerald-700" : "text-rose-700"}`}>
+                        {p2Pass ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
                         <span>{p2Pass ? `Skor kamu (${detailedAnalysis.totalAverage}) memenuhi passing score` : `Skor kamu (${detailedAnalysis.totalAverage}) belum memenuhi passing score`}</span>
                       </div>
                     </div>
@@ -709,25 +712,25 @@ export default function SimulationPage() {
               </div>
 
               {/* SEKSI 1: TABEL TES SKOLASTIK (4 SUBTES) */}
-              <div className="rounded-2xl border border-blue-200 bg-white print-overflow-safe">
+              <div className="rounded-2xl border border-blue-200 bg-white print-overflow-safe overflow-x-auto">
                 <div
-                  className="text-white px-4 py-2.5 text-xs font-bold flex items-center justify-between rounded-t-2xl"
+                  className="text-white px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold flex items-center justify-between rounded-t-2xl min-w-[500px]"
                   style={{ backgroundColor: "#1c4cb7" }}
                 >
                   <span>TES SKOLASTIK (4 SUBTES)</span>
                   <span className="font-mono text-xs font-bold bg-white/20 px-2.5 py-0.5 rounded">Rerata: {detailedAnalysis.avgSkolastik}</span>
                 </div>
 
-                <div className="p-4">
+                <div className="p-3 sm:p-4 overflow-x-auto min-w-[520px]">
                   <table className="w-full text-xs text-left">
                     <thead>
-                      <tr className="border-b text-slate-400 font-mono text-[10px] uppercase">
+                      <tr className="border-b text-slate-400 font-mono text-[9.5px] sm:text-[10px] uppercase">
                         <th className="py-2">SUBTES</th>
-                        <th className="py-2 text-center w-20">BENAR</th>
-                        <th className="py-2 text-center w-20">SALAH</th>
-                        <th className="py-2 text-center w-20">KOSONG</th>
-                        <th className="py-2 w-48">PROGRES CAPAIAN</th>
-                        <th className="py-2 text-right w-20">SKOR</th>
+                        <th className="py-2 text-center w-16 sm:w-20">BENAR</th>
+                        <th className="py-2 text-center w-16 sm:w-20">SALAH</th>
+                        <th className="py-2 text-center w-16 sm:w-20">KOSONG</th>
+                        <th className="py-2 w-36 sm:w-48">PROGRES CAPAIAN</th>
+                        <th className="py-2 text-right w-16 sm:w-20">SKOR</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -735,16 +738,16 @@ export default function SimulationPage() {
                         const pct = Math.min(100, Math.max(0, ((s.score - 200) / 800) * 100));
                         return (
                           <tr key={s.code} className="hover:bg-slate-50">
-                            <td className="py-2.5 font-medium">{s.name}</td>
-                            <td className="py-2.5 text-center font-mono font-bold text-emerald-700">{s.benar}</td>
-                            <td className="py-2.5 text-center font-mono font-bold text-rose-700">{s.salah}</td>
-                            <td className="py-2.5 text-center font-mono text-slate-400">{s.kosong}</td>
-                            <td className="py-2.5">
-                              <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                                <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${pct}%`, backgroundColor: "#2563eb" }} />
+                            <td className="py-2 font-medium">{s.name}</td>
+                            <td className="py-2 text-center font-mono font-bold text-emerald-700">{s.benar}</td>
+                            <td className="py-2 text-center font-mono font-bold text-rose-700">{s.salah}</td>
+                            <td className="py-2 text-center font-mono text-slate-400">{s.kosong}</td>
+                            <td className="py-2">
+                              <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${pct}%`, backgroundColor: "#2563eb" }} />
                               </div>
                             </td>
-                            <td className="py-2.5 text-right font-mono font-bold text-blue-800">{s.score.toFixed(1)}</td>
+                            <td className="py-2 text-right font-mono font-bold text-blue-800">{s.score.toFixed(1)}</td>
                           </tr>
                         );
                       })}
@@ -754,11 +757,11 @@ export default function SimulationPage() {
                         <td className="py-2 text-center font-mono text-rose-700">{detailedAnalysis.totalSalahSkolastik}</td>
                         <td className="py-2 text-center font-mono text-slate-400">{detailedAnalysis.totalKosongSkolastik}</td>
                         <td className="py-2">
-                          <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
-                            <div className="bg-blue-800 h-2.5 rounded-full" style={{ width: `${Math.min(100, Math.max(0, ((detailedAnalysis.avgSkolastik - 200) / 800) * 100))}%`, backgroundColor: "#1e40af" }} />
+                          <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                            <div className="bg-blue-800 h-2 rounded-full" style={{ width: `${Math.min(100, Math.max(0, ((detailedAnalysis.avgSkolastik - 200) / 800) * 100))}%`, backgroundColor: "#1e40af" }} />
                           </div>
                         </td>
-                        <td className="py-2 text-right font-mono text-blue-900 text-sm">{detailedAnalysis.avgSkolastik}</td>
+                        <td className="py-2 text-right font-mono text-blue-900 text-xs sm:text-sm">{detailedAnalysis.avgSkolastik}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -766,25 +769,25 @@ export default function SimulationPage() {
               </div>
 
               {/* SEKSI 2: TABEL TES LITERASI (3 SUBTES) */}
-              <div className="rounded-2xl border border-purple-200 bg-white print-overflow-safe">
+              <div className="rounded-2xl border border-purple-200 bg-white print-overflow-safe overflow-x-auto">
                 <div
-                  className="text-white px-4 py-2.5 text-xs font-bold flex items-center justify-between rounded-t-2xl"
+                  className="text-white px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold flex items-center justify-between rounded-t-2xl min-w-[500px]"
                   style={{ backgroundColor: "#6b31c9" }}
                 >
-                  <span>TES LITERASI &amp; PENALARAN MATEMATIKA (3 SUBTES)</span>
+                  <span>TES LITERASI & PENALARAN MATEMATIKA (3 SUBTES)</span>
                   <span className="font-mono text-xs font-bold bg-white/20 px-2.5 py-0.5 rounded">Rerata: {detailedAnalysis.avgLiterasi}</span>
                 </div>
 
-                <div className="p-4">
+                <div className="p-3 sm:p-4 overflow-x-auto min-w-[520px]">
                   <table className="w-full text-xs text-left">
                     <thead>
-                      <tr className="border-b text-slate-400 font-mono text-[10px] uppercase">
+                      <tr className="border-b text-slate-400 font-mono text-[9.5px] sm:text-[10px] uppercase">
                         <th className="py-2">SUBTES</th>
-                        <th className="py-2 text-center w-20">BENAR</th>
-                        <th className="py-2 text-center w-20">SALAH</th>
-                        <th className="py-2 text-center w-20">KOSONG</th>
-                        <th className="py-2 w-48">PROGRES CAPAIAN</th>
-                        <th className="py-2 text-right w-20">SKOR</th>
+                        <th className="py-2 text-center w-16 sm:w-20">BENAR</th>
+                        <th className="py-2 text-center w-16 sm:w-20">SALAH</th>
+                        <th className="py-2 text-center w-16 sm:w-20">KOSONG</th>
+                        <th className="py-2 w-36 sm:w-48">PROGRES CAPAIAN</th>
+                        <th className="py-2 text-right w-16 sm:w-20">SKOR</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -792,16 +795,16 @@ export default function SimulationPage() {
                         const pct = Math.min(100, Math.max(0, ((s.score - 200) / 800) * 100));
                         return (
                           <tr key={s.code} className="hover:bg-slate-50">
-                            <td className="py-2.5 font-medium">{s.name}</td>
-                            <td className="py-2.5 text-center font-mono font-bold text-emerald-700">{s.benar}</td>
-                            <td className="py-2.5 text-center font-mono font-bold text-rose-700">{s.salah}</td>
-                            <td className="py-2.5 text-center font-mono text-slate-400">{s.kosong}</td>
-                            <td className="py-2.5">
-                              <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                                <div className="bg-purple-600 h-2.5 rounded-full" style={{ width: `${pct}%`, backgroundColor: "#9333ea" }} />
+                            <td className="py-2 font-medium">{s.name}</td>
+                            <td className="py-2 text-center font-mono font-bold text-emerald-700">{s.benar}</td>
+                            <td className="py-2 text-center font-mono font-bold text-rose-700">{s.salah}</td>
+                            <td className="py-2 text-center font-mono text-slate-400">{s.kosong}</td>
+                            <td className="py-2">
+                              <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                <div className="bg-purple-600 h-2 rounded-full" style={{ width: `${pct}%`, backgroundColor: "#9333ea" }} />
                               </div>
                             </td>
-                            <td className="py-2.5 text-right font-mono font-bold text-purple-800">{s.score.toFixed(1)}</td>
+                            <td className="py-2 text-right font-mono font-bold text-purple-800">{s.score.toFixed(1)}</td>
                           </tr>
                         );
                       })}
@@ -811,11 +814,11 @@ export default function SimulationPage() {
                         <td className="py-2 text-center font-mono text-rose-700">{detailedAnalysis.totalSalahLiterasi}</td>
                         <td className="py-2 text-center font-mono text-slate-400">{detailedAnalysis.totalKosongLiterasi}</td>
                         <td className="py-2">
-                          <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
-                            <div className="bg-purple-800 h-2.5 rounded-full" style={{ width: `${Math.min(100, Math.max(0, ((detailedAnalysis.avgLiterasi - 200) / 800) * 100))}%`, backgroundColor: "#6b21a8" }} />
+                          <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                            <div className="bg-purple-800 h-2 rounded-full" style={{ width: `${Math.min(100, Math.max(0, ((detailedAnalysis.avgLiterasi - 200) / 800) * 100))}%`, backgroundColor: "#6b21a8" }} />
                           </div>
                         </td>
-                        <td className="py-2 text-right font-mono text-purple-900 text-sm">{detailedAnalysis.avgLiterasi}</td>
+                        <td className="py-2 text-right font-mono text-purple-900 text-xs sm:text-sm">{detailedAnalysis.avgLiterasi}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -825,29 +828,29 @@ export default function SimulationPage() {
               {/* SEKSI 3: BLOCKING TIME & EVALUASI WAKTU */}
               <div className="rounded-2xl border border-slate-800 bg-white print-overflow-safe">
                 <div
-                  className="text-white px-4 py-2.5 text-xs font-bold flex items-center justify-between rounded-t-2xl"
+                  className="text-white px-3 sm:px-4 py-2 sm:py-2.5 text-xs font-bold flex items-center justify-between rounded-t-2xl"
                   style={{ backgroundColor: "#121c2d" }}
                 >
                   <span className="flex items-center gap-1.5">
                     <Timer className="w-3.5 h-3.5 text-blue-400" />
-                    <span>BLOCKING TIME &amp; EVALUASI KECEPATAN PENGERJAAN</span>
+                    <span>BLOCKING TIME & EVALUASI KECEPATAN</span>
                   </span>
-                  <span className="text-[10px] text-slate-400 font-mono font-normal">Terkalibrasi Presisi</span>
+                  <span className="text-[10px] text-slate-400 font-mono font-normal hidden sm:inline">Terkalibrasi Presisi</span>
                 </div>
 
-                <div className="p-4 divide-y divide-slate-100 text-xs">
+                <div className="p-3 sm:p-4 divide-y divide-slate-100 text-xs">
                   {detailedAnalysis.metrics.map((s) => (
-                    <div key={s.code} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div key={s.code} className="py-2.5 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
                       <div className="space-y-0.5">
                         <div className="font-bold text-slate-900">{s.name}</div>
-                        <div className="text-[11px] text-slate-500 font-mono">
-                          Dikerjakan <strong>{s.spentMin} menit {s.spentRemainingSec} detik</strong> dari {s.defaultDurationMinutes} menit ({s.timePercent}%) &bull; Benar {s.benar}, Salah {s.salah}, Kosong {s.kosong}
+                        <div className="text-[10.5px] sm:text-[11px] text-slate-500 font-mono">
+                          Dikerjakan <strong>{s.spentMin} mnt {s.spentRemainingSec} dtk</strong> dari {s.defaultDurationMinutes} mnt ({s.timePercent}%) • Benar {s.benar}, Salah {s.salah}, Kosong {s.kosong}
                         </div>
-                        <div className="text-[11px] text-slate-600 italic">{s.timeNote}</div>
+                        <div className="text-[10px] sm:text-[11px] text-slate-600 italic">{s.timeNote}</div>
                       </div>
 
-                      <div className="shrink-0">
-                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${s.timeEvaluation === "Efisien" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                      <div className="self-start sm:self-auto shrink-0">
+                        <span className={`text-[9.5px] sm:text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${s.timeEvaluation === "Efisien" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
                           s.timeEvaluation === "Terburu-buru" ? "bg-amber-50 text-amber-700 border-amber-200" :
                             "bg-rose-50 text-rose-700 border-rose-200"
                           }`}>
@@ -860,18 +863,18 @@ export default function SimulationPage() {
               </div>
 
               {/* SEKSI 4: ANALISA PASSING SCORE PER SUBTES */}
-              <div className="rounded-2xl border border-slate-200 bg-white print-overflow-safe">
+              <div className="rounded-2xl border border-slate-200 bg-white print-overflow-safe overflow-x-auto">
                 <div
-                  className="text-white px-4 py-2.5 text-xs font-bold rounded-t-2xl"
+                  className="text-white px-3 sm:px-4 py-2 sm:py-2.5 text-xs font-bold rounded-t-2xl min-w-[500px]"
                   style={{ backgroundColor: "#121c2d" }}
                 >
                   ANALISA PASSING SCORE PER SUBTES TERHADAP PROGRAM STUDI PILIHAN
                 </div>
 
-                <div className="p-4">
+                <div className="p-3 sm:p-4 min-w-[520px]">
                   <table className="w-full text-xs text-left">
                     <thead>
-                      <tr className="border-b text-slate-400 font-mono text-[10px] uppercase">
+                      <tr className="border-b text-slate-400 font-mono text-[9.5px] sm:text-[10px] uppercase">
                         <th className="py-2">SUBTES</th>
                         <th className="py-2 text-center">SKOR KAMU</th>
                         <th className="py-2 text-center">PILIHAN 1 - {targetPtn1.prodi.toUpperCase()}</th>
@@ -888,12 +891,12 @@ export default function SimulationPage() {
                             <td className="py-2.5 font-medium">{s.name}</td>
                             <td className="py-2.5 text-center font-mono font-bold text-blue-900">{s.score.toFixed(1)}</td>
                             <td className="py-2.5 text-center">
-                              <span className={`font-mono font-bold text-[11px] ${pass1 ? "text-emerald-700" : "text-rose-600"}`}>
+                              <span className={`font-mono font-bold text-[10.5px] sm:text-[11px] ${pass1 ? "text-emerald-700" : "text-rose-600"}`}>
                                 {pass1 ? `✓ ${targetPtn1.passingScore}` : `✗ Belum mencukupi (${targetPtn1.passingScore})`}
                               </span>
                             </td>
                             <td className="py-2.5 text-center">
-                              <span className={`font-mono font-bold text-[11px] ${pass2 ? "text-emerald-700" : "text-rose-600"}`}>
+                              <span className={`font-mono font-bold text-[10.5px] sm:text-[11px] ${pass2 ? "text-emerald-700" : "text-rose-600"}`}>
                                 {pass2 ? `✓ ${targetPtn2.passingScore}` : `✗ Belum mencukupi (${targetPtn2.passingScore})`}
                               </span>
                             </td>
@@ -906,31 +909,30 @@ export default function SimulationPage() {
               </div>
 
               {/* SEKSI 5: DIAGRAM BATANG KOMPARASI 7 SUBTES MODERN */}
-              <div className="rounded-2xl border border-slate-200 p-6 bg-white space-y-4">
-                <div className="flex items-center justify-between border-b pb-3 flex-wrap gap-2">
+              <div className="rounded-2xl border border-slate-200 p-4 sm:p-6 bg-white space-y-3.5 sm:space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-3 gap-2">
                   <div>
                     <h3 className="font-bold text-xs uppercase text-slate-900 flex items-center gap-1.5">
-                      <BarChart2 className="w-4 h-4 text-blue-700" />
+                      <BarChart2 className="w-4 h-4 text-blue-700 shrink-0" />
                       <span>DIAGRAM KOMPARASI CAPAIAN 7 SUBTES (SKALA 200 - 1000)</span>
                     </h3>
-                    <p className="text-[11px] text-slate-500">Garis vertikal putus-putus menunjukkan ambang batas aman kelulusan SNBT (Target 650)</p>
+                    <p className="text-[10px] sm:text-[11px] text-slate-500">Garis vertikal putus-putus menunjukkan ambang batas aman kelulusan SNBT (Target 650)</p>
                   </div>
 
-                  <div className="flex items-center gap-3 text-[10px] font-mono">
-                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-emerald-500" style={{ backgroundColor: "#10b981" }} /> &gt;= 650 (Aman)</span>
+                  <div className="flex items-center gap-2.5 sm:gap-3 text-[9.5px] sm:text-[10px] font-mono flex-wrap">
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-emerald-500" style={{ backgroundColor: "#10b981" }} /> ≥ 650 (Aman)</span>
                     <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-amber-500" style={{ backgroundColor: "#f59e0b" }} /> 400 - 649 (Cukup)</span>
-                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-rose-500" style={{ backgroundColor: "#f43f5e" }} /> &lt; 400 (Kurang)</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-rose-500" style={{ backgroundColor: "#f43f5e" }} /> ≤ 399 (Kurang)</span>
                   </div>
                 </div>
 
                 {/* DIAGRAM BATANG HORIZONTAL EKSEKUTIF */}
-                <div className="space-y-3 pt-4 relative">
-                  {/* Reference Line Target 650 */}
+                <div className="space-y-2.5 sm:space-y-3 pt-3 relative">
                   <div
                     className="absolute top-0 bottom-0 border-r-2 border-dashed border-slate-400 z-10 pointer-events-none"
                     style={{ left: `${((650 - 200) / 800) * 100}%` }}
                   >
-                    <span className="text-[9px] font-mono font-bold bg-slate-800 text-white px-1.5 py-0.5 rounded absolute -top-5 -translate-x-1/2">
+                    <span className="text-[8.5px] sm:text-[9px] font-mono font-bold bg-slate-800 text-white px-1.5 py-0.5 rounded absolute -top-4 -translate-x-1/2">
                       TARGET 650
                     </span>
                   </div>
@@ -942,10 +944,10 @@ export default function SimulationPage() {
                     return (
                       <div key={s.code} className="space-y-1">
                         <div className="flex justify-between items-center text-xs">
-                          <span className="font-semibold text-slate-700">{s.name} ({s.code})</span>
+                          <span className="font-semibold text-slate-700 text-[11px] sm:text-xs truncate">{s.name} ({s.code})</span>
                           <span className="font-mono font-bold text-slate-900">{s.score.toFixed(1)}</span>
                         </div>
-                        <div className="w-full bg-slate-100 h-4 rounded-lg overflow-hidden flex items-center relative">
+                        <div className="w-full bg-slate-100 h-3.5 sm:h-4 rounded-lg overflow-hidden flex items-center relative">
                           <div
                             className="h-full rounded-lg transition-all duration-500"
                             style={{ width: `${pct}%`, backgroundColor: barColor }}
@@ -958,19 +960,19 @@ export default function SimulationPage() {
               </div>
 
               {/* SEKSI 6: REKOMENDASI PTN LAIN BERDASARKAN SKOR */}
-              <div className="rounded-2xl border border-slate-200 bg-white print-overflow-safe">
+              <div className="rounded-2xl border border-slate-200 bg-white print-overflow-safe overflow-x-auto">
                 <div
-                  className="text-white px-4 py-2.5 text-xs font-bold flex items-center justify-between rounded-t-2xl"
+                  className="text-white px-3 sm:px-4 py-2 sm:py-2.5 text-xs font-bold flex items-center justify-between rounded-t-2xl min-w-[560px]"
                   style={{ backgroundColor: "#121c2d" }}
                 >
-                  <span>REKOMENDASI PTN LAIN &bull; PROGRAM STUDI SERUPA DENGAN PILIHAN 1</span>
-                  <span className="text-[10px] text-slate-400 font-mono">Daya Tampung &amp; Keketatan</span>
+                  <span>REKOMENDASI PTN LAIN • PROGRAM STUDI SERUPA DENGAN PILIHAN 1</span>
+                  <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">Daya Tampung & Keketatan</span>
                 </div>
 
-                <div className="p-4">
+                <div className="p-3 sm:p-4 min-w-[600px]">
                   <table className="w-full text-xs text-left">
                     <thead>
-                      <tr className="border-b text-slate-400 font-mono text-[10px] uppercase">
+                      <tr className="border-b text-slate-400 font-mono text-[9.5px] sm:text-[10px] uppercase">
                         <th className="py-2">#</th>
                         <th className="py-2">UNIVERSITAS</th>
                         <th className="py-2">PROGRAM STUDI</th>
@@ -989,7 +991,7 @@ export default function SimulationPage() {
                           <td className="py-2.5 text-center font-mono">{alt.ik}</td>
                           <td className="py-2.5 text-center font-mono">{alt.dt}</td>
                           <td className="py-2.5 text-center font-mono">{alt.peminat}</td>
-                          <td className="py-2.5 text-right font-bold text-[11px]">
+                          <td className="py-2.5 text-right font-bold text-[10.5px] sm:text-[11px]">
                             <span className={alt.statusPeluang === "Peluang Tinggi" ? "text-emerald-700" : "text-amber-700"}>
                               {alt.statusPeluang}
                             </span>
@@ -1003,22 +1005,22 @@ export default function SimulationPage() {
 
               {/* HANDOFF SATU KLIK KE APLIKASI ANALISIS SNBT */}
               <div
-                className="print-hidden p-5 rounded-2xl text-white flex items-center justify-between flex-wrap gap-4 shadow-lg"
+                className="print-hidden p-4 sm:p-5 rounded-2xl text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-lg"
                 style={{ backgroundColor: "#1e3a8a" }}
               >
                 <div className="space-y-1">
                   <div className="font-bold text-sm sm:text-base flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-emerald-400" />
-                    <span>Lanjutkan ke Aplikasi Analisis &amp; Rasionalisasi SNBT</span>
+                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 shrink-0" />
+                    <span>Lanjutkan ke Aplikasi Analisis & Rasionalisasi SNBT</span>
                   </div>
-                  <p className="text-xs text-blue-200 max-w-xl">
+                  <p className="text-[11px] sm:text-xs text-blue-200 max-w-xl">
                     Skor rata-rata Anda (<strong>{detailedAnalysis.totalAverage}</strong>) dapat langsung diuji ke simulator passing grade dengan data daya tampung seluruh PTN nasional.
                   </p>
                 </div>
 
                 <button
                   onClick={handleExportToExternalApp}
-                  className="px-5 py-3 rounded-xl bg-white text-blue-950 font-bold text-xs hover:bg-blue-50 cursor-pointer flex items-center gap-2 shadow-md transition-all active:scale-95"
+                  className="w-full sm:w-auto px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-white text-blue-950 font-bold text-xs hover:bg-blue-50 cursor-pointer flex items-center justify-center gap-2 shadow-md transition-all active:scale-95 shrink-0"
                 >
                   <span>Buka Aplikasi Analisis</span>
                   <ExternalLink className="w-4 h-4" />
@@ -1030,7 +1032,7 @@ export default function SimulationPage() {
                 <div>
                   <p>Mengetahui,</p>
                   <p className="font-semibold mt-1">Koordinator BK / Pembina KIR</p>
-                  <div className="h-16" />
+                  <div className="h-14 sm:h-16" />
                   <p className="font-bold underline text-slate-900">Fadhillah Umar, S.Pd.</p>
                   <p className="text-[10px] text-slate-500 font-mono">NBM. 118.2026.091</p>
                 </div>
@@ -1038,7 +1040,7 @@ export default function SimulationPage() {
                 <div>
                   <p>Jakarta, {examDateStr || "14 Oktober 2026"}</p>
                   <p className="font-semibold mt-1">Peserta Ujian</p>
-                  <div className="h-16" />
+                  <div className="h-14 sm:h-16" />
                   <p className="font-bold underline text-slate-900">( Tanda Tangan Siswa )</p>
                   <p className="text-[10px] text-slate-500 font-mono">NISN: 0078926118</p>
                 </div>
@@ -1047,7 +1049,7 @@ export default function SimulationPage() {
           </div>
 
           {/* FOOTER NAVIGASI KELUAR / ULANGI DI BAGIAN BAWAH RAPOR */}
-          <div className="print-hidden flex items-center justify-between gap-3 pt-3">
+          <div className="print-hidden flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-3 pt-2">
             <button
               onClick={() => {
                 setAnswers({});
@@ -1060,7 +1062,7 @@ export default function SimulationPage() {
                 setIsSubmitted(false);
                 setIsInExam(false);
               }}
-              className="w-1/2 py-3 rounded-2xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-2xs transition-all"
+              className="w-full sm:w-1/2 py-2.5 sm:py-3 rounded-2xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-2xs transition-all"
             >
               <RotateCcw className="w-4 h-4 text-slate-500" />
               <span>Ulangi Simulasi</span>
@@ -1068,7 +1070,7 @@ export default function SimulationPage() {
 
             <Link
               href="/"
-              className="w-1/2 py-3 rounded-2xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-blue-900/20 text-center transition-all"
+              className="w-full sm:w-1/2 py-2.5 sm:py-3 rounded-2xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-blue-900/20 text-center transition-all"
             >
               <Home className="w-4 h-4" />
               <span>Kembali ke Halaman Utama</span>
@@ -1080,46 +1082,46 @@ export default function SimulationPage() {
         {showReviewModal && (
           <div className="fixed inset-0 z-[999999] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 print-hidden">
             <div className="bg-white rounded-3xl border border-slate-200 max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
-              <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-                <h3 className="font-bold text-sm sm:text-base flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-indigo-600" />
+              <div className="p-3.5 sm:p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <h3 className="font-bold text-xs sm:text-base flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-indigo-600 shrink-0" />
                   <span>Pembahasan 145 Butir Soal</span>
                 </h3>
-                <button onClick={() => setShowReviewModal(false)} className="p-1.5 rounded-lg border border-slate-200 cursor-pointer">
+                <button onClick={() => setShowReviewModal(false)} className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="p-3 border-b border-slate-100 flex gap-2 flex-wrap text-xs bg-white">
-                <button onClick={() => setReviewFilter("ALL")} className={`px-2.5 py-1 rounded-lg border font-bold cursor-pointer ${reviewFilter === "ALL" ? "bg-slate-900 text-white" : "bg-white"}`}>Semua ({allQuestions.length})</button>
-                <button onClick={() => setReviewFilter("CORRECT")} className={`px-2.5 py-1 rounded-lg border font-bold cursor-pointer ${reviewFilter === "CORRECT" ? "bg-emerald-600 text-white" : "bg-white"}`}>Benar</button>
-                <button onClick={() => setReviewFilter("INCORRECT")} className={`px-2.5 py-1 rounded-lg border font-bold cursor-pointer ${reviewFilter === "INCORRECT" ? "bg-rose-600 text-white" : "bg-white"}`}>Salah</button>
-                <button onClick={() => setReviewFilter("BLANK")} className={`px-2.5 py-1 rounded-lg border font-bold cursor-pointer ${reviewFilter === "BLANK" ? "bg-amber-500 text-white" : "bg-white"}`}>Kosong</button>
+              <div className="p-2.5 sm:p-3 border-b border-slate-100 flex gap-1.5 sm:gap-2 flex-wrap text-xs bg-white">
+                <button onClick={() => setReviewFilter("ALL")} className={`px-2.5 py-1 rounded-lg border font-bold cursor-pointer text-[11px] sm:text-xs ${reviewFilter === "ALL" ? "bg-slate-900 text-white" : "bg-white"}`}>Semua ({allQuestions.length})</button>
+                <button onClick={() => setReviewFilter("CORRECT")} className={`px-2.5 py-1 rounded-lg border font-bold cursor-pointer text-[11px] sm:text-xs ${reviewFilter === "CORRECT" ? "bg-emerald-600 text-white" : "bg-white"}`}>Benar</button>
+                <button onClick={() => setReviewFilter("INCORRECT")} className={`px-2.5 py-1 rounded-lg border font-bold cursor-pointer text-[11px] sm:text-xs ${reviewFilter === "INCORRECT" ? "bg-rose-600 text-white" : "bg-white"}`}>Salah</button>
+                <button onClick={() => setReviewFilter("BLANK")} className={`px-2.5 py-1 rounded-lg border font-bold cursor-pointer text-[11px] sm:text-xs ${reviewFilter === "BLANK" ? "bg-amber-500 text-white" : "bg-white"}`}>Kosong</button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 bg-slate-50/50">
+              <div className="flex-1 overflow-y-auto p-3.5 sm:p-6 space-y-4 sm:space-y-5 bg-slate-50/50">
                 {filteredReview.map((q, idx) => {
                   const uAns = answers[q.id];
                   const isRight = uAns === q.correctAnswer;
                   return (
-                    <div key={q.id} className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
+                    <div key={q.id} className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 space-y-2.5 sm:space-y-3">
                       <div className="flex items-center justify-between text-xs border-b border-slate-100 pb-2">
-                        <span className="font-mono font-bold text-blue-700">{q.subtest} &bull; No. {idx + 1}</span>
-                        <span className={`px-2 py-0.5 rounded font-bold ${!uAns ? "bg-amber-50 text-amber-700" : isRight ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
+                        <span className="font-mono font-bold text-blue-700 text-[11px] sm:text-xs">{q.subtest} • No. {idx + 1}</span>
+                        <span className={`px-2 py-0.5 rounded font-bold text-[10px] ${!uAns ? "bg-amber-50 text-amber-700" : isRight ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
                           {!uAns ? "Kosong" : isRight ? "Benar" : "Salah"}
                         </span>
                       </div>
-                      {q.stimulus && <div className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl whitespace-pre-line">{q.stimulus}</div>}
+                      {q.stimulus && <div className="text-[11px] sm:text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl whitespace-pre-line leading-relaxed">{q.stimulus}</div>}
                       <div className="text-xs sm:text-sm font-semibold">{q.question}</div>
                       <div className="space-y-1">
                         {q.options.map((opt) => (
-                          <div key={opt.id} className={`p-2 rounded-lg border text-xs flex justify-between ${opt.id === q.correctAnswer ? "border-emerald-500 bg-emerald-50 text-emerald-900 font-bold" : uAns === opt.id ? "border-rose-400 bg-rose-50 text-rose-900 line-through" : "border-slate-200"}`}>
+                          <div key={opt.id} className={`p-2 rounded-lg border text-[11px] sm:text-xs flex justify-between ${opt.id === q.correctAnswer ? "border-emerald-500 bg-emerald-50 text-emerald-900 font-bold" : uAns === opt.id ? "border-rose-400 bg-rose-50 text-rose-900 line-through" : "border-slate-200"}`}>
                             <span>{opt.id}. {opt.text}</span>
-                            {opt.id === q.correctAnswer && <span className="text-[10px] text-emerald-700">Kunci</span>}
+                            {opt.id === q.correctAnswer && <span className="text-[10px] text-emerald-700 font-bold">Kunci</span>}
                           </div>
                         ))}
                       </div>
-                      <div className="text-xs p-2.5 rounded-xl bg-indigo-50 text-indigo-950">
+                      <div className="text-[11px] sm:text-xs p-2.5 rounded-xl bg-indigo-50 text-indigo-950 leading-relaxed">
                         <strong>Pembahasan:</strong> {q.explanation}
                       </div>
                     </div>
@@ -1133,9 +1135,64 @@ export default function SimulationPage() {
     );
   }
 
-  // 4. BILIK PENGERJAAN SOAL
+  // 4. BILIK PENGERJAAN SOAL (RESPONSIF MOBILE / TABLET / LAPTOP)
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans select-none text-slate-800">
+    <div className="min-h-screen bg-slate-100 flex flex-col font-sans select-none text-slate-800 relative pb-20 lg:pb-6 text-left">
+      {/* DRAWER MATRIX KISI-KISI KHUSUS TABLET & HP */}
+      {showMobileMatrix && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex flex-col justify-end lg:hidden animate-in fade-in">
+          <div className="bg-white rounded-t-3xl border-t border-slate-200 p-5 space-y-4 max-h-[80vh] flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <LayoutGrid className="w-5 h-5 text-blue-700" />
+                <span className="font-bold text-sm text-slate-900">
+                  Daftar Soal Subtes {activeSubtestConfig.code} ({currentSubtestQuestions.length} Butir)
+                </span>
+              </div>
+              <button
+                onClick={() => setShowMobileMatrix(false)}
+                className="p-1.5 rounded-lg border border-slate-200 text-slate-500 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-5 gap-2 overflow-y-auto p-1 flex-1">
+              {currentSubtestQuestions.map((q, idx) => {
+                const isCurrent = currentQIndexInSubtest === idx;
+                const isAnswered = Boolean(answers[q.id]);
+                const isDoubt = Boolean(doubtfuls[q.id]);
+
+                return (
+                  <button
+                    key={q.id}
+                    onClick={() => {
+                      setCurrentQIndexInSubtest(idx);
+                      setShowMobileMatrix(false);
+                    }}
+                    className={`h-11 rounded-xl border font-mono text-xs font-bold cursor-pointer transition-all ${isCurrent ? "ring-2 ring-blue-700 border-blue-700" : "border-slate-200"
+                      } ${isDoubt
+                        ? "bg-amber-400 text-amber-950 border-amber-400"
+                        : isAnswered
+                          ? "bg-blue-700 text-white border-blue-700"
+                          : "bg-slate-50 text-slate-700"
+                      }`}
+                  >
+                    {idx + 1}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="pt-2 border-t grid grid-cols-3 gap-1 text-[10px] font-mono text-slate-500 text-center">
+              <div><span className="w-2.5 h-2.5 rounded bg-blue-700 inline-block mr-1" /> Terjawab</div>
+              <div><span className="w-2.5 h-2.5 rounded bg-amber-400 inline-block mr-1" /> Ragu</div>
+              <div><span className="w-2.5 h-2.5 rounded bg-slate-200 inline-block mr-1" /> Kosong</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showViolationModal && (
         <div className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl border-2 border-rose-500 max-w-md w-full p-6 text-center space-y-4">
@@ -1157,78 +1214,95 @@ export default function SimulationPage() {
         </div>
       )}
 
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-20 px-4 sm:px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-800 font-black flex items-center justify-center text-xs">SIM</div>
-          <div>
-            <div className="font-bold text-xs sm:text-sm">{activeSubtestConfig.name}</div>
-            <div className="text-[11px] text-slate-500 font-mono">Subtes {currentSubtestIndex + 1} dari 7</div>
+      {/* HEADER BILIK PENGERJAAN RESPONSIF */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-20 px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 text-blue-800 font-black flex items-center justify-center text-[11px] sm:text-xs shrink-0">
+            SIM
+          </div>
+          <div className="min-w-0">
+            <div className="font-bold text-xs sm:text-sm truncate">{activeSubtestConfig.name}</div>
+            <div className="text-[10px] sm:text-[11px] text-slate-500 font-mono truncate">
+              Subtes {currentSubtestIndex + 1} dari 7
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          {/* TOMBOL BUKA KISI-KISI DI HP & TABLET */}
+          <button
+            onClick={() => setShowMobileMatrix(true)}
+            className="lg:hidden px-2.5 py-1.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1 cursor-pointer"
+          >
+            <LayoutGrid className="w-3.5 h-3.5 text-blue-700" />
+            <span className="text-[11px]">Soal</span>
+          </button>
+
           <div className="hidden md:flex items-center bg-slate-100 p-0.5 rounded-lg border text-xs font-bold text-slate-600">
             <button onClick={() => setFontSizeMode("normal")} className={`px-2 py-1 rounded cursor-pointer ${fontSizeMode === "normal" ? "bg-white text-blue-600" : ""}`}>A</button>
             <button onClick={() => setFontSizeMode("large")} className={`px-2 py-1 rounded cursor-pointer ${fontSizeMode === "large" ? "bg-white text-blue-600" : ""}`}>A+</button>
             <button onClick={() => setFontSizeMode("xlarge")} className={`px-2 py-1 rounded cursor-pointer ${fontSizeMode === "xlarge" ? "bg-white text-blue-600" : ""}`}>A++</button>
           </div>
 
-          <div className="px-3.5 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 font-mono font-bold text-xs flex items-center gap-1.5">
-            <Clock className="w-4 h-4" />
-            <span>Waktu: {formatTime(subtestTimeLeft)}</span>
+          <div className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 font-mono font-bold text-xs flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span>{formatTime(subtestTimeLeft)}</span>
           </div>
 
           <button
             onClick={() => setShowSubtestConfirmModal(true)}
-            className="px-3.5 py-1.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+            className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs flex items-center gap-1 cursor-pointer"
           >
-            <span>{currentSubtestIndex === 6 ? "Selesai" : "Lanjut Subtes"}</span>
+            <span>{currentSubtestIndex === 6 ? "Selesai" : "Lanjut"}</span>
             <FastForward className="w-3.5 h-3.5" />
           </button>
         </div>
       </header>
 
-      <div className="flex-1 max-w-[1600px] w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <div className="lg:col-span-8 bg-white rounded-3xl border border-slate-200 p-5 sm:p-8 space-y-4 shadow-sm">
-          <div className="font-mono text-xs font-bold text-blue-700 border-b pb-2">
-            SOAL NO. {currentQIndexInSubtest + 1} ({activeSubtestConfig.code})
+      {/* AREA SOAL & MATRIX */}
+      <div className="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
+        <div className="lg:col-span-8 bg-white rounded-3xl border border-slate-200 p-4 sm:p-8 space-y-3.5 sm:space-y-4 shadow-sm">
+          <div className="font-mono text-[11px] sm:text-xs font-bold text-blue-700 border-b pb-2 flex justify-between items-center">
+            <span>SOAL NO. {currentQIndexInSubtest + 1} ({activeSubtestConfig.code})</span>
+            <span className="text-slate-400 font-normal">{currentQIndexInSubtest + 1} dari {currentSubtestQuestions.length} Butir</span>
           </div>
 
           {currentQ?.stimulus && (
-            <div className={`p-4 rounded-2xl bg-slate-50 border text-slate-700 whitespace-pre-line ${fontClasses.stimulus}`}>
+            <div className={`p-3.5 sm:p-4 rounded-2xl bg-slate-50 border text-slate-700 whitespace-pre-line leading-relaxed overflow-x-auto ${fontClasses.stimulus}`}>
               {currentQ.stimulus}
             </div>
           )}
 
-          <div className={`text-slate-900 ${fontClasses.question}`}>{currentQ?.question}</div>
+          <div className={`text-slate-900 leading-snug ${fontClasses.question}`}>{currentQ?.question}</div>
 
-          <div className="space-y-2 pt-2">
+          <div className="space-y-2 pt-1">
             {currentQ?.options?.map((opt) => (
               <button
                 key={opt.id}
                 onClick={() => handleSelectOption(opt.id)}
-                className={`w-full text-left p-3.5 rounded-2xl border text-xs sm:text-sm flex items-center gap-3 transition-all cursor-pointer ${answers[currentQ.id] === opt.id ? "bg-blue-50 border-blue-700 text-blue-900 font-bold" : "bg-white hover:bg-slate-50 border-slate-200"
+                className={`w-full text-left p-3 sm:p-3.5 rounded-2xl border text-xs sm:text-sm flex items-center gap-2.5 sm:gap-3 transition-all cursor-pointer ${answers[currentQ.id] === opt.id ? "bg-blue-50 border-blue-700 text-blue-900 font-bold" : "bg-white hover:bg-slate-50 border-slate-200"
                   }`}
               >
-                <span className="w-7 h-7 rounded-xl border font-mono font-bold flex items-center justify-center shrink-0">{opt.id}</span>
-                <span>{opt.text}</span>
+                <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl border font-mono font-bold flex items-center justify-center shrink-0 text-xs sm:text-sm">{opt.id}</span>
+                <span className="leading-snug">{opt.text}</span>
               </button>
             ))}
           </div>
 
-          <div className="pt-4 flex justify-between items-center border-t border-slate-100">
+          {/* Navigasi Desktop */}
+          <div className="hidden lg:flex pt-4 justify-between items-center border-t border-slate-100">
             <button
               onClick={() => setCurrentQIndexInSubtest((i) => Math.max(0, i - 1))}
               disabled={currentQIndexInSubtest === 0}
-              className="px-4 py-2 border rounded-xl text-xs font-bold disabled:opacity-30 cursor-pointer"
+              className="px-4 py-2 border rounded-xl text-xs font-bold disabled:opacity-30 cursor-pointer hover:bg-slate-50"
             >
-              Sebelumnya
+              ← Sebelumnya
             </button>
             <button
               onClick={handleToggleDoubtful}
-              className={`px-4 py-2 border rounded-xl text-xs font-bold cursor-pointer ${doubtfuls[currentQ?.id] ? "bg-amber-100 text-amber-900 border-amber-300" : "bg-white"}`}
+              className={`px-4 py-2 border rounded-xl text-xs font-bold cursor-pointer transition-all ${doubtfuls[currentQ?.id] ? "bg-amber-400 text-amber-950 border-amber-500 font-black" : "bg-white hover:bg-slate-50"}`}
             >
-              Ragu-Ragu
+              {doubtfuls[currentQ?.id] ? "✓ Ragu-Ragu" : "Ragu-Ragu"}
             </button>
             <button
               onClick={() => {
@@ -1238,17 +1312,18 @@ export default function SimulationPage() {
                   setShowSubtestConfirmModal(true);
                 }
               }}
-              className="px-5 py-2 bg-[#1e3a8a] text-white rounded-xl text-xs font-bold cursor-pointer"
+              className="px-5 py-2 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded-xl text-xs font-bold cursor-pointer transition-all"
             >
-              {currentQIndexInSubtest < currentSubtestQuestions.length - 1 ? "Berikutnya" : "Selesai Subtes"}
+              {currentQIndexInSubtest < currentSubtestQuestions.length - 1 ? "Berikutnya →" : "Selesai Subtes"}
             </button>
           </div>
         </div>
 
-        <div className="lg:col-span-4 bg-white rounded-3xl border border-slate-200 p-5 space-y-4 shadow-sm">
+        {/* MATRIX DESKTOP */}
+        <div className="hidden lg:block lg:col-span-4 bg-white rounded-3xl border border-slate-200 p-5 space-y-4 shadow-sm sticky top-24">
           <div className="font-bold text-xs text-slate-800 flex justify-between border-b pb-2">
             <span>Daftar Soal {activeSubtestConfig.code}</span>
-            <span>{currentSubtestQuestions.length} Butir</span>
+            <span className="font-mono text-blue-700">{currentSubtestQuestions.length} Butir</span>
           </div>
           <div className="grid grid-cols-5 gap-2 max-h-[360px] overflow-y-auto p-1">
             {currentSubtestQuestions.map((q, idx) => (
@@ -1256,7 +1331,7 @@ export default function SimulationPage() {
                 key={q.id}
                 onClick={() => setCurrentQIndexInSubtest(idx)}
                 className={`h-11 rounded-xl border font-mono text-xs font-bold cursor-pointer transition-all ${currentQIndexInSubtest === idx ? "ring-2 ring-blue-600 border-blue-600" : ""
-                  } ${doubtfuls[q.id] ? "bg-amber-400 text-amber-950" : answers[q.id] ? "bg-blue-700 text-white" : "bg-slate-50"}`}
+                  } ${doubtfuls[q.id] ? "bg-amber-400 text-amber-950" : answers[q.id] ? "bg-blue-700 text-white" : "bg-slate-50 hover:bg-slate-100"}`}
               >
                 {idx + 1}
               </button>
@@ -1265,9 +1340,43 @@ export default function SimulationPage() {
         </div>
       </div>
 
+      {/* STICKY BOTTOM NAV BAR KHUSUS HP & TABLET */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-2.5 px-3 z-40 flex items-center justify-between gap-2 shadow-lg">
+        <button
+          onClick={() => setCurrentQIndexInSubtest((i) => Math.max(0, i - 1))}
+          disabled={currentQIndexInSubtest === 0}
+          className="flex-1 py-2.5 bg-slate-100 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold disabled:opacity-30 active:scale-95 cursor-pointer"
+        >
+          ← Prev
+        </button>
+
+        <button
+          onClick={handleToggleDoubtful}
+          className={`flex-1 py-2.5 border rounded-xl text-xs font-bold active:scale-95 cursor-pointer ${doubtfuls[currentQ?.id]
+            ? "bg-amber-400 text-amber-950 border-amber-500 font-black"
+            : "bg-amber-50 border-amber-300 text-amber-900"
+            }`}
+        >
+          {doubtfuls[currentQ?.id] ? "✓ Ragu" : "Ragu"}
+        </button>
+
+        <button
+          onClick={() => {
+            if (currentQIndexInSubtest < currentSubtestQuestions.length - 1) {
+              setCurrentQIndexInSubtest((i) => i + 1);
+            } else {
+              setShowSubtestConfirmModal(true);
+            }
+          }}
+          className="flex-1 py-2.5 bg-[#1e3a8a] text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 cursor-pointer"
+        >
+          {currentQIndexInSubtest < currentSubtestQuestions.length - 1 ? "Next →" : "Selesai"}
+        </button>
+      </div>
+
       {showSubtestConfirmModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 text-center animate-in zoom-in-95">
+          <div className="bg-white rounded-3xl p-5 sm:p-6 max-w-sm w-full space-y-4 text-center animate-in zoom-in-95">
             <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 mx-auto">
               <Lock className="w-6 h-6" />
             </div>
@@ -1278,7 +1387,7 @@ export default function SimulationPage() {
               <p className="text-xs text-slate-500 mt-1">Jawaban pada subtes ini akan dikunci permanen.</p>
             </div>
             <div className="flex gap-2 pt-1">
-              <button onClick={() => setShowSubtestConfirmModal(false)} className="w-1/2 py-2.5 rounded-xl border text-xs font-bold cursor-pointer">Periksa Lagi</button>
+              <button onClick={() => setShowSubtestConfirmModal(false)} className="w-1/2 py-2.5 rounded-xl border text-xs font-bold cursor-pointer hover:bg-slate-50">Periksa Lagi</button>
               <button
                 onClick={() => {
                   setShowSubtestConfirmModal(false);

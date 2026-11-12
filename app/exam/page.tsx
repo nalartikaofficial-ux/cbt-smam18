@@ -232,7 +232,6 @@ function OfficialExamChamberContent() {
         } catch { }
     };
 
-    // STRICT INDEX PARTITIONING (0..159) - KUNCI MATI KUOTA RESMI
     const mapRawToQuestionItems = (rawData: any[]): QuestionItem[] => {
         const getSubtestMetaByStrictIndex = (idx: number) => {
             let acc = 0;
@@ -272,7 +271,6 @@ function OfficialExamChamberContent() {
         });
     };
 
-    // 1. MEMUAT SESI & SELALU FETCH DARI API LOKAL SERVER
     useEffect(() => {
         if (typeof window === "undefined") return;
 
@@ -299,7 +297,6 @@ function OfficialExamChamberContent() {
         const activePkg = queryPkg || sessionData.packageId || "PAKET_1";
         setSessionTitle(`RUANG UJIAN RESMI • ${activePkg.replace("_", " ")}`);
 
-        // Sinkronisasi Sesi & Jadwal Server
         fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_active_session&_t=${Date.now()}`, { cache: "no-store" })
             .then((r) => r.json())
             .then((res) => {
@@ -310,7 +307,6 @@ function OfficialExamChamberContent() {
             })
             .catch(() => { });
 
-        // Cek Durasi Subtes
         const localDuration = localStorage.getItem(`durasi_${activePkg}`);
         if (localDuration) {
             try {
@@ -319,7 +315,6 @@ function OfficialExamChamberContent() {
             } catch { }
         }
 
-        // Pulihkan progres jika siswa menyambung ujian
         const savedProgressKey = `cbt_progress_${sessionData.nisn}`;
         const savedProgress = localStorage.getItem(savedProgressKey);
         if (savedProgress) {
@@ -337,7 +332,6 @@ function OfficialExamChamberContent() {
             } catch { }
         }
 
-        // SELALU FETCH DARI API LOKAL SERVER
         setIsLoading(true);
         fetch(`/api/questions?paket=${activePkg}&_t=${Date.now()}`, { cache: "no-store" })
             .then((res) => res.json())
@@ -369,7 +363,6 @@ function OfficialExamChamberContent() {
             });
     }, [searchParams]);
 
-    // Simpan progres ke browser saat mengerjakan
     useEffect(() => {
         if (!studentSession?.nisn || !isInExam || isExamCompleted) return;
         const savedProgressKey = `cbt_progress_${studentSession.nisn}`;
@@ -389,7 +382,6 @@ function OfficialExamChamberContent() {
 
     const activeSubtestConfig = subtestsList[currentSubtestIndex] || subtestsList[0];
 
-    // Filter soal yang aktif khusus untuk subtes saat ini & selalu terurut 1..30 atau 1..20
     const currentSubtestQuestions = useMemo(() => {
         const filtered = allQuestions
             .filter((q) => q.subtest === activeSubtestConfig.code)
@@ -399,7 +391,6 @@ function OfficialExamChamberContent() {
 
     const currentQ = currentSubtestQuestions[currentQIndexInSubtest] || currentSubtestQuestions[0];
 
-    // Ganti Subtes (Manual)
     const handleNextSubtestManual = useCallback(() => {
         setShowSubtestConfirmModal(false);
         if (currentSubtestIndex < subtestsList.length - 1) {
@@ -413,7 +404,6 @@ function OfficialExamChamberContent() {
         }
     }, [currentSubtestIndex, subtestsList]);
 
-    // TIMER PER DETIK
     useEffect(() => {
         if (!isInExam || isSyncingServer || isExamCompleted || isExamLockedPermanently || isSessionLockedByProctor) return;
 
@@ -436,7 +426,6 @@ function OfficialExamChamberContent() {
         return () => clearInterval(timer);
     }, [isInExam, isSyncingServer, isExamCompleted, isExamLockedPermanently, isSessionLockedByProctor, hardEndTime, activeSubtestConfig]);
 
-    // AUTO ADVANCE KETIKA TIMER HABIS
     useEffect(() => {
         if (!isInExam || isSyncingServer || isExamCompleted) return;
 
@@ -453,7 +442,6 @@ function OfficialExamChamberContent() {
         }
     }, [subtestTimeLeft, isInExam, isSyncingServer, isExamCompleted, currentSubtestIndex, subtestsList]);
 
-    // Parsing data target PTN
     const parseTargetSelection = useCallback((val: string) => {
         if (!val || typeof val !== "string") return null;
         const trimmed = val.trim();
@@ -562,7 +550,6 @@ function OfficialExamChamberContent() {
         };
     }, [isInExam, isSyncingServer, isExamCompleted, recordViolation]);
 
-    // KALKULASI SKOR 7 SUBTES RESMI
     const scoreResults = useMemo(() => {
         let correct = 0;
         let incorrect = 0;
@@ -628,7 +615,6 @@ function OfficialExamChamberContent() {
         };
     }, [answers, allQuestions, subtestsList]);
 
-    // PENGUMPULAN AKHIR SOAL: LANGSUNG BUKA RAPOR TANPA STUCK DI LOADING
     const executeFinalSubmission = () => {
         setShowSubtestConfirmModal(false);
 
@@ -660,7 +646,6 @@ function OfficialExamChamberContent() {
             pilihan2: pilihanKampus2
         };
 
-        // Simpan langsung ke memori browser agar laporan instan siap cetak
         localStorage.setItem("cbt_exam_result", JSON.stringify(finalReport));
 
         if (cleanNisn) {
@@ -693,7 +678,6 @@ function OfficialExamChamberContent() {
                 pilihan_kampus_2: pilihanKampus2 || "-"
             };
 
-            // Kirim ke Google Apps Script di background tanpa await agar TIDAK MENGUNCI LAYAR SISWA!
             fetch(GOOGLE_SCRIPT_API_URL, {
                 method: "POST",
                 mode: "no-cors",
@@ -702,7 +686,6 @@ function OfficialExamChamberContent() {
             }).catch(() => { });
         }
 
-        // Langsung tampilkan rapor kelulusan siswa secara instan
         safeExitFullscreen();
         setIsSyncingServer(false);
         setIsExamCompleted(true);
@@ -852,10 +835,10 @@ function OfficialExamChamberContent() {
     // TAHAP 1: GERBANG KARANTINA (RESPONSIF MOBILE / TABLET / LAPTOP)
     if (!isInExam) {
         return (
-            <div className="min-h-screen bg-slate-100 flex items-center justify-center p-3 sm:p-6 font-sans text-slate-800">
+            <div className="min-h-screen bg-slate-100 flex items-center justify-center p-3.5 sm:p-6 font-sans text-slate-800">
                 {showPTNDatabaseModal && (
-                    <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-                        <div className="bg-white rounded-3xl border border-slate-200 max-w-2xl w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in fade-in max-h-[92vh] flex flex-col">
+                    <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3.5 sm:p-4">
+                        <div className="bg-white rounded-3xl border border-slate-200 max-w-2xl w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in fade-in max-h-[92vh] flex flex-col text-left">
                             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold shrink-0">
@@ -891,13 +874,13 @@ function OfficialExamChamberContent() {
                                 </div>
 
                                 <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
-                                        <span className="text-[9.5px] font-mono font-bold text-slate-400 px-1">JENJANG:</span>
+                                    <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto">
+                                        <span className="text-[9.5px] font-mono font-bold text-slate-400 px-1 shrink-0">JENJANG:</span>
                                         {(["ALL", "S1", "D4", "D3"] as const).map((j) => (
                                             <button
                                                 key={j}
                                                 onClick={() => setModalJenjangFilter(j)}
-                                                className={`px-2 py-0.5 rounded-lg text-[9.5px] font-bold font-mono transition-all cursor-pointer ${modalJenjangFilter === j ? "bg-indigo-700 text-white shadow-2xs" : "text-slate-600 hover:text-slate-900"
+                                                className={`px-2 py-0.5 rounded-lg text-[9.5px] font-bold font-mono transition-all cursor-pointer shrink-0 ${modalJenjangFilter === j ? "bg-indigo-700 text-white shadow-2xs" : "text-slate-600 hover:text-slate-900"
                                                     }`}
                                             >
                                                 {j === "ALL" ? "Semua" : j}
@@ -1212,7 +1195,7 @@ function OfficialExamChamberContent() {
         });
 
         return (
-            <div className="min-h-screen bg-slate-100 py-6 px-3 sm:px-6 font-sans text-slate-800">
+            <div className="min-h-screen bg-slate-100 py-6 px-3 sm:px-6 font-sans text-slate-800 text-left">
                 <style
                     dangerouslySetInnerHTML={{
                         __html: `
@@ -1234,7 +1217,7 @@ function OfficialExamChamberContent() {
                 {/* MODAL REVIEW PEMBAHASAN */}
                 {showReviewModal && (
                     <div className="fixed inset-0 z-[999999] bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-                        <div className="bg-white rounded-3xl border border-slate-200 max-w-3xl w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in fade-in max-h-[90vh] flex flex-col">
+                        <div className="bg-white rounded-3xl border border-slate-200 max-w-3xl w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in fade-in max-h-[90vh] flex flex-col text-left">
                             <div className="flex items-center justify-between border-b pb-3">
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
@@ -1370,7 +1353,7 @@ function OfficialExamChamberContent() {
                 </div>
 
                 {/* RAPOR RESMI BENTUK DOKUMEN CETAK */}
-                <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200 shadow-xl p-4 sm:p-10 space-y-5 sm:space-y-6 print-card">
+                <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200 shadow-xl p-4 sm:p-10 space-y-5 sm:space-y-6 print-card text-left">
                     {/* 2. KOP SURAT */}
                     <div className="flex items-center gap-3 sm:gap-4 border-b-2 border-slate-900 pb-3 sm:pb-4 text-center">
                         <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 flex items-center justify-center p-0.5">
@@ -1537,7 +1520,7 @@ function OfficialExamChamberContent() {
                     {/* 6. TABEL TES SKOLASTIK (4 SUBTES) */}
                     <div className="space-y-1 text-left overflow-x-auto">
                         <div
-                            className="p-2 sm:p-2.5 rounded-t-xl text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono"
+                            className="p-2 sm:p-2.5 rounded-t-xl text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono min-w-[320px]"
                             style={{ backgroundColor: "#1c4cb7" }}
                         >
                             <span>TES SKOLASTIK (4 SUBTES)</span>
@@ -1595,7 +1578,7 @@ function OfficialExamChamberContent() {
                     {/* 7. TABEL TES LITERASI & PENALARAN MATEMATIKA (3 SUBTES) */}
                     <div className="space-y-1 text-left overflow-x-auto">
                         <div
-                            className="p-2 sm:p-2.5 rounded-t-xl text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono"
+                            className="p-2 sm:p-2.5 rounded-t-xl text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono min-w-[320px]"
                             style={{ backgroundColor: "#6d28d9" }}
                         >
                             <span>TES LITERASI &amp; PENALARAN MATEMATIKA (3 SUBTES)</span>
@@ -1651,15 +1634,15 @@ function OfficialExamChamberContent() {
                     </div>
 
                     {/* 8. BLOCKING TIME & EVALUASI KECEPATAN PENGERJAAN */}
-                    <div className="space-y-1 text-left">
-                        <div className="p-2 sm:p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono">
+                    <div className="space-y-1 text-left overflow-x-auto">
+                        <div className="p-2 sm:p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono min-w-[320px]">
                             <span className="flex items-center gap-1.5">
                                 <Clock className="w-3.5 h-3.5 text-blue-400" />
                                 <span>BLOCKING TIME &amp; EVALUASI KECEPATAN PENGERJAAN</span>
                             </span>
                             <span className="text-[10px] text-slate-400 font-normal">Terdistribusi Presisi</span>
                         </div>
-                        <div className="border border-slate-200 rounded-b-xl p-3.5 sm:p-4 divide-y divide-slate-100 bg-white">
+                        <div className="border border-slate-200 rounded-b-xl p-3.5 sm:p-4 divide-y divide-slate-100 bg-white min-w-[320px]">
                             {subtestsList.map((st) => {
                                 const s = scoreResults.subtestBreakdown[st.code] || { correct: 0, incorrect: 0, unattempted: 0, total: 20 };
                                 const spentSecs = timeSpentPerSubtest[st.code] || 15;
@@ -1695,7 +1678,7 @@ function OfficialExamChamberContent() {
 
                     {/* 9. ANALISA PASSING SCORE PER SUBTES */}
                     <div className="space-y-1 text-left overflow-x-auto">
-                        <div className="p-2 sm:p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono">
+                        <div className="p-2 sm:p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono min-w-[320px]">
                             <span>ANALISA PASSING SCORE PER SUBTES TERHADAP PROGRAM STUDI PILIHAN</span>
                         </div>
                         <div className="border border-slate-200 rounded-b-xl overflow-hidden min-w-[320px]">
@@ -1799,7 +1782,7 @@ function OfficialExamChamberContent() {
 
                     {/* 11. REKOMENDASI PTN LAIN */}
                     <div className="space-y-1 text-left overflow-x-auto">
-                        <div className="p-2 sm:p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono">
+                        <div className="p-2 sm:p-2.5 rounded-t-xl bg-slate-900 text-white flex items-center justify-between text-[11px] sm:text-xs font-bold font-mono min-w-[320px]">
                             <span>REKOMENDASI PTN LAIN - PROGRAM STUDI SERUPA DENGAN PILIHAN 1</span>
                             <span className="text-[10px] text-slate-400 font-normal hidden sm:inline">Daya Tampung &amp; Keketatan</span>
                         </div>
@@ -1950,7 +1933,7 @@ function OfficialExamChamberContent() {
 
     // TAHAP 2 & 3: BILIK SOAL (RESPONSIF MOBILE / TABLET / DESKTOP)
     return (
-        <div className="min-h-screen bg-slate-100 flex flex-col font-sans select-none text-slate-800 relative pb-20 lg:pb-6">
+        <div className="min-h-screen bg-slate-100 flex flex-col font-sans select-none text-slate-800 relative pb-20 lg:pb-6 text-left">
             {/* DRAWER MATRIX KISI-KISI KHUSUS TABLET & HP */}
             {showMobileMatrix && (
                 <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex flex-col justify-end lg:hidden animate-in fade-in">
@@ -2228,14 +2211,14 @@ function OfficialExamChamberContent() {
                 <button
                     onClick={() => setCurrentQIndexInSubtest((i) => Math.max(0, i - 1))}
                     disabled={currentQIndexInSubtest === 0}
-                    className="flex-1 py-2.5 bg-slate-100 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold disabled:opacity-30 active:scale-95"
+                    className="flex-1 py-2.5 bg-slate-100 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold disabled:opacity-30 active:scale-95 cursor-pointer"
                 >
                     &larr; Prev
                 </button>
 
                 <button
                     onClick={handleToggleDoubtful}
-                    className={`flex-1 py-2.5 border rounded-xl text-xs font-bold active:scale-95 ${doubtfuls[currentQ?.id]
+                    className={`flex-1 py-2.5 border rounded-xl text-xs font-bold active:scale-95 cursor-pointer ${doubtfuls[currentQ?.id]
                         ? "bg-amber-400 text-amber-950 border-amber-500 font-black"
                         : "bg-amber-50 border-amber-300 text-amber-900"
                         }`}
@@ -2251,7 +2234,7 @@ function OfficialExamChamberContent() {
                             setShowSubtestConfirmModal(true);
                         }
                     }}
-                    className="flex-1 py-2.5 bg-[#1e3a8a] text-white rounded-xl text-xs font-bold shadow-xs active:scale-95"
+                    className="flex-1 py-2.5 bg-[#1e3a8a] text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 cursor-pointer"
                 >
                     {currentQIndexInSubtest < currentSubtestQuestions.length - 1 ? "Next →" : "Selesai"}
                 </button>
