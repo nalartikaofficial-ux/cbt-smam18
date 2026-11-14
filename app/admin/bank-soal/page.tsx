@@ -669,21 +669,14 @@ export default function AdminBankSoalPage() {
         try {
             const res = await fetch(`/api/questions?paket=${pkg}&_t=${Date.now()}`, { cache: "no-store" });
             const json = await res.json();
-            if (json.status === "success" && Array.isArray(json.data) && json.data.length > 0) {
+            if (json.status === "success" && Array.isArray(json.data)) {
                 setServerQuestions(json.data);
-                localStorage.setItem(`cbt_questions_${pkg}`, JSON.stringify(json.data));
             } else {
-                const localRaw = localStorage.getItem(`cbt_questions_${pkg}`);
-                if (localRaw) {
-                    setServerQuestions(JSON.parse(localRaw));
-                } else {
-                    setServerQuestions([]);
-                }
+                setServerQuestions([]);
             }
         } catch (err) {
             console.error("Gagal memuat soal:", err);
-            const localRaw = localStorage.getItem(`cbt_questions_${pkg}`);
-            if (localRaw) setServerQuestions(JSON.parse(localRaw));
+            setServerQuestions([]);
         } finally {
             setIsLoadingServerQuestions(false);
         }
