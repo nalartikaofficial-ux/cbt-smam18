@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-    KeyRound,
     Maximize2,
     ChevronLeft,
     AlertCircle,
@@ -12,9 +11,6 @@ import {
     Layers,
     Lock
 } from "lucide-react";
-
-const GOOGLE_SCRIPT_API_URL =
-    "https://script.google.com/macros/s/AKfycbxXeMuz-VXgbdUOESiOOLL5NlLrSMVfrdvOCwhgBbjLWwOy3ASkTjnWJSAIONFDrdY7hg/exec";
 
 function getPesanErrorSederhana(rawMsg: string): string {
     const msg = (rawMsg || "").toLowerCase();
@@ -41,7 +37,7 @@ function getPesanErrorSederhana(rawMsg: string): string {
         return "Waktu sesi ujian sudah habis.";
     }
 
-    return "Data login salah, silahkan coba lagi!";
+    return rawMsg || "Data login salah, silahkan coba lagi!";
 }
 
 export default function StudentLoginPage() {
@@ -65,7 +61,7 @@ export default function StudentLoginPage() {
     useEffect(() => {
         const fetchSession = async () => {
             try {
-                const res = await fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_active_session&_t=${Date.now()}`, {
+                const res = await fetch(`/api/auth/student?_t=${Date.now()}`, {
                     cache: "no-store"
                 });
                 const json = await res.json();
@@ -116,8 +112,15 @@ export default function StudentLoginPage() {
         setIsValidating(true);
 
         try {
-            const verifyUrl = `${GOOGLE_SCRIPT_API_URL}?action=verify_student&nisn=${cleanNisn}&nama=${encodeURIComponent(cleanName)}&token=${cleanToken}&_t=${Date.now()}`;
-            const res = await fetch(verifyUrl, { cache: "no-store" });
+            const res = await fetch("/api/auth/student", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    nisn: cleanNisn,
+                    nama: cleanName,
+                    token: cleanToken
+                })
+            });
             const json = await res.json();
 
             if (json.status === "success" && json.student) {

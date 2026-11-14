@@ -237,27 +237,25 @@ function OfficialExamChamberContent() {
     };
 
     const mapRawToQuestionItems = (rawData: any[]): QuestionItem[] => {
-        const getSubtestMetaByStrictIndex = (idx: number) => {
-            let acc = 0;
-            for (const sub of SNBT_STRUCTURE) {
-                if (idx < acc + sub.count) {
-                    return { subtes: sub.code, localNo: (idx - acc) + 1, category: sub.category };
-                }
-                acc += sub.count;
-            }
-            return { subtes: "PM", localNo: 20, category: "Penalaran Matematika" };
+        const categoryMap: Record<string, string> = {
+            PU: "Tes Potensi Skolastik",
+            PPU: "Tes Potensi Skolastik",
+            PBM: "Tes Potensi Skolastik",
+            PK: "Tes Potensi Skolastik",
+            LIT_INDO: "Tes Literasi",
+            LIT_ENG: "Tes Literasi",
+            PM: "Penalaran Matematika"
         };
 
         return rawData.map((item: any, idx: number) => {
-            const meta = getSubtestMetaByStrictIndex(idx);
-            const subCode = meta.subtes;
-            const localNo = meta.localNo;
+            const subCode = String(item.subtes_code || "PU").trim().toUpperCase();
+            const localNo = Number(item.no_soal) || idx + 1;
 
             return {
                 id: `${subCode}_${localNo}`,
                 localNo,
                 subtest: subCode,
-                subtestCategory: meta.category,
+                subtestCategory: categoryMap[subCode] || "Tes Potensi Skolastik",
                 stimulus: item.stimulus || "",
                 imageUrl: getCleanImageUrl(item.image_url),
                 imagePosition: item.image_position === "above" ? "above" : "below",
@@ -301,12 +299,18 @@ function OfficialExamChamberContent() {
         const activePkg = queryPkg || sessionData.packageId || "PAKET_1";
         setSessionTitle(`RUANG UJIAN RESMI • ${activePkg.replace("_", " ")}`);
 
-        fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_active_session&_t=${Date.now()}`, { cache: "no-store" })
+        fetch(`/api/session?_t=${Date.now()}`, { cache: "no-store" })
             .then((r) => r.json())
             .then((res) => {
-                if (res.status === "success" && res.data?.waktu_selesai) {
-                    const endTimestamp = new Date(res.data.waktu_selesai).getTime();
-                    if (!isNaN(endTimestamp)) setHardEndTime(endTimestamp);
+                if (res.status === "success" && res.data) {
+                    if (res.data.status_akses === "TERKUNCI") {
+                        setIsSessionLockedByProctor(true);
+                        setSessionLockMessage("Akses ruang ujian sedang dikunci oleh Pengawas.");
+                    }
+                    if (res.data.waktu_selesai) {
+                        const endTimestamp = new Date(res.data.waktu_selesai).getTime();
+                        if (!isNaN(endTimestamp)) setHardEndTime(endTimestamp);
+                    }
                 }
             })
             .catch(() => { });
@@ -533,10 +537,9 @@ function OfficialExamChamberContent() {
                 const isFinalLock = next >= 3;
                 const cleanNisn = String(studentSession.nisn).replace(/\D/g, "").trim();
 
-                fetch(GOOGLE_SCRIPT_API_URL, {
+                fetch("/api/students", {
                     method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         action: "report_kiosk_lock",
                         nisn: cleanNisn,
@@ -704,11 +707,36 @@ function OfficialExamChamberContent() {
                 pilihan_kampus_2: pilihanKampus2 || "-"
             };
 
-            fetch(GOOGLE_SCRIPT_API_URL, {
+            fetch("/api/students", {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify(gasPayload)
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: "finish_exam",
+                    student: {
+                        nisn: cleanNisn,
+                        nama: studentSession?.candidateName || "-",
+                        kelas: studentSession?.kelas || "XII",
+                        paket: studentSession?.packageId || "PAKET_1",
+                        score: scoreResults.scaledScore,
+                        nilai_tps: scoreResults.tpsAvg,
+                        nilai_literasi: scoreResults.litAvg,
+                        skor_pu: scoreResults.subtestBreakdown["PU"]?.scoreIRT || 200,
+                        skor_ppu: scoreResults.subtestBreakdown["PPU"]?.scoreIRT || 200,
+                        skor_pbm: scoreResults.subtestBreakdown["PBM"]?.scoreIRT || 200,
+                        skor_pk: scoreResults.subtestBreakdown["PK"]?.scoreIRT || 200,
+                        skor_lit_indo: scoreResults.subtestBreakdown["LIT_INDO"]?.scoreIRT || 200,
+                        skor_lit_eng: scoreResults.subtestBreakdown["LIT_ENG"]?.scoreIRT || 200,
+                        skor_pm: scoreResults.subtestBreakdown["PM"]?.scoreIRT || 200,
+                        benar: scoreResults.correct,
+                        salah: scoreResults.incorrect,
+                        kosong: scoreResults.unattempted,
+                        violations: violationCount,
+                        waktu_mulai: examStartTimeStr || "-",
+                        waktu_selesai: timeStr,
+                        pilihan_kampus_1: pilihanKampus1 || "-",
+                        pilihan_kampus_2: pilihanKampus2 || "-"
+                    }
+                })
             }).catch(() => { });
         }
 
@@ -734,10 +762,9 @@ function OfficialExamChamberContent() {
 
             const cleanNisn = String(studentSession.nisn).replace(/\D/g, "").trim();
             if (cleanNisn) {
-                fetch(GOOGLE_SCRIPT_API_URL, {
+                fetch("/api/students", {
                     method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         action: "save_student_target",
                         nisn: cleanNisn,
