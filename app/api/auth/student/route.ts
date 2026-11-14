@@ -85,13 +85,32 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { action, student, students, nisn, updates } = body;
 
-        // 1. Import massal peserta
-        if (action === "bulk_upsert_students" && Array.isArray(students)) {
+        // 1. Tambah 1 peserta baru dari panel Proktor
+        if (action === "add_student") {
+            const cleanNisn = String(body.nisn || "").replace(/\D/g, "").trim();
+            const { error } = await supabase.from("students").upsert(
+                {
+                    nisn: cleanNisn,
+                    nama: String(body.nama || "").trim(),
+                    kelas: String(body.kelas || "XII").trim().toUpperCase(),
+                    status: "Belum Hadir",
+                    violations: 0,
+                    score: 0,
+                    updated_at: new Date().toISOString()
+                },
+                { onConflict: "nisn" }
+            );
+            if (error) throw error;
+            return NextResponse.json({ status: "success" });
+        }
+
+        // 2. Import massal peserta (Salin-tempel Excel / CSV)
+        if ((action === "bulk_upsert_students" || action === "bulk_add_students") && Array.isArray(students)) {
             const rows = students
                 .map((s: any) => ({
-                    nisn: String(s.nisn || "").trim(),
+                    nisn: String(s.nisn || "").replace(/\D/g, "").trim(),
                     nama: String(s.nama || s.nama_siswa || "").trim(),
-                    kelas: String(s.kelas || "").trim(),
+                    kelas: String(s.kelas || "XII").trim().toUpperCase(),
                     sesi_aktif: String(s.sesi_aktif || "Sesi 1").trim(),
                     status: String(s.status || s.status_ujian || "Belum Hadir").trim(),
                     token_proktor: String(s.token_proktor || "").trim(),
@@ -102,7 +121,7 @@ export async function POST(request: Request) {
                     pilihan_kampus_2: String(s.pilihan_kampus_2 || "").trim(),
                     updated_at: new Date().toISOString()
                 }))
-                .filter((s: any) => s.nisn !== "");
+                .filter((s: any) => s.nisn !== "" && s.nama !== "");
 
             const { error } = await supabase
                 .from("students")
@@ -115,7 +134,92 @@ export async function POST(request: Request) {
             });
         }
 
-        // 2. Simpan target pilihan kampus sebelum mulai ujian
+        // 3. Edit biodata peserta (NISN / Nama / Kelas)
+        if (action === "edit_student") {
+            const oldNisn = String(body.old_nisn || "").trim();
+            const newNisn = String(body.nisn || "").replace(/\D/g, "").trim();
+            const nama = String(body.nama || "").trim();
+            const kelas = String(body.kelas || "").trim().toUpperCase();
+
+            if (oldNisn && oldNisn !== newNisn) {
+                await supabase.from("students").delete().eq("nisn", oldNisn);
+                const { error } = await supabase.from("students").insert({
+                    nisn: newNisn,
+                    nama,
+                    kelas,
+                    updated_at: new Date().toISOString()
+                });
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from("students")
+                    .update({ nama, kelas, updated_at: new Date().toISOString() })
+                    .eq("nisn", newNisn);
+                if (error) throw error;
+            }
+            return NextResponse.json({ status: "success" });
+        }
+
+        // 4. Hapus peserta
+        if (action === "delete_student" && nisn) {
+            const { error } = await supabase
+                .from("students")
+                .delete()
+                .eq("nisn", String(nisn).trim());
+            if (error) throw error;
+            return NextResponse.json({ status: "success" });
+        }
+
+        // 5. Buka akses pengerjaan (lanjut ujian setelah terkunci kiosk)
+        if (action === "unlock_student" && nisn) {
+            const { error } = await supabase
+                .from("students")
+                .update({ status: "Sedang Mengerjakan", updated_at: new Date().toISOString() })
+                .eq("nisn", String(nisn).trim());
+            if (error) throw error;
+            return NextResponse.json({ status: "success" });
+        }
+
+        // 6. Blokir / kunci bilik siswa secara manual oleh pengawas
+        if (action === "block_student" && nisn) {
+            const { error } = await supabase
+                .from("students")
+                .update({ status: "Terkunci", updated_at: new Date().toISOString() })
+                .eq("nisn", String(nisn).trim());
+            if (error) throw error;
+            return NextResponse.json({ status: "success" });
+        }
+
+        // 7. Reset status peserta ke Belum Hadir (untuk persiapan TO berikutnya; riwayat di exam_attempts tetap aman)
+        if (action === "reset_status" && nisn) {
+            const { error } = await supabase
+                .from("students")
+                .update({
+                    status: "Belum Hadir",
+                    violations: 0,
+                    score: 0,
+                    nilai_tps: 0,
+                    nilai_literasi: 0,
+                    skor_pu: 0,
+                    skor_ppu: 0,
+                    skor_pbm: 0,
+                    skor_pk: 0,
+                    skor_lit_indo: 0,
+                    skor_lit_eng: 0,
+                    skor_pm: 0,
+                    benar: 0,
+                    salah: 0,
+                    kosong: 0,
+                    waktu_mulai: "-",
+                    waktu_selesai: "-",
+                    updated_at: new Date().toISOString()
+                })
+                .eq("nisn", String(nisn).trim());
+            if (error) throw error;
+            return NextResponse.json({ status: "success" });
+        }
+
+        // 8. Simpan target pilihan kampus sebelum mulai ujian
         if (action === "save_student_target" && nisn) {
             const { error } = await supabase
                 .from("students")
@@ -130,7 +234,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ status: "success" });
         }
 
-        // 3. Laporkan pelanggaran layar penuh / pindah tab
+        // 9. Laporkan pelanggaran layar penuh / pindah tab
         if (action === "report_kiosk_lock" && nisn) {
             const vCount = Number(body.violations || 1);
             const nextStatus = vCount >= 3 ? "Terkunci" : "Sedang Mengerjakan";
@@ -148,7 +252,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ status: "success" });
         }
 
-        // 4. Simpan hasil akhir ujian ke students + exam_attempts + backup Google Sheets
+        // 10. Simpan hasil akhir ujian ke students + exam_attempts + backup Google Sheets
         if (action === "finish_exam" && student?.nisn) {
             const cleanNisn = String(student.nisn).trim();
             const payload = {
@@ -178,14 +282,12 @@ export async function POST(request: Request) {
                 updated_at: new Date().toISOString()
             };
 
-            // Simpan status terkini di tabel students
             const { error } = await supabase
                 .from("students")
                 .upsert(payload, { onConflict: "nisn" });
 
             if (error) throw error;
 
-            // Simpan jejak historis ke tabel exam_attempts untuk perbandingan TO-1, TO-2, dst.
             await supabase.from("exam_attempts").insert({
                 nisn: payload.nisn,
                 nama: payload.nama,
@@ -211,7 +313,6 @@ export async function POST(request: Request) {
                 waktu_selesai: payload.waktu_selesai
             });
 
-            // Backup otomatis ke Google Sheets jika URL tersedia
             if (GAS_WEBHOOK_URL) {
                 fetch(GAS_WEBHOOK_URL, {
                     method: "POST",
@@ -236,7 +337,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ status: "success", data: payload });
         }
 
-        // 5. Update status manual oleh Proktor
+        // 11. Update status parsial umum
         if (action === "update_status" && nisn && updates) {
             const { error } = await supabase
                 .from("students")

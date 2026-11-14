@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import {
     ShieldAlert,
     BookOpen,
-    Lock,
     ArrowRight,
     ChevronLeft,
     User,
@@ -23,9 +22,6 @@ import {
     Eye,
     EyeOff
 } from "lucide-react";
-
-const GOOGLE_SCRIPT_API_URL =
-    "https://script.google.com/macros/s/AKfycbxXeMuz-VXgbdUOESiOOLL5NlLrSMVfrdvOCwhgBbjLWwOy3ASkTjnWJSAIONFDrdY7hg/exec";
 
 interface UserAccount {
     username: string;
@@ -62,12 +58,12 @@ export default function AdminGateAndHubPage() {
 
     const fetchUsers = async () => {
         try {
-            const res = await fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_users`, { cache: "no-store" });
+            const res = await fetch(`/api/staff?_t=${Date.now()}`, { cache: "no-store" });
             const json = await res.json();
             if (json.status === "success" && Array.isArray(json.data) && json.data.length > 0) {
-                const sheetUsers: UserAccount[] = json.data;
+                const dbUsers: UserAccount[] = json.data;
                 const merged = [...DEFAULT_SYSTEM_ACCOUNTS];
-                sheetUsers.forEach((su) => {
+                dbUsers.forEach((su) => {
                     if (!merged.some((m) => m.username.toLowerCase() === su.username.toLowerCase())) {
                         merged.push(su);
                     }
@@ -79,7 +75,6 @@ export default function AdminGateAndHubPage() {
         }
     };
 
-    // Cek sesi login saat halaman dimuat
     useEffect(() => {
         fetchUsers();
 
@@ -149,7 +144,7 @@ export default function AdminGateAndHubPage() {
         setIsAddingUser(true);
 
         const newUserObj: UserAccount = {
-            username: newUsername.trim(),
+            username: newUsername.trim().toLowerCase(),
             password: newPassword.trim(),
             nama: newNama.trim(),
             role: "guru",
@@ -157,24 +152,25 @@ export default function AdminGateAndHubPage() {
         };
 
         try {
-            await fetch(GOOGLE_SCRIPT_API_URL, {
+            const res = await fetch("/api/staff", {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: "add_user",
                     ...newUserObj
                 })
             });
+            const json = await res.json();
+            if (json.status !== "success") throw new Error(json.message);
 
-            setUserList((prev) => [...prev, newUserObj]);
+            setUserList((prev) => [...prev.filter((u) => u.username !== newUserObj.username), newUserObj]);
             setNewUsername("");
             setNewPassword("");
             setNewNama("");
             setNewMapel("");
-            alert(`Akun guru ${newUserObj.nama} berhasil didaftarkan!`);
-        } catch {
-            alert("Gagal menambahkan akun guru ke Google Sheets.");
+            alert(`Akun guru ${newUserObj.nama} berhasil disimpan ke Supabase!`);
+        } catch (err: any) {
+            alert(`Gagal menambahkan akun guru: ${err.message || "Cek koneksi"}`);
         } finally {
             setIsAddingUser(false);
         }
@@ -185,10 +181,9 @@ export default function AdminGateAndHubPage() {
         setUserList((prev) => prev.filter((u) => u.username !== username));
 
         try {
-            await fetch(GOOGLE_SCRIPT_API_URL, {
+            await fetch("/api/staff", {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "delete_user", username })
             });
         } catch { }
@@ -229,7 +224,7 @@ export default function AdminGateAndHubPage() {
                                 SMA MUHAMMADIYAH 18 JAKARTA
                             </div>
                             <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-1">
-                                Portal Guru &amp; Proktor
+                                Portal Guru & Proktor
                             </h1>
                             <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">
                                 Silakan masuk menggunakan akun Administrator, Pengawas Ujian, atau Guru Mata Pelajaran.
@@ -275,11 +270,7 @@ export default function AdminGateAndHubPage() {
                                     title={showPassword ? "Sembunyikan password" : "Lihat password"}
                                     tabIndex={-1}
                                 >
-                                    {showPassword ? (
-                                        <EyeOff className="w-4 h-4" />
-                                    ) : (
-                                        <Eye className="w-4 h-4" />
-                                    )}
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                 </button>
                             </div>
                         </div>
@@ -323,7 +314,7 @@ export default function AdminGateAndHubPage() {
                         </div>
                         <div className="min-w-0">
                             <div className="text-xs sm:text-sm font-black text-slate-900 tracking-tight uppercase truncate">
-                                PUSAT KENDALI STAF &bull; SMA MUHAMMADIYAH 18
+                                PUSAT KENDALI STAF • SMA MUHAMMADIYAH 18
                             </div>
                             <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
                                 Masuk sebagai: <strong className="text-blue-700">{currentUser.nama}</strong> ({currentUser.role.toUpperCase()})
@@ -367,12 +358,12 @@ export default function AdminGateAndHubPage() {
                                     Pusat Komando Proktor
                                 </h2>
                                 <p className="text-xs text-slate-500 leading-relaxed mt-1.5">
-                                    Generator token sesi, pemantauan bilik siswa, buka kunci pelanggaran kiosk, dan cetak Berita Acara Ujian (BAP).
+                                    Generator token sesi, pemantauan bilik siswa, buka kunci pelanggaran kiosk, import peserta, dan cetak Berita Acara Ujian (BAP).
                                 </p>
                             </div>
                         </div>
                         <div className="pt-3.5 sm:pt-4 mt-3.5 sm:mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-700">
-                            <span>Masuk Bilik Proktor &rarr;</span>
+                            <span>Masuk Bilik Proktor →</span>
                             <Activity className="w-4 h-4 animate-pulse" />
                         </div>
                     </Link>
@@ -394,12 +385,12 @@ export default function AdminGateAndHubPage() {
                                     Kelola Bank Soal SNBT
                                 </h2>
                                 <p className="text-xs text-slate-500 leading-relaxed mt-1.5">
-                                    Input butir soal 7 subtes, rumus sains KaTeX, impor CSV, konversi link Google Drive, dan sinkron ke spreadsheet.
+                                    Input butir soal 7 subtes, rumus sains KaTeX, impor Word/CSV, dan penyimpanan otomatis ke Supabase PostgreSQL.
                                 </p>
                             </div>
                         </div>
                         <div className="pt-3.5 sm:pt-4 mt-3.5 sm:mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-700">
-                            <span>Masuk Ruang Bank Soal &rarr;</span>
+                            <span>Masuk Ruang Bank Soal →</span>
                             <BookOpen className="w-4 h-4" />
                         </div>
                     </Link>
@@ -418,15 +409,15 @@ export default function AdminGateAndHubPage() {
                                     BILIK 03
                                 </span>
                                 <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight mt-1 group-hover:text-emerald-700 transition-colors">
-                                    Analitik &amp; Rekapitulasi Nilai
+                                    Analitik & Progres Tryout
                                 </h2>
                                 <p className="text-xs text-slate-500 leading-relaxed mt-1.5">
-                                    Dashboard hasil try out, peringkat siswa, cetak rapor diagnostik individual, dan pengesahan pejabat.
+                                    Dashboard hasil try out, perbandingan TO-1 vs TO-2 vs TO-3, peta kekuatan subtes, dan cetak rapor diagnostik A4.
                                 </p>
                             </div>
                         </div>
                         <div className="pt-3.5 sm:pt-4 mt-3.5 sm:mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-700">
-                            <span>Buka Statistik Nilai &rarr;</span>
+                            <span>Buka Statistik Nilai →</span>
                             <BarChart3 className="w-4 h-4" />
                         </div>
                     </Link>
@@ -438,7 +429,7 @@ export default function AdminGateAndHubPage() {
                         <GraduationCap className="w-5 h-5 text-amber-300 shrink-0" />
                         <div className="text-xs min-w-0">
                             <span className="font-bold block truncate">Uji Coba Bilik Siswa Langsung:</span>
-                            <span className="text-blue-200 text-[11px] truncate block">Buka halaman simulasi mandiri siswa dengan 145 butir soal dan alur 195 menit.</span>
+                            <span className="text-blue-200 text-[11px] truncate block">Buka halaman simulasi mandiri siswa dengan 160 butir soal dan alur 195 menit.</span>
                         </div>
                     </div>
                     <Link
@@ -466,9 +457,7 @@ export default function AdminGateAndHubPage() {
                             </span>
                         </div>
 
-                        {/* FORM GRID 12 KOLOM PRESISI */}
                         <form onSubmit={handleAddUser} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 text-xs items-end">
-                            {/* 1. Nama Lengkap Guru (3 Kolom) */}
                             <div className="lg:col-span-3 space-y-1">
                                 <label className="font-bold text-slate-700 font-mono text-[10.5px] uppercase tracking-wider block">
                                     NAMA LENGKAP GURU:
@@ -483,7 +472,6 @@ export default function AdminGateAndHubPage() {
                                 />
                             </div>
 
-                            {/* 2. Mata Pelajaran / Subtes (3 Kolom) */}
                             <div className="lg:col-span-3 space-y-1">
                                 <label className="font-bold text-slate-700 font-mono text-[10.5px] uppercase tracking-wider block">
                                     MATA PELAJARAN / SUBTES:
@@ -498,7 +486,6 @@ export default function AdminGateAndHubPage() {
                                 />
                             </div>
 
-                            {/* 3. Username (2 Kolom) */}
                             <div className="lg:col-span-2 space-y-1">
                                 <label className="font-bold text-slate-700 font-mono text-[10.5px] uppercase tracking-wider block">
                                     USERNAME:
@@ -513,7 +500,6 @@ export default function AdminGateAndHubPage() {
                                 />
                             </div>
 
-                            {/* 4. Password (2 Kolom) */}
                             <div className="lg:col-span-2 space-y-1">
                                 <label className="font-bold text-slate-700 font-mono text-[10.5px] uppercase tracking-wider block">
                                     PASSWORD:
@@ -528,7 +514,6 @@ export default function AdminGateAndHubPage() {
                                 />
                             </div>
 
-                            {/* 5. Tombol Buat Akun (2 Kolom) */}
                             <div className="lg:col-span-2">
                                 <button
                                     type="submit"
@@ -561,10 +546,10 @@ export default function AdminGateAndHubPage() {
                                             <td className="p-3">
                                                 <span
                                                     className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${u.role === "admin"
-                                                        ? "bg-purple-50 text-purple-700 border border-purple-200"
-                                                        : u.role === "proctor"
-                                                            ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                                            : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                                            ? "bg-purple-50 text-purple-700 border border-purple-200"
+                                                            : u.role === "proctor"
+                                                                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                                                : "bg-emerald-50 text-emerald-700 border border-emerald-200"
                                                         }`}
                                                 >
                                                     {u.role.toUpperCase()}

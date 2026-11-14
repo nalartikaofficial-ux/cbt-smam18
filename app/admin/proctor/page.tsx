@@ -138,19 +138,14 @@ export default function ProctorMasterDashboard() {
 
     const fetchMasterSession = async () => {
         try {
-            const res = await fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_active_session&_t=${Date.now()}`, {
-                cache: "no-store"
-            });
-            const rawText = await res.text();
-            if (!rawText.trim().startsWith("<")) {
-                const json = JSON.parse(rawText);
-                if (json.status === "success" && json.data) {
-                    setMasterSession({
-                        ...json.data,
-                        waktu_mulai: json.data.waktu_mulai ? String(json.data.waktu_mulai).substring(0, 16) : "2026-11-12T07:30",
-                        waktu_selesai: json.data.waktu_selesai ? String(json.data.waktu_selesai).substring(0, 16) : "2026-11-12T11:30"
-                    });
-                }
+            const res = await fetch(`/api/session?_t=${Date.now()}`, { cache: "no-store" });
+            const json = await res.json();
+            if (json.status === "success" && json.data) {
+                setMasterSession({
+                    ...json.data,
+                    waktu_mulai: json.data.waktu_mulai ? String(json.data.waktu_mulai).substring(0, 16) : "2026-11-14T07:30",
+                    waktu_selesai: json.data.waktu_selesai ? String(json.data.waktu_selesai).substring(0, 16) : "2026-11-14T11:30"
+                });
             }
         } catch (err) {
             console.error("Gagal ambil jadwal:", err);
@@ -168,24 +163,19 @@ export default function ProctorMasterDashboard() {
 
     const fetchStudentsSilently = async () => {
         try {
-            const res = await fetch(`${GOOGLE_SCRIPT_API_URL}?action=get_students&_t=${Date.now()}`, {
-                cache: "no-store"
-            });
-            const rawText = await res.text();
-            if (!rawText.trim().startsWith("<")) {
-                const json = JSON.parse(rawText);
-                if (json.status === "success" && Array.isArray(json.data)) {
-                    const cleanList: StudentItem[] = json.data.map((item: any) => ({
-                        nisn: String(item.nisn || "").replace(/\D/g, "").trim(),
-                        nama: String(item.nama || item.nama_siswa || "").trim(),
-                        kelas: String(item.kelas || "").trim(),
-                        status: String(item.status || item.status_ujian || "Belum Hadir").trim(),
-                        violations: Number(item.violations || item.pelanggaran || 0),
-                        score: Number(item.score || item.skor_irt || 0),
-                        waktu_selesai: String(item.waktu_selesai || "-").trim()
-                    }));
-                    setStudents(cleanList);
-                }
+            const res = await fetch(`/api/students?_t=${Date.now()}`, { cache: "no-store" });
+            const json = await res.json();
+            if (json.status === "success" && Array.isArray(json.data)) {
+                const cleanList: StudentItem[] = json.data.map((item: any) => ({
+                    nisn: String(item.nisn || "").replace(/\D/g, "").trim(),
+                    nama: String(item.nama || "").trim(),
+                    kelas: String(item.kelas || "").trim(),
+                    status: String(item.status || "Belum Hadir").trim(),
+                    violations: Number(item.violations || 0),
+                    score: Number(item.score || 0),
+                    waktu_selesai: String(item.waktu_selesai || "-").trim()
+                }));
+                setStudents(cleanList);
             }
         } catch (err) {
             console.error("Gagal polling data siswa:", err);
@@ -250,25 +240,27 @@ export default function ProctorMasterDashboard() {
         setIsSavingSchedule(true);
 
         const payload = {
-            action: "update_schedule",
-            ...masterSession,
-            ...customPayload,
-            token_resmi: (customPayload?.token_resmi || masterSession.token_resmi).toUpperCase()
+            paket_aktif: customPayload?.paket_aktif || masterSession.paket_aktif,
+            nama_paket: customPayload?.nama_paket || masterSession.nama_paket,
+            token_resmi: (customPayload?.token_resmi || masterSession.token_resmi).toUpperCase(),
+            status_akses: customPayload?.status_akses || masterSession.status_akses,
+            waktu_mulai: customPayload?.waktu_mulai || masterSession.waktu_mulai,
+            waktu_selesai: customPayload?.waktu_selesai || masterSession.waktu_selesai
         };
 
         try {
-            await fetch(GOOGLE_SCRIPT_API_URL, {
+            const res = await fetch("/api/session", {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
-            if (customPayload) {
-                setMasterSession((prev) => ({ ...prev, ...customPayload }));
-            }
-            alert(`Jadwal & Waktu batas ujian berhasil diterapkan ke server!`);
-        } catch {
-            alert("Gagal menyimpan jadwal.");
+            const json = await res.json();
+            if (json.status !== "success") throw new Error(json.message);
+
+            setMasterSession((prev) => ({ ...prev, ...payload }));
+            alert("Jadwal & Token ujian berhasil diterapkan ke database Supabase!");
+        } catch (err: any) {
+            alert(`Gagal menyimpan jadwal: ${err.message || ""}`);
         } finally {
             setIsSavingSchedule(false);
         }
@@ -284,17 +276,13 @@ export default function ProctorMasterDashboard() {
         if (!confirm(`Tambahkan waktu darurat ${minutes} menit untuk seluruh bilik siswa secara serentak?`)) return;
 
         try {
-            await fetch(GOOGLE_SCRIPT_API_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({
-                    action: "add_time_compensation",
-                    minutes: minutes
-                })
-            });
-            alert(`Waktu batas sesi ujian berhasil dimundurkan ${minutes} menit!`);
-            fetchMasterSession();
+            const currentEnd = new Date(masterSession.waktu_selesai);
+            const baseTime = isNaN(currentEnd.getTime()) ? new Date() : currentEnd;
+            const extended = new Date(baseTime.getTime() + minutes * 60000);
+            const pad = (n: number) => String(n).padStart(2, "0");
+            const formattedEnd = `${extended.getFullYear()}-${pad(extended.getMonth() + 1)}-${pad(extended.getDate())}T${pad(extended.getHours())}:${pad(extended.getMinutes())}`;
+
+            await handleUpdateSchedule(undefined, { waktu_selesai: formattedEnd });
         } catch {
             alert("Gagal menambahkan kompensasi waktu.");
         }
@@ -318,10 +306,9 @@ export default function ProctorMasterDashboard() {
         );
 
         try {
-            await fetch(GOOGLE_SCRIPT_API_URL, {
+            await fetch("/api/students", {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "unlock_student", nisn: student.nisn })
             });
             alert(`Akses pengerjaan ${student.nama} berhasil dibuka kembali. Siswa dapat login kembali di perangkatnya menggunakan NISN & Token untuk melanjutkan ujian dengan jawaban yang tetap tersimpan utuh.`);
@@ -338,10 +325,9 @@ export default function ProctorMasterDashboard() {
         );
 
         try {
-            await fetch(GOOGLE_SCRIPT_API_URL, {
+            await fetch("/api/students", {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: "block_student",
                     nisn: student.nisn,
@@ -366,10 +352,9 @@ export default function ProctorMasterDashboard() {
         );
 
         try {
-            await fetch(GOOGLE_SCRIPT_API_URL, {
+            await fetch("/api/students", {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "reset_status", nisn: student.nisn })
             });
             alert(`Peserta ${student.nama} telah berhasil direset ke status 'Belum Hadir' dan siap login kembali.`);
@@ -405,10 +390,9 @@ export default function ProctorMasterDashboard() {
         setStudents((prev) => [...prev.filter((s) => s.nisn !== cleanNisn), localItem]);
 
         try {
-            await fetch(GOOGLE_SCRIPT_API_URL, {
+            await fetch("/api/students", {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: "add_student",
                     nisn: cleanNisn,
@@ -471,10 +455,9 @@ export default function ProctorMasterDashboard() {
                 return merged;
             });
 
-            await fetch(GOOGLE_SCRIPT_API_URL, {
+            await fetch("/api/students", {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: "bulk_add_students",
                     students: newItems
@@ -524,10 +507,9 @@ export default function ProctorMasterDashboard() {
         setSearchQuery("");
 
         try {
-            await fetch(GOOGLE_SCRIPT_API_URL, {
+            await fetch("/api/students", {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: "edit_student",
                     old_nisn: oldNisn,
@@ -549,10 +531,9 @@ export default function ProctorMasterDashboard() {
         setStudents((prev) => prev.filter((s) => s.nisn !== nisn));
 
         try {
-            await fetch(GOOGLE_SCRIPT_API_URL, {
+            await fetch("/api/students", {
                 method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "delete_student", nisn })
             });
         } catch { }
