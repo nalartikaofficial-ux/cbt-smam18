@@ -35,9 +35,6 @@ import {
     Ban
 } from "lucide-react";
 
-const GOOGLE_SCRIPT_API_URL =
-    "https://script.google.com/macros/s/AKfycbxXeMuz-VXgbdUOESiOOLL5NlLrSMVfrdvOCwhgBbjLWwOy3ASkTjnWJSAIONFDrdY7hg/exec";
-
 export interface StudentItem {
     nisn: string;
     nama: string;
