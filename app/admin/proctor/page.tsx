@@ -99,8 +99,8 @@ export default function ProctorMasterDashboard() {
         nama_paket: "Simulasi Terstandarisasi SNBT 2026",
         token_resmi: "SM18UT",
         status_akses: "DIBUKA",
-        waktu_mulai: "2026-11-12T07:30",
-        waktu_selesai: "2026-11-12T11:30"
+        waktu_mulai: "2026-11-15T07:30",
+        waktu_selesai: "2026-11-15T11:30"
     });
     const [isSavingSchedule, setIsSavingSchedule] = useState(false);
     const [customMinutes, setCustomMinutes] = useState<number>(5);
@@ -140,8 +140,8 @@ export default function ProctorMasterDashboard() {
             if (json.status === "success" && json.data) {
                 setMasterSession({
                     ...json.data,
-                    waktu_mulai: json.data.waktu_mulai ? String(json.data.waktu_mulai).substring(0, 16) : "2026-11-14T07:30",
-                    waktu_selesai: json.data.waktu_selesai ? String(json.data.waktu_selesai).substring(0, 16) : "2026-11-14T11:30"
+                    waktu_mulai: json.data.waktu_mulai ? String(json.data.waktu_mulai).substring(0, 16) : "2026-11-15T07:30",
+                    waktu_selesai: json.data.waktu_selesai ? String(json.data.waktu_selesai).substring(0, 16) : "2026-11-15T11:30"
                 });
             }
         } catch (err) {
@@ -298,31 +298,29 @@ export default function ProctorMasterDashboard() {
             return;
         }
 
-        setStudents((prev) =>
-            prev.map((s) => (s.nisn === student.nisn ? { ...s, status: "Sedang Mengerjakan" } : s))
-        );
-
         try {
-            await fetch("/api/students", {
+            const res = await fetch("/api/students", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "unlock_student", nisn: student.nisn })
             });
+            const json = await res.json();
+            if (json.status !== "success") throw new Error(json.message);
+
+            setStudents((prev) =>
+                prev.map((s) => (s.nisn === student.nisn ? { ...s, status: "Sedang Mengerjakan" } : s))
+            );
             alert(`Akses pengerjaan ${student.nama} berhasil dibuka kembali. Siswa dapat login kembali di perangkatnya menggunakan NISN & Token untuk melanjutkan ujian dengan jawaban yang tetap tersimpan utuh.`);
-        } catch {
-            alert("Gagal membuka akses pengerjaan.");
+        } catch (err: any) {
+            alert(`Gagal membuka akses pengerjaan: ${err.message || ""}`);
         }
     };
 
     const handleBlockStudent = async (student: StudentItem) => {
         if (!confirm(`TINDAKAN PENGAWAS: Kunci/Blokir bilik ujian peserta ${student.nama} (${student.nisn})? Akses ujian akan langsung dihentikan sepihak tanpa mengubah jumlah catatan pelanggaran (${student.violations}x).`)) return;
 
-        setStudents((prev) =>
-            prev.map((s) => (s.nisn === student.nisn ? { ...s, status: "Terkunci" } : s))
-        );
-
         try {
-            await fetch("/api/students", {
+            const res = await fetch("/api/students", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -331,31 +329,41 @@ export default function ProctorMasterDashboard() {
                     violations: student.violations
                 })
             });
+            const json = await res.json();
+            if (json.status !== "success") throw new Error(json.message);
+
+            setStudents((prev) =>
+                prev.map((s) => (s.nisn === student.nisn ? { ...s, status: "Terkunci" } : s))
+            );
             alert(`Peserta ${student.nama} berhasil diblokir. Status sekarang 'Terkunci' dengan catatan pelanggaran tetap ${student.violations}x.`);
-        } catch {
-            alert("Gagal memblokir peserta.");
+        } catch (err: any) {
+            alert(`Gagal memblokir peserta: ${err.message || ""}`);
         }
     };
 
     const handleResetStudent = async (student: StudentItem) => {
         if (!confirm(`Reset ujian peserta ${student.nama} (${student.nisn})? Status akan dikembalikan ke 'Belum Hadir', nilai IRT di-nol-kan, dan pelanggaran dibersihkan kembali ke 0 untuk persiapan sesi baru.`)) return;
 
-        setStudents((prev) =>
-            prev.map((s) =>
-                s.nisn === student.nisn
-                    ? { ...s, status: "Belum Hadir", violations: 0, score: 0, waktu_selesai: "-" }
-                    : s
-            )
-        );
-
         try {
-            await fetch("/api/students", {
+            const res = await fetch("/api/students", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "reset_status", nisn: student.nisn })
             });
+            const json = await res.json();
+            if (json.status !== "success") throw new Error(json.message);
+
+            setStudents((prev) =>
+                prev.map((s) =>
+                    s.nisn === student.nisn
+                        ? { ...s, status: "Belum Hadir", violations: 0, score: 0, waktu_selesai: "-" }
+                        : s
+                )
+            );
             alert(`Peserta ${student.nama} telah berhasil direset ke status 'Belum Hadir' dan siap login kembali.`);
-        } catch { }
+        } catch (err: any) {
+            alert(`Gagal mereset peserta: ${err.message || ""}`);
+        }
     };
 
     const handleAddStudent = async (e: React.FormEvent) => {
@@ -375,19 +383,8 @@ export default function ProctorMasterDashboard() {
 
         setIsSubmittingStudent(true);
 
-        const localItem: StudentItem = {
-            nisn: cleanNisn,
-            nama: cleanNama,
-            kelas: cleanKelas,
-            status: "Belum Hadir",
-            violations: 0,
-            score: 0
-        };
-
-        setStudents((prev) => [...prev.filter((s) => s.nisn !== cleanNisn), localItem]);
-
         try {
-            await fetch("/api/students", {
+            const res = await fetch("/api/students", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -397,12 +394,14 @@ export default function ProctorMasterDashboard() {
                     kelas: cleanKelas
                 })
             });
+            const json = await res.json();
+            if (json.status !== "success") throw new Error(json.message);
 
             setNewNisn("");
             setNewNama("");
-            setTimeout(fetchStudents, 2500);
-        } catch {
-            alert("Gagal menyimpan siswa.");
+            await fetchStudents();
+        } catch (err: any) {
+            alert(`Gagal menyimpan siswa ke Supabase: ${err.message || ""}`);
         } finally {
             setIsSubmittingStudent(false);
         }
@@ -437,22 +436,12 @@ export default function ProctorMasterDashboard() {
             });
 
             if (newItems.length === 0) {
-                alert("Format salin tidak valid.");
+                alert("Format salin tidak valid. Pastikan berisi kolom NISN, Nama, dan Kelas.");
                 setIsBulkImporting(false);
                 return;
             }
 
-            setStudents((prev) => {
-                const merged = [...prev];
-                newItems.forEach((item) => {
-                    const idx = merged.findIndex((m) => m.nisn === item.nisn);
-                    if (idx >= 0) merged[idx] = item;
-                    else merged.push(item);
-                });
-                return merged;
-            });
-
-            await fetch("/api/students", {
+            const res = await fetch("/api/students", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -460,13 +449,17 @@ export default function ProctorMasterDashboard() {
                     students: newItems
                 })
             });
+            const json = await res.json();
+            if (json.status !== "success") {
+                throw new Error(json.message || "Gagal menyimpan ke Supabase");
+            }
 
-            alert(`Berhasil mendaftarkan ${newItems.length} siswa.`);
+            alert(`Berhasil menyimpan ${newItems.length} siswa secara permanen ke Supabase!`);
             setBulkRawText("");
             setShowBulkModal(false);
-            setTimeout(fetchStudents, 3000);
-        } catch {
-            alert("Gagal mengimpor data massal.");
+            await fetchStudents();
+        } catch (err: any) {
+            alert(`Gagal mengimpor data massal ke Supabase: ${err.message || ""}`);
         } finally {
             setIsBulkImporting(false);
         }
@@ -492,19 +485,8 @@ export default function ProctorMasterDashboard() {
 
         setIsUpdatingStudent(true);
 
-        setStudents((prev) =>
-            prev.map((s) =>
-                String(s.nisn).trim() === oldNisn
-                    ? { ...s, nisn: cleanNisn, nama: cleanNama, kelas: cleanKelas }
-                    : s
-            )
-        );
-
-        setEditingStudent(null);
-        setSearchQuery("");
-
         try {
-            await fetch("/api/students", {
+            const res = await fetch("/api/students", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -515,9 +497,14 @@ export default function ProctorMasterDashboard() {
                     kelas: cleanKelas
                 })
             });
-            setTimeout(fetchStudents, 3000);
-        } catch {
-            alert("Gagal memperbarui data siswa.");
+            const json = await res.json();
+            if (json.status !== "success") throw new Error(json.message);
+
+            setEditingStudent(null);
+            setSearchQuery("");
+            await fetchStudents();
+        } catch (err: any) {
+            alert(`Gagal memperbarui data siswa: ${err.message || ""}`);
         } finally {
             setIsUpdatingStudent(false);
         }
@@ -525,15 +512,20 @@ export default function ProctorMasterDashboard() {
 
     const handleDeleteStudent = async (nisn: string, nama: string) => {
         if (!confirm(`Hapus peserta ${nama} (${nisn})?`)) return;
-        setStudents((prev) => prev.filter((s) => s.nisn !== nisn));
 
         try {
-            await fetch("/api/students", {
+            const res = await fetch("/api/students", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "delete_student", nisn })
             });
-        } catch { }
+            const json = await res.json();
+            if (json.status !== "success") throw new Error(json.message);
+
+            setStudents((prev) => prev.filter((s) => s.nisn !== nisn));
+        } catch (err: any) {
+            alert(`Gagal menghapus peserta: ${err.message || ""}`);
+        }
     };
 
     const handleLogout = () => {
@@ -551,7 +543,6 @@ export default function ProctorMasterDashboard() {
         return Array.from(setClasses).sort();
     }, [students]);
 
-    // KALKULASI PRESISI: Peserta Terdaftar = Hadir (Mengerjakan + Selesai + Terkunci) + Belum Hadir
     const stats = useMemo(() => {
         const total = students.length;
         let working = 0;
@@ -598,7 +589,6 @@ export default function ProctorMasterDashboard() {
 
     return (
         <div className="min-h-screen bg-slate-100 print:bg-white print:min-h-0 flex flex-col font-sans text-slate-800">
-            {/* CSS CETAK RESMI STANDAR DINAS A4 */}
             <style
                 dangerouslySetInnerHTML={{
                     __html: `
@@ -692,8 +682,8 @@ export default function ProctorMasterDashboard() {
                             type="button"
                             onClick={toggleSessionLock}
                             className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition-all ${masterSession.status_akses === "DIBUKA"
-                                ? "bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100"
-                                : "bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100"
+                                    ? "bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100"
+                                    : "bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100"
                                 }`}
                         >
                             {masterSession.status_akses === "DIBUKA" ? (
@@ -749,8 +739,15 @@ export default function ProctorMasterDashboard() {
                                     Token Resmi & Penjadwalan Waktu Nyata
                                 </h2>
                                 <p className="text-xs text-blue-200">
-                                    Status Sesi: <strong className={`px-2 py-0.5 rounded font-mono text-[11px] ${masterSession.status_akses === "DIBUKA" ? "bg-emerald-500/30 text-emerald-300 border border-emerald-400/40" : "bg-rose-500/30 text-rose-300 border border-rose-400/40"
-                                        }`}>{masterSession.status_akses}</strong>
+                                    Status Sesi:{" "}
+                                    <strong
+                                        className={`px-2 py-0.5 rounded font-mono text-[11px] ${masterSession.status_akses === "DIBUKA"
+                                                ? "bg-emerald-500/30 text-emerald-300 border border-emerald-400/40"
+                                                : "bg-rose-500/30 text-rose-300 border border-rose-400/40"
+                                            }`}
+                                    >
+                                        {masterSession.status_akses}
+                                    </strong>
                                 </p>
                             </div>
                         </div>
@@ -1017,7 +1014,7 @@ export default function ProctorMasterDashboard() {
 
                                 <div className="sm:col-span-12 pt-1 flex items-center justify-between flex-wrap gap-2">
                                     <span className="text-[11px] text-slate-400 italic">
-                                        *Data otomatis tercatat di tab DATA_SISWA spreadsheet sekolah.
+                                        *Data tersimpan permanen di database Supabase sekolah.
                                     </span>
                                     <button
                                         type="submit"
@@ -1091,12 +1088,12 @@ export default function ProctorMasterDashboard() {
                                                 <td className="p-3.5">
                                                     <span
                                                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${s.status.toLowerCase().includes("mengerjakan")
-                                                            ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                                            : s.status.toLowerCase().includes("selesai") || s.score > 0
-                                                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                                                : s.status.toLowerCase().includes("kunci") || s.violations >= 3
-                                                                    ? "bg-rose-100 text-rose-800 border border-rose-300"
-                                                                    : "bg-slate-100 text-slate-600 border border-slate-200"
+                                                                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                                                : s.status.toLowerCase().includes("selesai") || s.score > 0
+                                                                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                                                    : s.status.toLowerCase().includes("kunci") || s.violations >= 3
+                                                                        ? "bg-rose-100 text-rose-800 border border-rose-300"
+                                                                        : "bg-slate-100 text-slate-600 border border-slate-200"
                                                             }`}
                                                     >
                                                         {s.status}
@@ -1276,7 +1273,7 @@ export default function ProctorMasterDashboard() {
                     </div>
                 )}
 
-                {/* TAB 3: BERITA ACARA UJIAN (BAP) - SUDAH DIPERBAIKI LOGIKA & TAMPILANNYA */}
+                {/* TAB 3: BERITA ACARA UJIAN (BAP) */}
                 {activeTab === "bap" && (
                     <div className="space-y-6 text-left">
                         <div className="print-hidden bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-5">
@@ -1425,7 +1422,6 @@ export default function ProctorMasterDashboard() {
                         {/* LEMBAR CETAK DOKUMEN BAP ASLI RESMI */}
                         <div className="print-sheet bg-white rounded-3xl border border-slate-200 p-5 sm:p-12 shadow-lg space-y-5 text-slate-950 font-serif leading-relaxed overflow-x-auto">
                             <div className="min-w-[540px] sm:min-w-0 space-y-5">
-                                {/* KOP SURAT RESMI LENGKAP */}
                                 <div className="text-center">
                                     <div className="flex items-center justify-between gap-4">
                                         <div className="w-20 h-20 shrink-0 flex items-center justify-center">
