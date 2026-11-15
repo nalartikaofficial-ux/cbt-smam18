@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -146,7 +146,7 @@ export default function CBTEngineLandingPage() {
             <span className="animate-ping absolute inline-flex h-16 w-16 rounded-full bg-blue-400 opacity-20" />
             <div className="relative w-14 h-14 rounded-2xl bg-white p-1 shadow-lg shadow-blue-900/10 border border-slate-200/80 flex items-center justify-center overflow-hidden">
               <img
-                src="/logo-timsim.jpg"
+                src="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg"
                 alt="Logo TIM S.I.M."
                 className="w-full h-full object-contain"
                 onError={(e) => {
@@ -182,7 +182,7 @@ export default function CBTEngineLandingPage() {
           </div>
 
           <div className="font-mono text-[9.5px] sm:text-[10px] text-slate-400 tracking-widest pt-1">
-            VERIFYING KIOSK • CALIBRATING IRT 3PL • READY
+            VERIFYING KIOSK â€¢ CALIBRATING IRT 3PL â€¢ READY
           </div>
         </div>
       </div>
@@ -205,7 +205,7 @@ export default function CBTEngineLandingPage() {
                 <div className="absolute -inset-1 rounded-full bg-blue-500/30 blur-xs animate-pulse" />
                 <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white p-0.5 shadow-xs border border-slate-200/80 flex items-center justify-center overflow-hidden">
                   <img
-                    src="/logo-timsim.jpg"
+                    src="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg"
                     alt="Logo TIM S.I.M."
                     className="w-full h-full object-contain scale-[1.02]"
                     onError={(e) => {
@@ -389,10 +389,10 @@ export default function CBTEngineLandingPage() {
 
                     <div className="space-y-1.5 text-left">
                       <p className="text-[11.5px] sm:text-[12px] text-slate-700 leading-snug font-normal">
-                        {"Diberikan simpangan gelombang y(t) = A sin(ωt + φ). Jika frekuensi sudut ω = 4π rad/s dan energi kinetik maksimum tercapai saat:"}
+                        {"Diberikan simpangan gelombang y(t) = A sin(Ï‰t + Ï†). Jika frekuensi sudut Ï‰ = 4Ï€ rad/s dan energi kinetik maksimum tercapai saat:"}
                       </p>
                       <div className="py-1.5 px-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-mono text-[10px] sm:text-[11px] font-semibold text-center shadow-2xs tracking-tight overflow-x-auto">
-                        {"Ek = (1/2) · m · ω² · A² cos²(ωt + φ)"}
+                        {"Ek = (1/2) Â· m Â· Ï‰Â² Â· AÂ² cosÂ²(Ï‰t + Ï†)"}
                       </div>
                     </div>
 
@@ -472,9 +472,9 @@ export default function CBTEngineLandingPage() {
               </div>
               <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-[11px] font-mono text-slate-400 flex-wrap justify-center">
                 <span>LATENCY: 45MS</span>
-                <span>•</span>
+                <span>â€¢</span>
                 <span>OFFLINE RESILIENCE: AKTIF</span>
-                <span>•</span>
+                <span>â€¢</span>
                 <span>STANDAR: BPPP / PUSMENDIK</span>
               </div>
             </div>
@@ -543,7 +543,7 @@ export default function CBTEngineLandingPage() {
                     Algoritma IRT 3PL
                   </h3>
                   <p className="text-[11.5px] sm:text-xs text-slate-600 leading-relaxed">
-                    Kalkulasi pembobotan non-linier skala 200–800 berdasarkan parameter tingkat kesukaran, daya pembeda butir, dan faktor tebakan semu.
+                    Kalkulasi pembobotan non-linier skala 200â€“800 berdasarkan parameter tingkat kesukaran, daya pembeda butir, dan faktor tebakan semu.
                   </p>
                 </div>
                 <div className="pt-3.5 mt-3.5 border-t border-slate-100 flex items-center justify-between text-[10.5px] sm:text-[11px] font-mono text-slate-500">
@@ -626,7 +626,7 @@ export default function CBTEngineLandingPage() {
               <div className="flex items-center justify-between md:justify-end gap-3 bg-white border border-slate-250/90 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl shadow-2xs shrink-0 self-stretch md:self-auto">
                 <div className="text-left md:text-right">
                   <div className="text-[9px] sm:text-[9.5px] font-bold font-mono text-slate-400 uppercase tracking-wider">Total Evaluasi</div>
-                  <div className="text-xs font-black text-slate-900">160 Soal • 195 Menit</div>
+                  <div className="text-xs font-black text-slate-900">160 Soal â€¢ 195 Menit</div>
                 </div>
                 <div className="h-7 w-[1px] bg-slate-200" />
                 <div className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 border border-blue-200/80 font-mono font-bold text-[11px] sm:text-xs">
@@ -642,7 +642,7 @@ export default function CBTEngineLandingPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
                     <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200/60 text-[9.5px] sm:text-[10px] font-mono font-bold">
-                      TPS • 01
+                      TPS â€¢ 01
                     </span>
                     <div className="flex items-center gap-1 font-mono text-[10.5px] sm:text-[11px] text-slate-600 font-semibold bg-slate-100/80 px-2 py-0.5 rounded-md">
                       <Clock className="w-3 h-3 text-slate-500" /> 30m
@@ -666,7 +666,7 @@ export default function CBTEngineLandingPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
                     <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200/60 text-[9.5px] sm:text-[10px] font-mono font-bold">
-                      TPS • 02
+                      TPS â€¢ 02
                     </span>
                     <div className="flex items-center gap-1 font-mono text-[10.5px] sm:text-[11px] text-slate-600 font-semibold bg-slate-100/80 px-2 py-0.5 rounded-md">
                       <Clock className="w-3 h-3 text-slate-500" /> 15m
@@ -690,7 +690,7 @@ export default function CBTEngineLandingPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
                     <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200/60 text-[9.5px] sm:text-[10px] font-mono font-bold">
-                      TPS • 03
+                      TPS â€¢ 03
                     </span>
                     <div className="flex items-center gap-1 font-mono text-[10.5px] sm:text-[11px] text-slate-600 font-semibold bg-slate-100/80 px-2 py-0.5 rounded-md">
                       <Clock className="w-3 h-3 text-slate-500" /> 25m
@@ -714,7 +714,7 @@ export default function CBTEngineLandingPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
                     <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200/60 text-[9.5px] sm:text-[10px] font-mono font-bold">
-                      TPS • 04
+                      TPS â€¢ 04
                     </span>
                     <div className="flex items-center gap-1 font-mono text-[10.5px] sm:text-[11px] text-slate-600 font-semibold bg-slate-100/80 px-2 py-0.5 rounded-md">
                       <Clock className="w-3 h-3 text-slate-500" /> 20m
@@ -738,7 +738,7 @@ export default function CBTEngineLandingPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
                     <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-800 border border-indigo-200/60 text-[9.5px] sm:text-[10px] font-mono font-bold">
-                      LIT • 01
+                      LIT â€¢ 01
                     </span>
                     <div className="flex items-center gap-1 font-mono text-[10.5px] sm:text-[11px] text-indigo-900 font-semibold bg-indigo-50/80 px-2 py-0.5 rounded-md border border-indigo-100">
                       <Clock className="w-3 h-3 text-indigo-600" /> 42.5m
@@ -762,7 +762,7 @@ export default function CBTEngineLandingPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
                     <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-800 border border-indigo-200/60 text-[9.5px] sm:text-[10px] font-mono font-bold">
-                      LIT • 02
+                      LIT â€¢ 02
                     </span>
                     <div className="flex items-center gap-1 font-mono text-[10.5px] sm:text-[11px] text-indigo-900 font-semibold bg-indigo-50/80 px-2 py-0.5 rounded-md border border-indigo-100">
                       <Clock className="w-3 h-3 text-indigo-600" /> 20m
@@ -786,7 +786,7 @@ export default function CBTEngineLandingPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
                     <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-250 text-[9.5px] sm:text-[10px] font-mono font-bold">
-                      PM • 01
+                      PM â€¢ 01
                     </span>
                     <div className="flex items-center gap-1 font-mono text-[10.5px] sm:text-[11px] text-emerald-950 font-semibold bg-emerald-50/90 px-2 py-0.5 rounded-md border border-emerald-200">
                       <Clock className="w-3 h-3 text-emerald-600" /> 42.5m
@@ -814,7 +814,7 @@ export default function CBTEngineLandingPage() {
                       ENGINE SCORE
                     </span>
                     <div className="flex items-center gap-1 text-blue-200 font-mono text-[10.5px] sm:text-[11px] bg-white/10 px-2 py-0.5 rounded-md">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-400" /> 200–800
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" /> 200â€“800
                     </div>
                   </div>
                   <h4 className="text-[13.5px] sm:text-[14px] font-bold text-white tracking-tight mb-1">
@@ -841,7 +841,7 @@ export default function CBTEngineLandingPage() {
             <div className="relative rounded-3xl bg-gradient-to-br from-white via-slate-50/80 to-blue-50/50 border border-blue-200/60 shadow-xl shadow-blue-900/5 p-5 sm:p-10 text-left overflow-hidden backdrop-blur-xs">
               <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-900" />
               <span className="absolute -top-4 right-6 text-8xl font-serif text-blue-900/5 select-none pointer-events-none font-bold">
-                “
+                â€œ
               </span>
 
               <div className="flex flex-wrap items-center justify-between gap-2 pb-4 sm:pb-5 border-b border-blue-150/60">
@@ -851,14 +851,14 @@ export default function CBTEngineLandingPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[9.5px] sm:text-[10.5px] font-mono font-bold text-slate-500">
                   <span className="px-1.5 sm:px-2 py-0.5 rounded-md bg-white border border-slate-200 shadow-2xs">FULL-CLIENT RESILIENT</span>
-                  <span className="text-slate-300 hidden xs:inline">•</span>
+                  <span className="text-slate-300 hidden xs:inline">â€¢</span>
                   <span className="px-1.5 sm:px-2 py-0.5 rounded-md bg-white border border-slate-200 shadow-2xs text-blue-800">IRT 3PL VERIFIED</span>
                 </div>
               </div>
 
               <blockquote className="relative py-4 sm:py-7">
                 <p className="text-sm sm:text-lg lg:text-[18.5px] font-normal text-slate-800 leading-relaxed tracking-tight">
-                  “CBT Engine ini dikembangkan langsung dari bilik asesmen nyata untuk menjawab masalah mendasar pengujian massal: <strong className="font-semibold text-slate-950">server rentan saat akses serentak</strong>, minimnya penguncian layar peramban, dan ketiadaan pembobotan IRT. Kami memastikan seluruh instrumen <strong className="font-semibold text-blue-900">terkalibrasi presisi, stabil, dan objektif</strong>.”
+                  â€œCBT Engine ini dikembangkan langsung dari bilik asesmen nyata untuk menjawab masalah mendasar pengujian massal: <strong className="font-semibold text-slate-950">server rentan saat akses serentak</strong>, minimnya penguncian layar peramban, dan ketiadaan pembobotan IRT. Kami memastikan seluruh instrumen <strong className="font-semibold text-blue-900">terkalibrasi presisi, stabil, dan objektif</strong>.â€
                 </p>
               </blockquote>
 
@@ -883,7 +883,7 @@ export default function CBTEngineLandingPage() {
                       </span>
                     </div>
                     <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
-                      SMA Muhammadiyah 18 Jakarta • <span className="text-blue-800 font-semibold">School of Champions</span>
+                      SMA Muhammadiyah 18 Jakarta â€¢ <span className="text-blue-800 font-semibold">School of Champions</span>
                     </p>
                   </div>
                 </div>
@@ -907,7 +907,7 @@ export default function CBTEngineLandingPage() {
               <div className="flex items-center gap-3 sm:gap-3.5 text-left w-full sm:w-auto">
                 <div className="relative h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-xl bg-white border border-slate-200/90 p-1 shadow-2xs flex items-center justify-center">
                   <img
-                    src="/logo-timsim.jpg"
+                    src="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg"
                     alt="Logo TIM S.I.M."
                     className="h-full w-full object-contain"
                     onError={(e) => {
@@ -925,7 +925,7 @@ export default function CBTEngineLandingPage() {
                     </span>
                   </div>
                   <p className="text-[11px] sm:text-[11.5px] text-slate-500 font-normal">
-                    <strong className="font-semibold text-slate-700">© 2026</strong>{" "}
+                    <strong className="font-semibold text-slate-700">Â© 2026</strong>{" "}
                     <strong className="font-semibold text-slate-700">TIM S.I.M.</strong>{" "}
                     <strong className="font-semibold text-slate-700">SMA Muhammadiyah 18 Jakarta</strong>.
                   </p>
@@ -944,7 +944,7 @@ export default function CBTEngineLandingPage() {
                 </div>
                 <div className="font-mono text-[9px] sm:text-[9.5px] text-slate-400 font-medium tracking-tight flex items-center justify-center flex-wrap">
                   <span>ENKRIPSI TLS 1.3</span>
-                  <span className="mx-1.5 text-slate-300">•</span>
+                  <span className="mx-1.5 text-slate-300">â€¢</span>
                   <span>STANDAR BPPP / PUSMENDIK</span>
                 </div>
               </div>

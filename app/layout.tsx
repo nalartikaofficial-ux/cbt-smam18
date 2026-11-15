@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -28,6 +28,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <head>
+          <link
+            rel="preload"
+            as="image"
+            href="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg"
+          />
+        </head>
       </body>
     </html>
   );

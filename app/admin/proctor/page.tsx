@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
@@ -659,7 +659,7 @@ export default function ProctorMasterDashboard() {
                         </Link>
                         <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white border border-slate-200 p-0.5 flex items-center justify-center overflow-hidden shrink-0">
                             <img
-                                src="/logo-timsim.jpg"
+                                src="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg"
                                 alt="Logo SMA Muhammadiyah 18 Jakarta"
                                 className="w-full h-full object-contain"
                                 onError={(e) => {
@@ -669,7 +669,7 @@ export default function ProctorMasterDashboard() {
                         </div>
                         <div className="min-w-0">
                             <div className="text-xs sm:text-sm font-black text-slate-900 tracking-tight uppercase truncate">
-                                PUSAT KENDALI PROKTOR • SMA MUHAMMADIYAH 18
+                                PUSAT KENDALI PROKTOR â€¢ SMA MUHAMMADIYAH 18
                             </div>
                             <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
                                 Pengawas Aktif: <strong className="text-blue-700">{currentProctor.nama}</strong> ({currentProctor.role.toUpperCase()})
@@ -1426,7 +1426,7 @@ export default function ProctorMasterDashboard() {
                                     <div className="flex items-center justify-between gap-4">
                                         <div className="w-20 h-20 shrink-0 flex items-center justify-center">
                                             <img
-                                                src="/logo-timsim.jpg"
+                                                src="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg"
                                                 alt="Logo SMA Muhammadiyah 18"
                                                 className="w-full h-full object-contain"
                                                 onError={(e) => {
@@ -1451,7 +1451,7 @@ export default function ProctorMasterDashboard() {
                                                 Jl. Panjang No. 19, Cipulir, Kebayoran Lama, Jakarta Selatan 12230 | Telp: (021) 7235544
                                             </p>
                                             <p className="text-[9.5px] text-slate-500 font-mono">
-                                                Website: https://smamuh18jakarta.sch.id • Pos-el: smamuh18@gmail.com
+                                                Website: https://smamuh18jakarta.sch.id â€¢ Pos-el: smamuh18@gmail.com
                                             </p>
                                         </div>
                                         <div className="w-20 shrink-0" />
@@ -1479,7 +1479,7 @@ export default function ProctorMasterDashboard() {
                                         <tbody>
                                             <tr className="border-b border-slate-200">
                                                 <td className="w-[30%] py-2 px-3 font-semibold bg-slate-50/70 border-r border-slate-200">Paket Soal Ujian</td>
-                                                <td className="w-[70%] py-2 px-3 font-bold font-mono">: {masterSession.paket_aktif} — {masterSession.nama_paket}</td>
+                                                <td className="w-[70%] py-2 px-3 font-bold font-mono">: {masterSession.paket_aktif} â€” {masterSession.nama_paket}</td>
                                             </tr>
                                             <tr className="border-b border-slate-200">
                                                 <td className="py-2 px-3 font-semibold bg-slate-50/70 border-r border-slate-200">Ruang / Tempat Ujian</td>
@@ -1515,7 +1515,7 @@ export default function ProctorMasterDashboard() {
                                     <div>
                                         <p className="font-bold mb-1.5">Catatan Khusus Selama Pelaksanaan Ujian:</p>
                                         <div className="p-3.5 border border-slate-400 print:border-black min-h-[48px] text-xs italic bg-slate-50/40">
-                                            “{bapData.catatanKhusus}”
+                                            â€œ{bapData.catatanKhusus}â€
                                         </div>
                                     </div>
 
@@ -1617,7 +1617,7 @@ export default function ProctorMasterDashboard() {
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="w-16 h-16 shrink-0 flex items-center justify-center">
                                         <img
-                                            src="/logo-timsim.jpg"
+                                            src="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg"
                                             alt="Logo SMA Muhammadiyah 18"
                                             className="w-full h-full object-contain"
                                             onError={(e) => {

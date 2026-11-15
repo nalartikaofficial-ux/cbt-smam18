@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -211,7 +211,7 @@ export default function AdminGateAndHubPage() {
                     <div className="text-center space-y-2">
                         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-center mx-auto overflow-hidden p-1">
                             <img
-                                src="/logo-timsim.jpg"
+                                src="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg"
                                 alt="Logo SMA Muhammadiyah 18 Jakarta"
                                 className="w-full h-full object-contain"
                                 onError={(e) => {
@@ -304,7 +304,7 @@ export default function AdminGateAndHubPage() {
                     <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                         <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white border border-slate-200 p-0.5 flex items-center justify-center overflow-hidden shrink-0">
                             <img
-                                src="/logo-timsim.jpg"
+                                src="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg"
                                 alt="Logo SMA Muhammadiyah 18 Jakarta"
                                 className="w-full h-full object-contain"
                                 onError={(e) => {
@@ -314,7 +314,7 @@ export default function AdminGateAndHubPage() {
                         </div>
                         <div className="min-w-0">
                             <div className="text-xs sm:text-sm font-black text-slate-900 tracking-tight uppercase truncate">
-                                PUSAT KENDALI STAF • SMA MUHAMMADIYAH 18
+                                PUSAT KENDALI STAF â€¢ SMA MUHAMMADIYAH 18
                             </div>
                             <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
                                 Masuk sebagai: <strong className="text-blue-700">{currentUser.nama}</strong> ({currentUser.role.toUpperCase()})
@@ -363,7 +363,7 @@ export default function AdminGateAndHubPage() {
                             </div>
                         </div>
                         <div className="pt-3.5 sm:pt-4 mt-3.5 sm:mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-700">
-                            <span>Masuk Bilik Proktor →</span>
+                            <span>Masuk Bilik Proktor â†’</span>
                             <Activity className="w-4 h-4 animate-pulse" />
                         </div>
                     </Link>
@@ -390,7 +390,7 @@ export default function AdminGateAndHubPage() {
                             </div>
                         </div>
                         <div className="pt-3.5 sm:pt-4 mt-3.5 sm:mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-700">
-                            <span>Masuk Ruang Bank Soal →</span>
+                            <span>Masuk Ruang Bank Soal â†’</span>
                             <BookOpen className="w-4 h-4" />
                         </div>
                     </Link>
@@ -417,7 +417,7 @@ export default function AdminGateAndHubPage() {
                             </div>
                         </div>
                         <div className="pt-3.5 sm:pt-4 mt-3.5 sm:mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-700">
-                            <span>Buka Statistik Nilai →</span>
+                            <span>Buka Statistik Nilai â†’</span>
                             <BarChart3 className="w-4 h-4" />
                         </div>
                     </Link>

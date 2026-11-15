@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
 
@@ -82,10 +82,10 @@ export const MathRenderer = ({ content }: { content: any }) => {
 
     const formatCleanText = (str: string) => {
         return str
-            .replace(/\^0/g, "⁰").replace(/\^1/g, "¹").replace(/\^2/g, "²").replace(/\^3/g, "³")
-            .replace(/\^4/g, "⁴").replace(/\^5/g, "⁵").replace(/\^6/g, "⁶").replace(/\^7/g, "⁷")
-            .replace(/\^8/g, "⁸").replace(/\^9/g, "⁹")
-            .replace(/<=/g, "≤").replace(/>=/g, "≥").replace(/!=/g, "≠").replace(/\+-/g, "±");
+            .replace(/\^0/g, "â°").replace(/\^1/g, "Â¹").replace(/\^2/g, "Â²").replace(/\^3/g, "Â³")
+            .replace(/\^4/g, "â´").replace(/\^5/g, "âµ").replace(/\^6/g, "â¶").replace(/\^7/g, "â·")
+            .replace(/\^8/g, "â¸").replace(/\^9/g, "â¹")
+            .replace(/<=/g, "â‰¤").replace(/>=/g, "â‰¥").replace(/!=/g, "â‰ ").replace(/\+-/g, "Â±");
     };
 
     return <span className="leading-relaxed">{formatCleanText(text)}</span>;
@@ -547,7 +547,7 @@ function WordImporterSection({
                                 {stagedList.length} Soal Berhasil Dipisahkan
                             </span>
                             <span className="text-xs text-slate-300">
-                                Subtes: <strong>{Array.from(new Set(stagedList.map((q) => q.subtes_code))).join(", ")}</strong> → {selectedPaket.replace("_", " ")}
+                                Subtes: <strong>{Array.from(new Set(stagedList.map((q) => q.subtes_code))).join(", ")}</strong> â†’ {selectedPaket.replace("_", " ")}
                             </span>
                         </div>
                         <p className="text-[10.5px] sm:text-[11px] text-slate-400">
@@ -980,11 +980,11 @@ export default function AdminBankSoalPage() {
                             <ChevronLeft className="w-4 h-4" />
                         </Link>
                         <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white border border-slate-200 p-0.5 flex items-center justify-center overflow-hidden shrink-0">
-                            <img src="/logo-timsim.jpg" alt="Logo SMA Muhammadiyah 18" className="w-full h-full object-contain" />
+                            <img src="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg" alt="Logo SMA Muhammadiyah 18" className="w-full h-full object-contain" />
                         </div>
                         <div className="min-w-0">
                             <div className="text-xs sm:text-sm font-black text-slate-900 uppercase truncate">
-                                BANK SOAL • SMA MUHAMMADIYAH 18
+                                BANK SOAL â€¢ SMA MUHAMMADIYAH 18
                             </div>
                             <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
                                 Penyusun Soal: <strong className="text-blue-700">{loggedTeacher.nama}</strong> ({loggedTeacher.mapel || "Guru Mapel"})
@@ -1022,11 +1022,11 @@ export default function AdminBankSoalPage() {
                             <div className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2 flex-wrap">
                                 <span className="truncate">Penyimpanan Lokal Edge JSON (7 Subtes SNBT)</span>
                                 <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono text-[10px] shrink-0">
-                                    Aktif • {serverQuestions.length} Butir Soal
+                                    Aktif â€¢ {serverQuestions.length} Butir Soal
                                 </span>
                             </div>
                             <div className="text-[10.5px] sm:text-[11px] text-slate-500 mt-0.5 truncate">
-                                Target Aktif: <strong className="text-blue-700 font-bold">{selectedPaket.replace("_", " ")}</strong> • Respon Cepat (50ms)
+                                Target Aktif: <strong className="text-blue-700 font-bold">{selectedPaket.replace("_", " ")}</strong> â€¢ Respon Cepat (50ms)
                             </div>
                         </div>
                     </div>
@@ -1292,7 +1292,7 @@ export default function AdminBankSoalPage() {
                                     Upload Massal Soal via File CSV / Excel
                                 </h2>
                                 <p className="text-[11px] sm:text-xs text-slate-500">
-                                    Mendukung formula KaTeX serta link Google Drive langsung pada kolom stimulus maupun pilihan A–E.
+                                    Mendukung formula KaTeX serta link Google Drive langsung pada kolom stimulus maupun pilihan Aâ€“E.
                                 </p>
                             </div>
 
@@ -1337,7 +1337,7 @@ export default function AdminBankSoalPage() {
                                         <Eye className="w-4 h-4 text-blue-700" />
                                         <span>Pratinjau Hasil Impor CSV ({batchQuestions.length} Soal)</span>
                                         <span className="text-[10px] bg-blue-200/70 text-blue-900 px-1.5 py-0.5 rounded font-mono">
-                                            {showCsvPreview ? "Tutup ▲" : "Lihat Hasil ▼"}
+                                            {showCsvPreview ? "Tutup â–²" : "Lihat Hasil â–¼"}
                                         </span>
                                     </button>
 

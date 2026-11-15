@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
@@ -436,7 +436,7 @@ export default function AdminAnalyticsPage() {
                         </Link>
                         <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white border border-slate-200 p-0.5 flex items-center justify-center overflow-hidden shrink-0">
                             <img
-                                src="/logo-timsim.jpg"
+                                src="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg"
                                 alt="Logo SMA Muhammadiyah 18 Jakarta"
                                 className="w-full h-full object-contain"
                                 onError={(e) => {
@@ -449,7 +449,7 @@ export default function AdminAnalyticsPage() {
                                 PUSAT ANALITIK & PROGRES TRYOUT SNBT
                             </div>
                             <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
-                                SMA Muhammadiyah 18 Jakarta • Terhubung Real-Time Supabase
+                                SMA Muhammadiyah 18 Jakarta â€¢ Terhubung Real-Time Supabase
                             </div>
                         </div>
                     </div>
@@ -562,7 +562,7 @@ export default function AdminAnalyticsPage() {
 
                     <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-2xs">
                         <div className="flex items-center justify-between text-emerald-700 text-[11px] sm:text-xs font-bold font-mono">
-                            <span>TARGET (≥650)</span>
+                            <span>TARGET (â‰¥650)</span>
                             <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-black text-emerald-700 mt-1 sm:mt-2 font-mono">
@@ -760,7 +760,7 @@ export default function AdminAnalyticsPage() {
                                             <th className="p-3 text-center">Skor TO-1 (Paket 1)</th>
                                             <th className="p-3 text-center">Skor TO-2 (Paket 2)</th>
                                             <th className="p-3 text-center">Skor TO-3 (Paket 3)</th>
-                                            <th className="p-3 text-center">Tren Perubahan (Δ)</th>
+                                            <th className="p-3 text-center">Tren Perubahan (Î”)</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 font-medium">
@@ -869,7 +869,7 @@ export default function AdminAnalyticsPage() {
                                         Analisis Diagnostik & Rapor Individual: {selectedStudentForReport.nama}
                                     </h3>
                                     <p className="text-[10px] sm:text-[11px] text-slate-500 font-mono truncate">
-                                        NISN: {selectedStudentForReport.nisn} • Kelas: {selectedStudentForReport.kelas}
+                                        NISN: {selectedStudentForReport.nisn} â€¢ Kelas: {selectedStudentForReport.kelas}
                                     </p>
                                 </div>
                             </div>
@@ -900,7 +900,7 @@ export default function AdminAnalyticsPage() {
                                 <div className="flex items-center justify-between gap-3 min-w-[540px] sm:min-w-0">
                                     <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 flex items-center justify-center overflow-hidden">
                                         <img
-                                            src="/logo-timsim.jpg"
+                                            src="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg"
                                             alt="Logo SMA Muhammadiyah 18 Jakarta"
                                             className="w-full h-full object-contain"
                                             onError={(e) => {
@@ -926,7 +926,7 @@ export default function AdminAnalyticsPage() {
                                             Jl. Panjang No.19, RT.8/RW.9, Cipulir, Kebayoran Lama, Jakarta Selatan, DKI Jakarta 12230
                                         </p>
                                         <p className="text-[8.5px] sm:text-[9.5px] font-mono text-slate-600 leading-normal pt-0.5 pb-1">
-                                            Website: https://smamuh18jakarta.sch.id • E-mail: smamuh18@gmail.com
+                                            Website: https://smamuh18jakarta.sch.id â€¢ E-mail: smamuh18@gmail.com
                                         </p>
                                     </div>
 
@@ -943,7 +943,7 @@ export default function AdminAnalyticsPage() {
                                     LEMBAR HASIL EVALUASI DIAGNOSTIK SIMULASI UTBK-SNBT
                                 </h2>
                                 <p className="text-[10.5px] sm:text-xs font-mono text-slate-700 font-semibold">
-                                    Tahun Pelajaran 2026/2027 • Penilaian Terstandarisasi IRT 3-Parameter
+                                    Tahun Pelajaran 2026/2027 â€¢ Penilaian Terstandarisasi IRT 3-Parameter
                                 </p>
                             </div>
 
@@ -1212,7 +1212,7 @@ export default function AdminAnalyticsPage() {
                                                 <div key={att.id} className="bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3">
                                                     <div className="space-y-0.5">
                                                         <div className="text-[10px] font-mono font-bold text-slate-500">
-                                                            SESI #{idx + 1} • {att.paket.replace("_", " ")}
+                                                            SESI #{idx + 1} â€¢ {att.paket.replace("_", " ")}
                                                         </div>
                                                         <div className="text-xl font-black font-mono text-blue-900">
                                                             {att.unifiedScore}
@@ -1222,7 +1222,7 @@ export default function AdminAnalyticsPage() {
                                                         </div>
                                                         {diff !== null && (
                                                             <div className={`text-[10px] font-mono font-bold ${diff >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
-                                                                {diff >= 0 ? `▲ Naik +${diff} poin` : `▼ Turun ${diff} poin`}
+                                                                {diff >= 0 ? `â–² Naik +${diff} poin` : `â–¼ Turun ${diff} poin`}
                                                             </div>
                                                         )}
                                                     </div>
@@ -1242,10 +1242,10 @@ export default function AdminAnalyticsPage() {
                                     KESIMPULAN & REKOMENDASI PEMBINAAN GURU / WALI KELAS:
                                 </div>
                                 <div className="p-3 border border-slate-900 bg-white text-xs leading-relaxed italic text-slate-800">
-                                    “Ananda <strong>{selectedStudentForReport.nama}</strong> memiliki kekuatan paling menonjol pada subtes{" "}
+                                    â€œAnanda <strong>{selectedStudentForReport.nama}</strong> memiliki kekuatan paling menonjol pada subtes{" "}
                                     <strong>{reportDiagnostic.strengths[0]?.name}</strong> ({reportDiagnostic.strengths[0]?.score.toFixed(1)}) dan{" "}
                                     <strong>{reportDiagnostic.strengths[1]?.name}</strong> ({reportDiagnostic.strengths[1]?.score.toFixed(1)}). Untuk mendongkrak skor akhir menuju target PTN pilihan, disarankan mengikuti klinik pendalaman intensif pada subtes{" "}
-                                    <strong>{reportDiagnostic.weaknesses[0]?.name}</strong> serta meningkatkan efektivitas pengerjaan soal (tingkat akurasi saat ini {reportDiagnostic.akurasiJawab}% dari soal yang dijawab).”
+                                    <strong>{reportDiagnostic.weaknesses[0]?.name}</strong> serta meningkatkan efektivitas pengerjaan soal (tingkat akurasi saat ini {reportDiagnostic.akurasiJawab}% dari soal yang dijawab).â€
                                 </div>
                             </div>
 

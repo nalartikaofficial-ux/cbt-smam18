@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
@@ -337,7 +337,7 @@ export default function SimulationPage() {
           <div className="flex items-center gap-3 sm:gap-4 border-b pb-4">
             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl p-1 bg-white border border-slate-200 shadow-2xs flex items-center justify-center shrink-0 overflow-hidden">
               <img
-                src="/logo-timsim.jpg"
+                src="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg"
                 alt="Logo SMA Muhammadiyah 18 Jakarta"
                 className="w-full h-full object-contain"
                 onError={(e) => {
@@ -353,7 +353,7 @@ export default function SimulationPage() {
                 Simulasi Uji Coba Mandiri SNBT
               </h1>
               <p className="text-[11px] sm:text-xs text-slate-500">
-                Standarisasi Instrumen UTBK (145 Butir Soal • 195 Menit)
+                Standarisasi Instrumen UTBK (145 Butir Soal â€¢ 195 Menit)
               </p>
             </div>
           </div>
@@ -469,8 +469,8 @@ export default function SimulationPage() {
               <span>Subtes Berikutnya: {nextSubtest.name}</span>
             </div>
             <div className="text-slate-600 leading-relaxed pl-6 space-y-0.5 text-[11px] sm:text-xs">
-              <div>• Alokasi Waktu: <strong>{nextSubtest.defaultDurationMinutes} Menit</strong></div>
-              <div>• Jumlah Butir: <strong>{allQuestions.filter((q) => q.subtest === nextSubtest.code).length} Butir Soal</strong></div>
+              <div>â€¢ Alokasi Waktu: <strong>{nextSubtest.defaultDurationMinutes} Menit</strong></div>
+              <div>â€¢ Jumlah Butir: <strong>{allQuestions.filter((q) => q.subtest === nextSubtest.code).length} Butir Soal</strong></div>
             </div>
           </div>
 
@@ -533,7 +533,7 @@ export default function SimulationPage() {
           <div className="print-hidden bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-2xs flex items-center justify-between flex-wrap gap-2.5">
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
               <Award className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span className="text-[11px] sm:text-xs">Hasil Asesmen Terkalibrasi • Evaluasi Diagnostik Siap Cetak</span>
+              <span className="text-[11px] sm:text-xs">Hasil Asesmen Terkalibrasi â€¢ Evaluasi Diagnostik Siap Cetak</span>
             </div>
 
             <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-end">
@@ -570,7 +570,7 @@ export default function SimulationPage() {
               <div className="flex items-center justify-between min-w-[540px] sm:min-w-0">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 flex items-center justify-center p-0.5 bg-white rounded-xl border border-slate-100 shadow-2xs overflow-hidden">
                   <img
-                    src="/logo-timsim.jpg"
+                    src="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg"
                     alt="Logo SMA Muhammadiyah 18 Jakarta"
                     className="w-full h-full object-contain"
                     onError={(e) => {
@@ -596,7 +596,7 @@ export default function SimulationPage() {
                     Jl. Panjang No.19, RT.8/RW.9, Cipulir, Kebayoran Lama, Jakarta Selatan, DKI Jakarta 12230
                   </p>
                   <p className="text-[9px] sm:text-[10px] font-mono text-slate-600 leading-none">
-                    https://smamuh18jakarta.sch.id • smamuh18@gmail.com
+                    https://smamuh18jakarta.sch.id â€¢ smamuh18@gmail.com
                   </p>
                 </div>
 
@@ -616,7 +616,7 @@ export default function SimulationPage() {
                 </div>
                 <div>
                   <div className="text-xs sm:text-sm font-bold tracking-wide uppercase">PESERTA SIMULASI MANDIRI</div>
-                  <div className="text-[10px] sm:text-[11px] text-blue-100 font-mono">NISN: 0078926118 • KELAS XII SMA MUHAMMADIYAH 18</div>
+                  <div className="text-[10px] sm:text-[11px] text-blue-100 font-mono">NISN: 0078926118 â€¢ KELAS XII SMA MUHAMMADIYAH 18</div>
                 </div>
               </div>
 
@@ -643,7 +643,7 @@ export default function SimulationPage() {
                 </div>
                 <div className="text-5xl sm:text-6xl font-black my-1 text-white">{detailedAnalysis.totalAverage}</div>
                 <div className="text-[10px] sm:text-[11px] text-blue-100 font-mono">
-                  Kalkulasi 145 Butir Soal Terstandarisasi Pusmendik • Skala 200 s.d. 1000
+                  Kalkulasi 145 Butir Soal Terstandarisasi Pusmendik â€¢ Skala 200 s.d. 1000
                 </div>
               </div>
 
@@ -844,7 +844,7 @@ export default function SimulationPage() {
                       <div className="space-y-0.5">
                         <div className="font-bold text-slate-900">{s.name}</div>
                         <div className="text-[10.5px] sm:text-[11px] text-slate-500 font-mono">
-                          Dikerjakan <strong>{s.spentMin} mnt {s.spentRemainingSec} dtk</strong> dari {s.defaultDurationMinutes} mnt ({s.timePercent}%) • Benar {s.benar}, Salah {s.salah}, Kosong {s.kosong}
+                          Dikerjakan <strong>{s.spentMin} mnt {s.spentRemainingSec} dtk</strong> dari {s.defaultDurationMinutes} mnt ({s.timePercent}%) â€¢ Benar {s.benar}, Salah {s.salah}, Kosong {s.kosong}
                         </div>
                         <div className="text-[10px] sm:text-[11px] text-slate-600 italic">{s.timeNote}</div>
                       </div>
@@ -892,12 +892,12 @@ export default function SimulationPage() {
                             <td className="py-2.5 text-center font-mono font-bold text-blue-900">{s.score.toFixed(1)}</td>
                             <td className="py-2.5 text-center">
                               <span className={`font-mono font-bold text-[10.5px] sm:text-[11px] ${pass1 ? "text-emerald-700" : "text-rose-600"}`}>
-                                {pass1 ? `✓ ${targetPtn1.passingScore}` : `✗ Belum mencukupi (${targetPtn1.passingScore})`}
+                                {pass1 ? `âœ“ ${targetPtn1.passingScore}` : `âœ— Belum mencukupi (${targetPtn1.passingScore})`}
                               </span>
                             </td>
                             <td className="py-2.5 text-center">
                               <span className={`font-mono font-bold text-[10.5px] sm:text-[11px] ${pass2 ? "text-emerald-700" : "text-rose-600"}`}>
-                                {pass2 ? `✓ ${targetPtn2.passingScore}` : `✗ Belum mencukupi (${targetPtn2.passingScore})`}
+                                {pass2 ? `âœ“ ${targetPtn2.passingScore}` : `âœ— Belum mencukupi (${targetPtn2.passingScore})`}
                               </span>
                             </td>
                           </tr>
@@ -920,9 +920,9 @@ export default function SimulationPage() {
                   </div>
 
                   <div className="flex items-center gap-2.5 sm:gap-3 text-[9.5px] sm:text-[10px] font-mono flex-wrap">
-                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-emerald-500" style={{ backgroundColor: "#10b981" }} /> ≥ 650 (Aman)</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-emerald-500" style={{ backgroundColor: "#10b981" }} /> â‰¥ 650 (Aman)</span>
                     <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-amber-500" style={{ backgroundColor: "#f59e0b" }} /> 400 - 649 (Cukup)</span>
-                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-rose-500" style={{ backgroundColor: "#f43f5e" }} /> ≤ 399 (Kurang)</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-rose-500" style={{ backgroundColor: "#f43f5e" }} /> â‰¤ 399 (Kurang)</span>
                   </div>
                 </div>
 
@@ -965,7 +965,7 @@ export default function SimulationPage() {
                   className="text-white px-3 sm:px-4 py-2 sm:py-2.5 text-xs font-bold flex items-center justify-between rounded-t-2xl min-w-[560px]"
                   style={{ backgroundColor: "#121c2d" }}
                 >
-                  <span>REKOMENDASI PTN LAIN • PROGRAM STUDI SERUPA DENGAN PILIHAN 1</span>
+                  <span>REKOMENDASI PTN LAIN â€¢ PROGRAM STUDI SERUPA DENGAN PILIHAN 1</span>
                   <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">Daya Tampung & Keketatan</span>
                 </div>
 
@@ -1106,7 +1106,7 @@ export default function SimulationPage() {
                   return (
                     <div key={q.id} className="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 space-y-2.5 sm:space-y-3">
                       <div className="flex items-center justify-between text-xs border-b border-slate-100 pb-2">
-                        <span className="font-mono font-bold text-blue-700 text-[11px] sm:text-xs">{q.subtest} • No. {idx + 1}</span>
+                        <span className="font-mono font-bold text-blue-700 text-[11px] sm:text-xs">{q.subtest} â€¢ No. {idx + 1}</span>
                         <span className={`px-2 py-0.5 rounded font-bold text-[10px] ${!uAns ? "bg-amber-50 text-amber-700" : isRight ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
                           {!uAns ? "Kosong" : isRight ? "Benar" : "Salah"}
                         </span>
@@ -1296,13 +1296,13 @@ export default function SimulationPage() {
               disabled={currentQIndexInSubtest === 0}
               className="px-4 py-2 border rounded-xl text-xs font-bold disabled:opacity-30 cursor-pointer hover:bg-slate-50"
             >
-              ← Sebelumnya
+              â† Sebelumnya
             </button>
             <button
               onClick={handleToggleDoubtful}
               className={`px-4 py-2 border rounded-xl text-xs font-bold cursor-pointer transition-all ${doubtfuls[currentQ?.id] ? "bg-amber-400 text-amber-950 border-amber-500 font-black" : "bg-white hover:bg-slate-50"}`}
             >
-              {doubtfuls[currentQ?.id] ? "✓ Ragu-Ragu" : "Ragu-Ragu"}
+              {doubtfuls[currentQ?.id] ? "âœ“ Ragu-Ragu" : "Ragu-Ragu"}
             </button>
             <button
               onClick={() => {
@@ -1314,7 +1314,7 @@ export default function SimulationPage() {
               }}
               className="px-5 py-2 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded-xl text-xs font-bold cursor-pointer transition-all"
             >
-              {currentQIndexInSubtest < currentSubtestQuestions.length - 1 ? "Berikutnya →" : "Selesai Subtes"}
+              {currentQIndexInSubtest < currentSubtestQuestions.length - 1 ? "Berikutnya â†’" : "Selesai Subtes"}
             </button>
           </div>
         </div>
@@ -1347,7 +1347,7 @@ export default function SimulationPage() {
           disabled={currentQIndexInSubtest === 0}
           className="flex-1 py-2.5 bg-slate-100 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold disabled:opacity-30 active:scale-95 cursor-pointer"
         >
-          ← Prev
+          â† Prev
         </button>
 
         <button
@@ -1357,7 +1357,7 @@ export default function SimulationPage() {
             : "bg-amber-50 border-amber-300 text-amber-900"
             }`}
         >
-          {doubtfuls[currentQ?.id] ? "✓ Ragu" : "Ragu"}
+          {doubtfuls[currentQ?.id] ? "âœ“ Ragu" : "Ragu"}
         </button>
 
         <button
@@ -1370,7 +1370,7 @@ export default function SimulationPage() {
           }}
           className="flex-1 py-2.5 bg-[#1e3a8a] text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 cursor-pointer"
         >
-          {currentQIndexInSubtest < currentSubtestQuestions.length - 1 ? "Next →" : "Selesai"}
+          {currentQIndexInSubtest < currentSubtestQuestions.length - 1 ? "Next â†’" : "Selesai"}
         </button>
       </div>
 

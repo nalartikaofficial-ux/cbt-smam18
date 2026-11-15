@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -181,7 +181,7 @@ export default function StudentLoginPage() {
                     <div className="text-center space-y-2">
                         <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-center mx-auto overflow-hidden p-1">
                             <img
-                                src="/logo-timsim.jpg"
+                                src="https://iqflpgrliqztoecpzrnu.supabase.co/storage/v1/object/public/cbt-assets/logo-timsim.jpg"
                                 alt="Logo SMA Muhammadiyah 18 Jakarta"
                                 className="w-full h-full object-contain"
                                 onError={(e) => {
@@ -215,7 +215,7 @@ export default function StudentLoginPage() {
                                         {activeSession.nama_paket}
                                     </span>
                                     <span className="text-[10.5px] sm:text-[11px] font-mono text-blue-700 font-semibold block truncate">
-                                        Target: {activeSession.paket_aktif} • {activeSession.durasi_menit} Menit
+                                        Target: {activeSession.paket_aktif} â€¢ {activeSession.durasi_menit} Menit
                                     </span>
                                 </div>
                             </div>
