@@ -389,10 +389,10 @@ export default function CBTEngineLandingPage() {
 
                     <div className="space-y-1.5 text-left">
                       <p className="text-[11.5px] sm:text-[12px] text-slate-700 leading-snug font-normal">
-                        {"Diberikan simpangan gelombang y(t) = A sin(Ï‰t + Ï†). Jika frekuensi sudut Ï‰ = 4Ï€ rad/s dan energi kinetik maksimum tercapai saat:"}
+                        {"Diberikan simpangan gelombang y(t) = A sin(ωt + φ). Jika frekuensi sudut ω = 4π rad/s dan energi kinetik maksimum tercapai saat:"}
                       </p>
                       <div className="py-1.5 px-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-mono text-[10px] sm:text-[11px] font-semibold text-center shadow-2xs tracking-tight overflow-x-auto">
-                        {"Ek = (1/2) Â· m Â· Ï‰² Â· A² cos²(Ï‰t + Ï†)"}
+                        {"Ek = (1/2)· m · ω² · A² cos²(ωt + φ)"}
                       </div>
                     </div>
 
@@ -543,7 +543,7 @@ export default function CBTEngineLandingPage() {
                     Algoritma IRT 3PL
                   </h3>
                   <p className="text-[11.5px] sm:text-xs text-slate-600 leading-relaxed">
-                    Kalkulasi pembobotan non-linier skala 200â€“800 berdasarkan parameter tingkat kesukaran, daya pembeda butir, dan faktor tebakan semu.
+                    Kalkulasi pembobotan non-linier skala 200–800 berdasarkan parameter tingkat kesukaran, daya pembeda butir, dan faktor tebakan semu.
                   </p>
                 </div>
                 <div className="pt-3.5 mt-3.5 border-t border-slate-100 flex items-center justify-between text-[10.5px] sm:text-[11px] font-mono text-slate-500">
@@ -814,7 +814,7 @@ export default function CBTEngineLandingPage() {
                       ENGINE SCORE
                     </span>
                     <div className="flex items-center gap-1 text-blue-200 font-mono text-[10.5px] sm:text-[11px] bg-white/10 px-2 py-0.5 rounded-md">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-400" /> 200â€“800
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" /> 200–800
                     </div>
                   </div>
                   <h4 className="text-[13.5px] sm:text-[14px] font-bold text-white tracking-tight mb-1">
@@ -841,7 +841,7 @@ export default function CBTEngineLandingPage() {
             <div className="relative rounded-3xl bg-gradient-to-br from-white via-slate-50/80 to-blue-50/50 border border-blue-200/60 shadow-xl shadow-blue-900/5 p-5 sm:p-10 text-left overflow-hidden backdrop-blur-xs">
               <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-900" />
               <span className="absolute -top-4 right-6 text-8xl font-serif text-blue-900/5 select-none pointer-events-none font-bold">
-                â€œ
+                “
               </span>
 
               <div className="flex flex-wrap items-center justify-between gap-2 pb-4 sm:pb-5 border-b border-blue-150/60">
@@ -858,7 +858,7 @@ export default function CBTEngineLandingPage() {
 
               <blockquote className="relative py-4 sm:py-7">
                 <p className="text-sm sm:text-lg lg:text-[18.5px] font-normal text-slate-800 leading-relaxed tracking-tight">
-                  â€œCBT Engine ini dikembangkan langsung dari bilik asesmen nyata untuk menjawab masalah mendasar pengujian massal: <strong className="font-semibold text-slate-950">server rentan saat akses serentak</strong>, minimnya penguncian layar peramban, dan ketiadaan pembobotan IRT. Kami memastikan seluruh instrumen <strong className="font-semibold text-blue-900">terkalibrasi presisi, stabil, dan objektif</strong>.â€
+                  “CBT Engine ini dikembangkan langsung dari bilik asesmen nyata untuk menjawab masalah mendasar pengujian massal: <strong className="font-semibold text-slate-950">server rentan saat akses serentak</strong>, minimnya penguncian layar peramban, dan ketiadaan pembobotan IRT. Kami memastikan seluruh instrumen <strong className="font-semibold text-blue-900">terkalibrasi presisi, stabil, dan objektif</strong>.â€
                 </p>
               </blockquote>
 
