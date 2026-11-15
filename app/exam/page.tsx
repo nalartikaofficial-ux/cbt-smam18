@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { LIST_PRODI_SNBT, ProdiItem } from '@/data/prodiDatabase';
 import React, { useState, useEffect, useMemo, useCallback, Suspense } from "react";
@@ -298,7 +298,7 @@ function OfficialExamChamberContent() {
 
         const queryPkg = searchParams.get("package") || searchParams.get("paket");
         const activePkg = queryPkg || sessionData.packageId || "PAKET_1";
-        setSessionTitle(`RUANG UJIAN RESMI â€¢ ${activePkg.replace("_", " ")}`);
+        setSessionTitle(`RUANG UJIAN RESMI • ${activePkg.replace("_", " ")}`);
 
         // Cek status server siswa di Supabase agar siswa yang sudah selesai terkunci total
         const cleanNisn = String(sessionData.nisn).replace(/\D/g, "").trim();
@@ -969,7 +969,7 @@ function OfficialExamChamberContent() {
                                     </div>
                                     <div>
                                         <h3 className="font-black text-xs sm:text-sm text-slate-900 leading-tight">
-                                            Database Resmi SNBT â€¢ Target Pilihan {targetSlotForSelection}
+                                            Database Resmi SNBT • Target Pilihan {targetSlotForSelection}
                                         </h3>
                                         <p className="text-[10px] sm:text-[11px] text-slate-500">
                                             Menampilkan {filteredModalBenchmarks.length} prodi terdaftar nasional (S1, D4, D3)
@@ -1062,7 +1062,7 @@ function OfficialExamChamberContent() {
                                             </div>
                                             <div className="text-slate-600">
                                                 <span className="text-slate-400 block text-[9.5px]">Passing Grade:</span>
-                                                <strong className="text-emerald-700">â‰¥ {item.passingGradeMin}</strong>
+                                                <strong className="text-emerald-700">≥ {item.passingGradeMin}</strong>
                                             </div>
                                         </div>
                                     </div>
@@ -1154,7 +1154,7 @@ function OfficialExamChamberContent() {
                                 <div className="p-2.5 rounded-xl bg-white border border-blue-200 space-y-1 shadow-2xs animate-in fade-in">
                                     <div className="flex items-center justify-between text-[11px] font-bold text-slate-800">
                                         <div className="flex items-center gap-1.5 truncate">
-                                            <span>{benchmarkData1.prodi} â€¢ {benchmarkData1.kampus}</span>
+                                            <span>{benchmarkData1.prodi} • {benchmarkData1.kampus}</span>
                                             <span className="px-1.5 py-0.2 rounded bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono text-[9px] font-bold">
                                                 {benchmarkData1.jenjang || "S1"}
                                             </span>
@@ -1172,7 +1172,7 @@ function OfficialExamChamberContent() {
                                         </div>
                                         <div>
                                             <span className="text-slate-400 block text-[9px]">Passing Grade:</span>
-                                            <strong className="text-emerald-700">â‰¥ {benchmarkData1.passingGradeMin}</strong>
+                                            <strong className="text-emerald-700">≥ {benchmarkData1.passingGradeMin}</strong>
                                         </div>
                                     </div>
                                 </div>
@@ -1210,7 +1210,7 @@ function OfficialExamChamberContent() {
                                 <div className="p-2.5 rounded-xl bg-white border border-blue-200 space-y-1 shadow-2xs animate-in fade-in">
                                     <div className="flex items-center justify-between text-[11px] font-bold text-slate-800">
                                         <div className="flex items-center gap-1.5 truncate">
-                                            <span>{benchmarkData2.prodi} â€¢ {benchmarkData2.kampus}</span>
+                                            <span>{benchmarkData2.prodi} • {benchmarkData2.kampus}</span>
                                             <span className="px-1.5 py-0.2 rounded bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono text-[9px] font-bold">
                                                 {benchmarkData2.jenjang || "S1"}
                                             </span>
@@ -1228,7 +1228,7 @@ function OfficialExamChamberContent() {
                                         </div>
                                         <div>
                                             <span className="text-slate-400 block text-[9px]">Passing Grade:</span>
-                                            <strong className="text-emerald-700">â‰¥ {benchmarkData2.passingGradeMin}</strong>
+                                            <strong className="text-emerald-700">≥ {benchmarkData2.passingGradeMin}</strong>
                                         </div>
                                     </div>
                                 </div>
@@ -1238,7 +1238,7 @@ function OfficialExamChamberContent() {
                         <datalist id="ptn-options-list">
                             {ptnBenchmarks.slice(0, 300).map((item) => (
                                 <option key={item.id} value={`${item.kampus} - ${item.prodi} (${item.jenjang || "S1"})`}>
-                                    Jenjang: {item.jenjang || "S1"} | Keketatan: {formatKeketatan(item.keketatan)} | Min Skor: â‰¥ {item.passingGradeMin}
+                                    Jenjang: {item.jenjang || "S1"} | Keketatan: {formatKeketatan(item.keketatan)} | Min Skor: ≥ {item.passingGradeMin}
                                 </option>
                             ))}
                         </datalist>
@@ -1349,8 +1349,8 @@ function OfficialExamChamberContent() {
                                 <span>Subtes Berikutnya: {nextSubtest.name}</span>
                             </div>
                             <div className="text-slate-600 leading-relaxed pl-6 space-y-1">
-                                <div>â€¢ Alokasi Waktu: <strong>{nextSubtest.defaultDurationMinutes} Menit</strong></div>
-                                <div>â€¢ Jumlah Butir: <strong>{nextSubtestQCount} Butir Soal</strong></div>
+                                <div>• Alokasi Waktu: <strong>{nextSubtest.defaultDurationMinutes} Menit</strong></div>
+                                <div>• Jumlah Butir: <strong>{nextSubtestQCount} Butir Soal</strong></div>
                             </div>
                         </div>
                     )}
@@ -1433,7 +1433,7 @@ function OfficialExamChamberContent() {
                                         <div key={q.id} className="p-3.5 sm:p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2.5 text-left text-xs">
                                             <div className="flex items-center justify-between border-b border-slate-200/70 pb-1.5">
                                                 <span className="font-mono font-bold text-blue-900">
-                                                    No. {q.localNo || idx + 1} â€¢ {q.subtest}
+                                                    No. {q.localNo || idx + 1} • {q.subtest}
                                                 </span>
                                                 <span
                                                     className={`px-2 py-0.5 rounded font-mono text-[9.5px] sm:text-[10px] font-bold ${isCorrect
@@ -1509,7 +1509,7 @@ function OfficialExamChamberContent() {
                 <div className="max-w-4xl mx-auto mb-4 bg-white rounded-2xl border border-slate-200 p-3 flex flex-wrap items-center justify-between gap-2.5 shadow-xs print-hidden">
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
                         <Award className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span className="text-[11px] sm:text-xs">Hasil Asesmen Terstandarisasi â€¢ Evaluasi Diagnostik Siap Cetak</span>
+                        <span className="text-[11px] sm:text-xs">Hasil Asesmen Terstandarisasi • Evaluasi Diagnostik Siap Cetak</span>
                     </div>
 
                     <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-end">
@@ -1586,7 +1586,7 @@ function OfficialExamChamberContent() {
                                     {studentSession?.candidateName || "Peserta Ujian"}
                                 </div>
                                 <div className="text-[10px] sm:text-[11px] text-blue-200 font-mono">
-                                    NISN: {studentSession?.nisn || "-"} â€¢ KELAS: {studentSession?.kelas || "XII"} â€¢ SMA MUHAMMADIYAH 18
+                                    NISN: {studentSession?.nisn || "-"} • KELAS: {studentSession?.kelas || "XII"} • SMA MUHAMMADIYAH 18
                                 </div>
                             </div>
                         </div>
@@ -1614,7 +1614,7 @@ function OfficialExamChamberContent() {
                         </div>
                         <div className="text-5xl sm:text-6xl font-black tracking-tight text-white my-1">{scoreResults.scaledScore}</div>
                         <div className="text-[10px] sm:text-[11px] text-blue-100 font-mono">
-                            Kalkulasi {scoreResults.total} Butir Soal Terstandarisasi Pemerintah â€¢ Skala 200 s.d. 1000
+                            Kalkulasi {scoreResults.total} Butir Soal Terstandarisasi Pemerintah • Skala 200 s.d. 1000
                         </div>
                     </div>
 
@@ -1845,7 +1845,7 @@ function OfficialExamChamberContent() {
                                         <div className="space-y-0.5">
                                             <div className="font-bold text-slate-900">{st.name}</div>
                                             <div className="text-[10.5px] sm:text-[11px] text-slate-500 font-mono">
-                                                Dikerjakan {spentMin} menit {spentSecRemainder} detik dari {totalMin} menit ({pctTime}%) â€¢ Benar: {s.correct}, Salah: {s.incorrect}, Kosong: {s.unattempted}
+                                                Dikerjakan {spentMin} menit {spentSecRemainder} detik dari {totalMin} menit ({pctTime}%) • Benar: {s.correct}, Salah: {s.incorrect}, Kosong: {s.unattempted}
                                             </div>
                                             <p className="text-[10px] sm:text-[10.5px] text-slate-400 italic">
                                                 {isHasty
@@ -1927,7 +1927,7 @@ function OfficialExamChamberContent() {
                             <div className="flex items-center gap-2 text-[9.5px] sm:text-[10px] font-mono">
                                 <span className="flex items-center gap-1">
                                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                                    â‰¥ 650 (Aman)
+                                    ≥ 650 (Aman)
                                 </span>
                                 <span className="flex items-center gap-1">
                                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
@@ -1935,7 +1935,7 @@ function OfficialExamChamberContent() {
                                 </span>
                                 <span className="flex items-center gap-1">
                                     <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                                    â‰¤ 499 (Kurang)
+                                    ≤ 499 (Kurang)
                                 </span>
                             </div>
                         </div>
@@ -2205,7 +2205,7 @@ function OfficialExamChamberContent() {
                     <div className="min-w-0">
                         <div className="font-bold text-xs sm:text-sm text-slate-900 truncate">{activeSubtestConfig.name}</div>
                         <div className="text-[10px] sm:text-[11px] text-slate-500 font-mono truncate">
-                            Subtes {currentSubtestIndex + 1}/{subtestsList.length} â€¢ {studentSession?.candidateName}
+                            Subtes {currentSubtestIndex + 1}/{subtestsList.length} • {studentSession?.candidateName}
                         </div>
                     </div>
                 </div>
@@ -2315,7 +2315,7 @@ function OfficialExamChamberContent() {
                             disabled={currentQIndexInSubtest === 0}
                             className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs active:scale-95"
                         >
-                            â† Sebelumnya
+                            ← Sebelumnya
                         </button>
 
                         <button
@@ -2338,7 +2338,7 @@ function OfficialExamChamberContent() {
                             }}
                             className="px-6 py-2.5 bg-[#1e3a8a] hover:bg-blue-900 text-white rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer active:scale-95"
                         >
-                            {currentQIndexInSubtest < currentSubtestQuestions.length - 1 ? "Berikutnya â†’" : "Selesai Subtes"}
+                            {currentQIndexInSubtest < currentSubtestQuestions.length - 1 ? "Berikutnya →" : "Selesai Subtes"}
                         </button>
                     </div>
                 </div>
@@ -2389,7 +2389,7 @@ function OfficialExamChamberContent() {
                     disabled={currentQIndexInSubtest === 0}
                     className="flex-1 py-2.5 bg-slate-100 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold disabled:opacity-30 active:scale-95 cursor-pointer"
                 >
-                    â† Prev
+                    ← Prev
                 </button>
 
                 <button
@@ -2412,7 +2412,7 @@ function OfficialExamChamberContent() {
                     }}
                     className="flex-1 py-2.5 bg-[#1e3a8a] text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 cursor-pointer"
                 >
-                    {currentQIndexInSubtest < currentSubtestQuestions.length - 1 ? "Next â†’" : "Selesai"}
+                    {currentQIndexInSubtest < currentSubtestQuestions.length - 1 ? "Next →" : "Selesai"}
                 </button>
             </div>
 

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -314,7 +314,7 @@ export default function AdminGateAndHubPage() {
                         </div>
                         <div className="min-w-0">
                             <div className="text-xs sm:text-sm font-black text-slate-900 tracking-tight uppercase truncate">
-                                PUSAT KENDALI STAF â€¢ SMA MUHAMMADIYAH 18
+                                PUSAT KENDALI STAF • SMA MUHAMMADIYAH 18
                             </div>
                             <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
                                 Masuk sebagai: <strong className="text-blue-700">{currentUser.nama}</strong> ({currentUser.role.toUpperCase()})
@@ -363,7 +363,7 @@ export default function AdminGateAndHubPage() {
                             </div>
                         </div>
                         <div className="pt-3.5 sm:pt-4 mt-3.5 sm:mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-700">
-                            <span>Masuk Bilik Proktor â†’</span>
+                            <span>Masuk Bilik Proktor →</span>
                             <Activity className="w-4 h-4 animate-pulse" />
                         </div>
                     </Link>
@@ -390,7 +390,7 @@ export default function AdminGateAndHubPage() {
                             </div>
                         </div>
                         <div className="pt-3.5 sm:pt-4 mt-3.5 sm:mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-700">
-                            <span>Masuk Ruang Bank Soal â†’</span>
+                            <span>Masuk Ruang Bank Soal →</span>
                             <BookOpen className="w-4 h-4" />
                         </div>
                     </Link>
@@ -417,7 +417,7 @@ export default function AdminGateAndHubPage() {
                             </div>
                         </div>
                         <div className="pt-3.5 sm:pt-4 mt-3.5 sm:mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-700">
-                            <span>Buka Statistik Nilai â†’</span>
+                            <span>Buka Statistik Nilai →</span>
                             <BarChart3 className="w-4 h-4" />
                         </div>
                     </Link>

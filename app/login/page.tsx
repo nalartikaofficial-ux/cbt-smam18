@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -215,7 +215,7 @@ export default function StudentLoginPage() {
                                         {activeSession.nama_paket}
                                     </span>
                                     <span className="text-[10.5px] sm:text-[11px] font-mono text-blue-700 font-semibold block truncate">
-                                        Target: {activeSession.paket_aktif} â€¢ {activeSession.durasi_menit} Menit
+                                        Target: {activeSession.paket_aktif} • {activeSession.durasi_menit} Menit
                                     </span>
                                 </div>
                             </div>

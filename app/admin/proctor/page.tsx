@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
@@ -669,7 +669,7 @@ export default function ProctorMasterDashboard() {
                         </div>
                         <div className="min-w-0">
                             <div className="text-xs sm:text-sm font-black text-slate-900 tracking-tight uppercase truncate">
-                                PUSAT KENDALI PROKTOR â€¢ SMA MUHAMMADIYAH 18
+                                PUSAT KENDALI PROKTOR • SMA MUHAMMADIYAH 18
                             </div>
                             <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
                                 Pengawas Aktif: <strong className="text-blue-700">{currentProctor.nama}</strong> ({currentProctor.role.toUpperCase()})
@@ -1451,7 +1451,7 @@ export default function ProctorMasterDashboard() {
                                                 Jl. Panjang No. 19, Cipulir, Kebayoran Lama, Jakarta Selatan 12230 | Telp: (021) 7235544
                                             </p>
                                             <p className="text-[9.5px] text-slate-500 font-mono">
-                                                Website: https://smamuh18jakarta.sch.id â€¢ Pos-el: smamuh18@gmail.com
+                                                Website: https://smamuh18jakarta.sch.id • Pos-el: smamuh18@gmail.com
                                             </p>
                                         </div>
                                         <div className="w-20 shrink-0" />
