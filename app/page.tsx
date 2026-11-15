@@ -96,7 +96,7 @@ export default function CBTEngineLandingPage() {
     };
   }, []);
 
-  // 3. STATE SPLASH SCREEN PEMBUKA RESMI (DIPERCEPAT KILAT 0.45 DETIK)
+  // 3. STATE SPLASH SCREEN PEMBUKA RESMI (DIPERCEPAT KILAT 0.25 DETIK)
   const [isLoading, setIsLoading] = useState(true);
   const [loadProgress, setLoadProgress] = useState(0);
 
