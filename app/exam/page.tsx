@@ -413,6 +413,23 @@ function OfficialExamChamberContent() {
         return filtered.length > 0 ? filtered : allQuestions;
     }, [allQuestions, activeSubtestConfig]);
 
+    // PRELOAD SELURUH GAMBAR SOAL PADA SUBTES AKTIF DI LATAR BELAKANG (ZERO FLICKER)
+    useEffect(() => {
+        if (!currentSubtestQuestions || currentSubtestQuestions.length === 0) return;
+        currentSubtestQuestions.forEach((q) => {
+            if (q.imageUrl) {
+                const img = new window.Image();
+                img.src = q.imageUrl;
+            }
+            q.options?.forEach((opt) => {
+                if (opt.imageUrl) {
+                    const optImg = new window.Image();
+                    optImg.src = opt.imageUrl;
+                }
+            });
+        });
+    }, [currentSubtestQuestions]);
+
     // Ringkasan jawaban subtes aktif untuk layar jeda antar-subtes
     const currentSubtestSummary = useMemo(() => {
         let answered = 0;

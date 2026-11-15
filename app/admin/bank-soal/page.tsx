@@ -1,6 +1,7 @@
 ﻿"use client";
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
+import { createClient } from "@supabase/supabase-js";
 
 import * as XLSX from "xlsx";
 import React, { useState, useEffect, useMemo, useRef } from "react";
@@ -141,6 +142,52 @@ interface SubtestDurationItem {
     name: string;
     category?: string;
     defaultDurationMinutes: number;
+}
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const supabaseClient = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+
+// KOMPRESI & UNGGAH OTOMATIS GAMBAR BASE64 KE SUPABASE STORAGE (cbt-assets)
+async function uploadBase64ToSupabaseStorage(dataUrl: string, prefix = "soal"): Promise<string> {
+    if (!dataUrl || !dataUrl.startsWith("data:image/") || !supabaseClient) return dataUrl;
+    try {
+        const img = new Image();
+        img.src = dataUrl;
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+        });
+
+        const canvas = document.createElement("canvas");
+        const maxWidth = 1000;
+        const scale = img.width > maxWidth ? maxWidth / img.width : 1;
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const webpBlob: Blob | null = await new Promise((resolve) =>
+            canvas.toBlob((blob) => resolve(blob), "image/webp", 0.82)
+        );
+        if (!webpBlob) return dataUrl;
+
+        const fileName = `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}.webp`;
+        const { error } = await supabaseClient.storage
+            .from("cbt-assets")
+            .upload(fileName, webpBlob, { contentType: "image/webp", upsert: true });
+
+        if (error) {
+            console.error("Gagal upload ke Supabase Storage:", error.message);
+            return dataUrl;
+        }
+
+        const { data: pub } = supabaseClient.storage.from("cbt-assets").getPublicUrl(fileName);
+        return pub?.publicUrl || dataUrl;
+    } catch {
+        return dataUrl;
+    }
 }
 
 // STRUKTUR RESMI 7 SUBTES SNBT (TOTAL 160 BUTIR SOAL)
@@ -452,36 +499,43 @@ function WordImporterSection({
             };
 
             const subtestCounters: Record<string, number> = {};
-            const finalized: ParsedQuestion[] = rawQuestions.map((q, idx) => {
-                let subCode = (q.subtes_code || "PU").toUpperCase();
-                let localNo = 1;
+            const finalized: ParsedQuestion[] = await Promise.all(
+                rawQuestions.map(async (q, idx) => {
+                    let subCode = (q.subtes_code || "PU").toUpperCase();
+                    let localNo = 1;
 
-                if (hasExplicitSubtestTag) {
-                    subtestCounters[subCode] = (subtestCounters[subCode] || 0) + 1;
-                    localNo = subtestCounters[subCode];
-                } else {
-                    const meta = getSubtestMetaByQuota(idx);
-                    subCode = meta.subtes;
-                    localNo = meta.localNo;
-                }
+                    if (hasExplicitSubtestTag) {
+                        subtestCounters[subCode] = (subtestCounters[subCode] || 0) + 1;
+                        localNo = subtestCounters[subCode];
+                    } else {
+                        const meta = getSubtestMetaByQuota(idx);
+                        subCode = meta.subtes;
+                        localNo = meta.localNo;
+                    }
 
-                return {
-                    no_soal: localNo,
-                    subtes_code: subCode,
-                    stimulus: q.stimulus || "",
-                    image_url: q.image_url || "",
-                    image_position: q.image_position || "above",
-                    pertanyaan: q.pertanyaan,
-                    opsi_a: q.opsi_a,
-                    opsi_b: q.opsi_b,
-                    opsi_c: q.opsi_c,
-                    opsi_d: q.opsi_d,
-                    opsi_e: q.opsi_e,
-                    kunci: q.kunci,
-                    tingkat_kesukaran: q.tingkat_kesukaran || "Sedang",
-                    pembahasan: q.pembahasan || ""
-                };
-            });
+                    // Unggah otomatis gambar dari Word ke bucket cbt-assets Supabase
+                    const uploadedImgUrl = q.image_url?.startsWith("data:image/")
+                        ? await uploadBase64ToSupabaseStorage(q.image_url, `${selectedPaket}_${subCode}_${localNo}`)
+                        : (q.image_url || "");
+
+                    return {
+                        no_soal: localNo,
+                        subtes_code: subCode,
+                        stimulus: q.stimulus || "",
+                        image_url: uploadedImgUrl,
+                        image_position: q.image_position || "above",
+                        pertanyaan: q.pertanyaan,
+                        opsi_a: q.opsi_a,
+                        opsi_b: q.opsi_b,
+                        opsi_c: q.opsi_c,
+                        opsi_d: q.opsi_d,
+                        opsi_e: q.opsi_e,
+                        kunci: q.kunci,
+                        tingkat_kesukaran: q.tingkat_kesukaran || "Sedang",
+                        pembahasan: q.pembahasan || ""
+                    };
+                })
+            );
 
             setStagedList(finalized);
         } catch (err: any) {
