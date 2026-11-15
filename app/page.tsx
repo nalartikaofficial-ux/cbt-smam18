@@ -96,13 +96,15 @@ export default function CBTEngineLandingPage() {
     };
   }, []);
 
-  // 3. STATE SPLASH SCREEN PEMBUKA RESMI
+  // 3. STATE SPLASH SCREEN PEMBUKA RESMI (DIPERCEPAT KILAT 0.45 DETIK)
   const [isLoading, setIsLoading] = useState(true);
   const [loadProgress, setLoadProgress] = useState(0);
 
   useEffect(() => {
-    const totalDuration = 3000;
-    const updateInterval = 25;
+    document.title = "CBT SNBT - SMA Muhammadiyah 18 Jakarta";
+
+    const totalDuration = 450;
+    const updateInterval = 15;
     const totalTicks = totalDuration / updateInterval;
     let currentTick = 0;
 
@@ -115,7 +117,7 @@ export default function CBTEngineLandingPage() {
         clearInterval(progressTimer);
         setTimeout(() => {
           setIsLoading(false);
-        }, 200);
+        }, 50);
       }
     }, updateInterval);
 
@@ -133,8 +135,8 @@ export default function CBTEngineLandingPage() {
       {/* ============================================================== */}
       <div
         className={`fixed inset-0 top-0 left-0 w-screen h-screen z-[9999] flex flex-col items-center justify-center bg-white transition-all duration-700 ease-in-out ${isLoading
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 -translate-y-4 pointer-events-none"
+          ? "opacity-100 pointer-events-auto"
+          : "opacity-0 -translate-y-4 pointer-events-none"
           }`}
       >
         <div className="absolute w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
@@ -190,8 +192,8 @@ export default function CBTEngineLandingPage() {
       {/* ============================================================== */}
       <div
         className={`transition-all duration-1000 ease-out ${isLoading
-            ? "opacity-0 translate-y-3 filter blur-xs"
-            : "opacity-100 translate-y-0 filter-none"
+          ? "opacity-0 translate-y-3 filter blur-xs"
+          : "opacity-100 translate-y-0 filter-none"
           }`}
       >
         {/* HEADER / NAVBAR RESPONSIF */}
