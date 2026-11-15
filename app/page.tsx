@@ -97,8 +97,8 @@ export default function CBTEngineLandingPage() {
   }, []);
 
   // 3. STATE SPLASH SCREEN PEMBUKA RESMI (DIPERCEPAT KILAT 0.45 DETIK)
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadProgress, setLoadProgress] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadProgress, setLoadProgress] = useState(100);
 
   useEffect(() => {
     document.title = "CBT SNBT - SMA Muhammadiyah 18 Jakarta";
