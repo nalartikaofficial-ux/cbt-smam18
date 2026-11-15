@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
     BarChart3,
-    Users,
     Trophy,
     ShieldCheck,
     Search,
@@ -20,7 +19,9 @@ import {
     TrendingDown,
     Minus,
     Layers,
-    ArrowUpRight
+    Award,
+    AlertTriangle,
+    PieChart
 } from "lucide-react";
 
 export interface RealStudentResult {
@@ -75,14 +76,100 @@ export interface ExamAttemptRecord {
 }
 
 const SUBTEST_LABELS = [
-    { key: "skor_pu", code: "PU", name: "Penalaran Umum (PU)" },
-    { key: "skor_ppu", code: "PPU", name: "Pengetahuan & Pemahaman Umum (PPU)" },
-    { key: "skor_pbm", code: "PBM", name: "Pemahaman Bacaan & Menulis (PBM)" },
-    { key: "skor_pk", code: "PK", name: "Pengetahuan Kuantitatif (PK)" },
-    { key: "skor_lit_indo", code: "LIT_INDO", name: "Literasi Bahasa Indonesia" },
-    { key: "skor_lit_eng", code: "LIT_ENG", name: "Literasi Bahasa Inggris" },
-    { key: "skor_pm", code: "PM", name: "Penalaran Matematika (PM)" }
+    {
+        key: "skor_pu",
+        code: "PU",
+        shortName: "Penalaran Umum",
+        name: "Penalaran Umum (PU)",
+        rekomendasi: "Perbanyak latihan silogisme, logika deduktif-induktif, dan analisis pola bilangan/grafik."
+    },
+    {
+        key: "skor_ppu",
+        code: "PPU",
+        shortName: "Pemahaman Umum",
+        name: "Pengetahuan & Pemahaman Umum (PPU)",
+        rekomendasi: "Perkuat penguasaan makna kontekstual kata, relasi semantik, dan ide pokok paragraf."
+    },
+    {
+        key: "skor_pbm",
+        code: "PBM",
+        shortName: "Bacaan & Menulis",
+        name: "Pemahaman Bacaan & Menulis (PBM)",
+        rekomendasi: "Fokus pada kaidah PUEBI/EYD V, kalimat efektif, konjungsi, dan kepaduan antarparagraf."
+    },
+    {
+        key: "skor_pk",
+        code: "PK",
+        shortName: "Pengetahuan Kuantitatif",
+        name: "Pengetahuan Kuantitatif (PK)",
+        rekomendasi: "Latih konsep dasar aljabar, geometri bidang, statistika deskriptif, dan kecukupan data."
+    },
+    {
+        key: "skor_lit_indo",
+        code: "LIT_INDO",
+        shortName: "Lit. B. Indonesia",
+        name: "Literasi Bahasa Indonesia",
+        rekomendasi: "Biasakan membaca teks panjang saintek/soshum untuk menarik kesimpulan tersirat secara cepat."
+    },
+    {
+        key: "skor_lit_eng",
+        code: "LIT_ENG",
+        shortName: "Lit. B. Inggris",
+        name: "Literasi Bahasa Inggris",
+        rekomendasi: "Perkuat pemahaman author's tone, inference, purpose of text, dan perbandingan dua teks opini."
+    },
+    {
+        key: "skor_pm",
+        code: "PM",
+        shortName: "Penalaran Matematika",
+        name: "Penalaran Matematika (PM)",
+        rekomendasi: "Latih pemodelan soal cerita kontekstual ke bentuk persamaan matematika dan analisis tabel."
+    }
 ] as const;
+
+// Kalkulasi skor akhir seragam (identik dengan layar ujian siswa)
+function getUnifiedScore(item: Partial<RealStudentResult>): number {
+    const subs = [
+        Number(item.skor_pu) || 0,
+        Number(item.skor_ppu) || 0,
+        Number(item.skor_pbm) || 0,
+        Number(item.skor_pk) || 0,
+        Number(item.skor_lit_indo) || 0,
+        Number(item.skor_lit_eng) || 0,
+        Number(item.skor_pm) || 0
+    ];
+    const hasSubtestData = subs.some((v) => v > 0);
+    if (hasSubtestData) {
+        const sum = subs.reduce((a, b) => a + b, 0);
+        return Math.round(sum / 7);
+    }
+    return Math.round(Number(item.score) || 0);
+}
+
+function getUnifiedTps(item: Partial<RealStudentResult>): number {
+    const tps = [
+        Number(item.skor_pu) || 0,
+        Number(item.skor_ppu) || 0,
+        Number(item.skor_pbm) || 0,
+        Number(item.skor_pk) || 0
+    ];
+    if (tps.some((v) => v > 0)) {
+        return Math.round(tps.reduce((a, b) => a + b, 0) / 4);
+    }
+    return Math.round(Number(item.nilai_tps) || 0);
+}
+
+function getUnifiedLiterasi(item: Partial<RealStudentResult>): number {
+    const lit = [
+        Number(item.skor_lit_indo) || 0,
+        Number(item.skor_lit_eng) || 0,
+        Number(item.skor_pm) || 0
+    ];
+    if (lit.some((v) => v > 0)) {
+        return Math.round(lit.reduce((a, b) => a + b, 0) / 3);
+    }
+    return Math.round(Number(item.nilai_literasi) || 0);
+}
 
 export default function AdminAnalyticsPage() {
     const [students, setStudents] = useState<RealStudentResult[]>([]);
@@ -92,7 +179,6 @@ export default function AdminAnalyticsPage() {
     const [selectedClass, setSelectedClass] = useState("ALL");
     const [activeTab, setActiveTab] = useState<"ranking" | "progres_to" | "subtes_angkatan">("ranking");
 
-    // State Form Pejabat (Bisa diketik bebas manual)
     const [officials, setOfficials] = useState({
         kepalaSekolahNama: "Drs. H. Ahmad Dahlan, M.Pd.",
         kepalaSekolahNbm: "882.118.001",
@@ -101,10 +187,8 @@ export default function AdminAnalyticsPage() {
         koordinatorJabatan: "Koordinator Kurikulum & Asesmen SNBT"
     });
 
-    // Modal Cetak Rapor Individual 1 Murid Terpilih
     const [selectedStudentForReport, setSelectedStudentForReport] = useState<RealStudentResult | null>(null);
 
-    // Ambil data nilai & riwayat TO real-time dari Supabase
     const fetchStudents = async () => {
         setIsLoading(true);
         try {
@@ -140,14 +224,12 @@ export default function AdminAnalyticsPage() {
         fetchStudents();
     }, []);
 
-    // Filter siswa yang sudah selesai mengerjakan
     const finishedStudents = useMemo(() => {
         return students
             .filter((s) => s.status === "Selesai" || Number(s.score) > 0)
-            .sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
+            .sort((a, b) => getUnifiedScore(b) - getUnifiedScore(a));
     }, [students]);
 
-    // Daftar kelas unik dari database
     const availableClasses = useMemo(() => {
         const setCls = new Set<string>();
         students.forEach((s) => {
@@ -156,7 +238,6 @@ export default function AdminAnalyticsPage() {
         return Array.from(setCls).sort();
     }, [students]);
 
-    // Filter tabel pencarian dan kelas
     const filteredStudents = useMemo(() => {
         return finishedStudents.filter((s) => {
             const matchClass = selectedClass === "ALL" || s.kelas === selectedClass;
@@ -169,9 +250,19 @@ export default function AdminAnalyticsPage() {
         });
     }, [finishedStudents, selectedClass, searchQuery]);
 
-    // Kelompokkan riwayat Tryout per siswa untuk analisis perbandingan TO-1 vs TO-2 vs TO-3
     const studentProgressionList = useMemo(() => {
-        const map = new Map<string, { nisn: string; nama: string; kelas: string; to1?: ExamAttemptRecord; to2?: ExamAttemptRecord; to3?: ExamAttemptRecord; history: ExamAttemptRecord[] }>();
+        const map = new Map<
+            string,
+            {
+                nisn: string;
+                nama: string;
+                kelas: string;
+                to1?: ExamAttemptRecord;
+                to2?: ExamAttemptRecord;
+                to3?: ExamAttemptRecord;
+                history: ExamAttemptRecord[];
+            }
+        >();
 
         attempts.forEach((att) => {
             if (!map.has(att.nisn)) {
@@ -198,7 +289,6 @@ export default function AdminAnalyticsPage() {
         });
     }, [attempts, selectedClass, searchQuery]);
 
-    // Rerata 7 Subtes Tingkat Angkatan / Kelas Terpilih
     const subtestClassAverages = useMemo(() => {
         const count = filteredStudents.length;
         return SUBTEST_LABELS.map((sub) => {
@@ -208,15 +298,14 @@ export default function AdminAnalyticsPage() {
         });
     }, [filteredStudents]);
 
-    // Statistik Real Agregat Angkatan
     const overallStats = useMemo(() => {
         const totalSelesai = finishedStudents.length;
         const totalTerdaftar = students.length;
         const avgScore =
             totalSelesai > 0
-                ? Math.round((finishedStudents.reduce((acc, curr) => acc + (Number(curr.score) || 0), 0) / totalSelesai) * 10) / 10
+                ? Math.round((finishedStudents.reduce((acc, curr) => acc + getUnifiedScore(curr), 0) / totalSelesai) * 10) / 10
                 : 0;
-        const tembusTarget = finishedStudents.filter((s) => Number(s.score) >= 650).length;
+        const tembusTarget = finishedStudents.filter((s) => getUnifiedScore(s) >= 650).length;
         const persentaseTarget = totalSelesai > 0 ? Math.round((tembusTarget / totalSelesai) * 100) : 0;
         const totalPelanggaran = finishedStudents.reduce((acc, curr) => acc + (Number(curr.violations) || 0), 0);
         const integritasRate = Math.max(0, 100 - totalPelanggaran * 3);
@@ -224,32 +313,87 @@ export default function AdminAnalyticsPage() {
         return { totalTerdaftar, totalSelesai, avgScore, tembusTarget, persentaseTarget, integritasRate };
     }, [finishedStudents, students]);
 
-    // Riwayat TO khusus untuk murid yang sedang dibuka di modal rapor
-    const selectedStudentAttempts = useMemo(() => {
-        if (!selectedStudentForReport) return [];
-        return attempts.filter((a) => a.nisn === selectedStudentForReport.nisn);
+    // Analisis Mendalam untuk Siswa yang Diklik pada Modal Rapor
+    const reportDiagnostic = useMemo(() => {
+        if (!selectedStudentForReport) return null;
+
+        const unifiedScore = getUnifiedScore(selectedStudentForReport);
+        const unifiedTps = getUnifiedTps(selectedStudentForReport);
+        const unifiedLit = getUnifiedLiterasi(selectedStudentForReport);
+
+        const subtestScores = SUBTEST_LABELS.map((sub) => {
+            const val = Number((selectedStudentForReport as any)[sub.key]) || 200;
+            return {
+                ...sub,
+                score: val,
+                gap: Math.round((val - 650) * 10) / 10,
+                isPassed: val >= 650
+            };
+        });
+
+        const sortedDesc = [...subtestScores].sort((a, b) => b.score - a.score);
+        const strengths = sortedDesc.slice(0, 2);
+        const weaknesses = [...subtestScores].sort((a, b) => a.score - b.score).slice(0, 2);
+
+        const benar = Number(selectedStudentForReport.benar) || 0;
+        const salah = Number(selectedStudentForReport.salah) || 0;
+        const kosong = Number(selectedStudentForReport.kosong) || 0;
+        const totalSoal = Math.max(1, benar + salah + kosong);
+        const dijawab = benar + salah;
+        const akurasiJawab = dijawab > 0 ? Math.round((benar / dijawab) * 100) : 0;
+        const tingkatPartisipasi = Math.round((dijawab / totalSoal) * 100);
+
+        const studentAttempts = attempts
+            .filter((a) => a.nisn === selectedStudentForReport.nisn)
+            .map((a) => ({
+                ...a,
+                unifiedScore: getUnifiedScore(a),
+                unifiedTps: getUnifiedTps(a),
+                unifiedLit: getUnifiedLiterasi(a)
+            }));
+
+        return {
+            unifiedScore,
+            unifiedTps,
+            unifiedLit,
+            subtestScores,
+            strengths,
+            weaknesses,
+            benar,
+            salah,
+            kosong,
+            totalSoal,
+            akurasiJawab,
+            tingkatPartisipasi,
+            studentAttempts
+        };
     }, [selectedStudentForReport, attempts]);
+
+    const handleOpenStudentByNisn = (nisn: string) => {
+        const found = students.find((s) => s.nisn === nisn);
+        if (found) {
+            setSelectedStudentForReport(found);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-800">
-            {/* ATURAN CETAK KHUSUS LEMBAR RAPOR INDIVIDU A4 */}
             <style
                 dangerouslySetInnerHTML={{
                     __html: `
             @page {
               size: A4 portrait;
-              margin: 10mm 15mm 10mm 15mm;
+              margin: 10mm 14mm 10mm 14mm;
             }
             @media print {
               html, body {
                 background: #ffffff !important;
-                background-color: #ffffff !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 width: 100% !important;
                 color: #000000 !important;
                 font-family: 'Times New Roman', Times, serif !important;
-                font-size: 11pt !important;
+                font-size: 10.5pt !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
               }
@@ -258,7 +402,6 @@ export default function AdminAnalyticsPage() {
               }
               .print-sheet {
                 background: #ffffff !important;
-                background-color: #ffffff !important;
                 box-shadow: none !important;
                 border: none !important;
                 border-radius: 0 !important;
@@ -266,12 +409,10 @@ export default function AdminAnalyticsPage() {
                 padding: 0 !important;
                 width: 100% !important;
                 max-width: 100% !important;
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
               }
               .kop-divider-thick {
                 border-bottom: 2.5px solid #000000 !important;
-                margin-top: 8px !important;
+                margin-top: 6px !important;
               }
               .kop-divider-thin {
                 border-bottom: 1px solid #000000 !important;
@@ -282,7 +423,7 @@ export default function AdminAnalyticsPage() {
                 }}
             />
 
-            {/* HEADER ATAS RESPONSIF */}
+            {/* HEADER ATAS */}
             <header className="print-hidden bg-white border-b border-slate-200/90 py-3 sm:py-3.5 px-3.5 sm:px-8 sticky top-0 z-30 shadow-2xs">
                 <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 w-full sm:w-auto">
@@ -520,70 +661,86 @@ export default function AdminAnalyticsPage() {
 
                     {/* TAB 1: PERINGKAT & CETAK RAPOR */}
                     {activeTab === "ranking" && (
-                        <div className="overflow-x-auto rounded-2xl border border-slate-200">
-                            <table className="w-full text-left text-xs border-collapse min-w-[820px]">
-                                <thead className="bg-slate-50 border-b border-slate-200 font-mono text-[10.5px] sm:text-[11px] text-slate-600">
-                                    <tr>
-                                        <th className="p-3">Rank</th>
-                                        <th className="p-3">NISN</th>
-                                        <th className="p-3">Nama Siswa</th>
-                                        <th className="p-3">Kelas</th>
-                                        <th className="p-3 text-center">Skor IRT</th>
-                                        <th className="p-3 text-center">TPS / Lit</th>
-                                        <th className="p-3">Pilihan Kampus 1</th>
-                                        <th className="p-3 text-center">Integritas</th>
-                                        <th className="p-3 text-right">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 font-medium">
-                                    {filteredStudents.map((s, idx) => {
-                                        const numScore = Number(s.score) || 0;
-                                        return (
-                                            <tr key={s.nisn} className="hover:bg-slate-50/70">
-                                                <td className="p-3 font-mono font-bold text-blue-700">#{idx + 1}</td>
-                                                <td className="p-3 font-mono text-slate-700">{s.nisn}</td>
-                                                <td className="p-3 font-bold text-slate-900">{s.nama}</td>
-                                                <td className="p-3 font-mono text-slate-600">{s.kelas}</td>
-                                                <td className="p-3 font-mono font-black text-xs sm:text-sm text-center text-blue-900">
-                                                    {numScore.toFixed(1)}
-                                                </td>
-                                                <td className="p-3 font-mono text-[11px] text-center text-slate-600">
-                                                    {Number(s.nilai_tps || 0).toFixed(0)} / {Number(s.nilai_literasi || 0).toFixed(0)}
-                                                </td>
-                                                <td className="p-3 text-slate-700 text-[11px]">
-                                                    {s.pilihan_kampus_1 || "-"}
-                                                </td>
-                                                <td className="p-3 text-center">
-                                                    {Number(s.violations) === 0 ? (
-                                                        <span className="text-emerald-700 font-bold text-[10px]">Bersih</span>
-                                                    ) : (
-                                                        <span className="text-rose-700 font-bold text-[10px]">{s.violations}x Langgar</span>
-                                                    )}
-                                                </td>
-                                                <td className="p-3 text-right">
-                                                    <button
-                                                        onClick={() => setSelectedStudentForReport(s)}
-                                                        className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 text-[10.5px] sm:text-[11px] font-bold flex items-center gap-1.5 cursor-pointer ml-auto transition-colors shadow-2xs"
-                                                    >
-                                                        <Printer className="w-3.5 h-3.5 text-blue-700" />
-                                                        <span>Rapor & Cetak</span>
-                                                    </button>
+                        <div className="space-y-2.5">
+                            <p className="text-[11px] text-slate-500">
+                                Klik pada <strong>Nama Siswa</strong> atau tombol <strong>Rapor & Diagram</strong> untuk melihat grafik lingkaran proporsi jawaban, tren progres TO, serta keunggulan & kelemahan per subtes.
+                            </p>
+                            <div className="overflow-x-auto rounded-2xl border border-slate-200">
+                                <table className="w-full text-left text-xs border-collapse min-w-[820px]">
+                                    <thead className="bg-slate-50 border-b border-slate-200 font-mono text-[10.5px] sm:text-[11px] text-slate-600">
+                                        <tr>
+                                            <th className="p-3">Rank</th>
+                                            <th className="p-3">NISN</th>
+                                            <th className="p-3">Nama Siswa (Klik untuk Detail)</th>
+                                            <th className="p-3">Kelas</th>
+                                            <th className="p-3 text-center">Skor IRT</th>
+                                            <th className="p-3 text-center">TPS / Lit</th>
+                                            <th className="p-3">Pilihan Kampus 1</th>
+                                            <th className="p-3 text-center">Integritas</th>
+                                            <th className="p-3 text-right">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 font-medium">
+                                        {filteredStudents.map((s, idx) => {
+                                            const unifiedScore = getUnifiedScore(s);
+                                            const unifiedTps = getUnifiedTps(s);
+                                            const unifiedLit = getUnifiedLiterasi(s);
+
+                                            return (
+                                                <tr key={s.nisn} className="hover:bg-blue-50/40 transition-colors">
+                                                    <td className="p-3 font-mono font-bold text-blue-700">#{idx + 1}</td>
+                                                    <td className="p-3 font-mono text-slate-700">{s.nisn}</td>
+                                                    <td className="p-3">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setSelectedStudentForReport(s)}
+                                                            className="font-bold text-slate-900 hover:text-blue-700 hover:underline text-left cursor-pointer"
+                                                        >
+                                                            {s.nama}
+                                                        </button>
+                                                    </td>
+                                                    <td className="p-3 font-mono text-slate-600">{s.kelas}</td>
+                                                    <td className="p-3 font-mono font-black text-xs sm:text-sm text-center text-blue-900">
+                                                        {unifiedScore}
+                                                    </td>
+                                                    <td className="p-3 font-mono text-[11px] text-center text-slate-600">
+                                                        {unifiedTps} / {unifiedLit}
+                                                    </td>
+                                                    <td className="p-3 text-slate-700 text-[11px]">
+                                                        {s.pilihan_kampus_1 || "-"}
+                                                    </td>
+                                                    <td className="p-3 text-center">
+                                                        {Number(s.violations) === 0 ? (
+                                                            <span className="text-emerald-700 font-bold text-[10px]">Bersih</span>
+                                                        ) : (
+                                                            <span className="text-rose-700 font-bold text-[10px]">{s.violations}x Langgar</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="p-3 text-right">
+                                                        <button
+                                                            onClick={() => setSelectedStudentForReport(s)}
+                                                            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 text-[10.5px] sm:text-[11px] font-bold flex items-center gap-1.5 cursor-pointer ml-auto transition-colors shadow-2xs"
+                                                        >
+                                                            <PieChart className="w-3.5 h-3.5 text-blue-700" />
+                                                            <span>Rapor & Diagram</span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+
+                                        {filteredStudents.length === 0 && (
+                                            <tr>
+                                                <td colSpan={9} className="text-center py-10 text-slate-400 font-medium">
+                                                    {isLoading
+                                                        ? "Memuat data dari Supabase..."
+                                                        : "Belum ada siswa berstatus 'Selesai' pada filter ini."}
                                                 </td>
                                             </tr>
-                                        );
-                                    })}
-
-                                    {filteredStudents.length === 0 && (
-                                        <tr>
-                                            <td colSpan={9} className="text-center py-10 text-slate-400 font-medium">
-                                                {isLoading
-                                                    ? "Memuat data dari Supabase..."
-                                                    : "Belum ada siswa berstatus 'Selesai' pada filter ini."}
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )}
 
@@ -591,7 +748,7 @@ export default function AdminAnalyticsPage() {
                     {activeTab === "progres_to" && (
                         <div className="space-y-3">
                             <p className="text-xs text-slate-500">
-                                Membandingkan perkembangan skor rata-rata siswa antar paket tryout (<strong>PAKET 1 = TO-1</strong>, <strong>PAKET 2 = TO-2</strong>, <strong>PAKET 3 = TO-3</strong>) beserta selisih peningkatan/penurunan poin.
+                                Klik <strong>Nama Siswa</strong> untuk membuka grafik progres lengkap lintas tryout (<strong>PAKET 1 = TO-1</strong>, <strong>PAKET 2 = TO-2</strong>, <strong>PAKET 3 = TO-3</strong>).
                             </p>
                             <div className="overflow-x-auto rounded-2xl border border-slate-200">
                                 <table className="w-full text-left text-xs border-collapse min-w-[780px]">
@@ -603,42 +760,50 @@ export default function AdminAnalyticsPage() {
                                             <th className="p-3 text-center">Skor TO-1 (Paket 1)</th>
                                             <th className="p-3 text-center">Skor TO-2 (Paket 2)</th>
                                             <th className="p-3 text-center">Skor TO-3 (Paket 3)</th>
-                                            <th className="p-3 text-center">Tren Perubahan ($\Delta$)</th>
+                                            <th className="p-3 text-center">Tren Perubahan (Δ)</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 font-medium">
                                         {studentProgressionList.map((item) => {
-                                            const scores = item.history.map((h) => Number(h.score) || 0);
-                                            const delta = scores.length >= 2 ? Math.round((scores[scores.length - 1] - scores[0]) * 10) / 10 : null;
+                                            const scores = item.history.map((h) => getUnifiedScore(h));
+                                            const delta = scores.length >= 2 ? scores[scores.length - 1] - scores[0] : null;
 
                                             return (
-                                                <tr key={item.nisn} className="hover:bg-slate-50/70">
+                                                <tr key={item.nisn} className="hover:bg-blue-50/40 transition-colors">
                                                     <td className="p-3 font-mono text-slate-600">{item.nisn}</td>
-                                                    <td className="p-3 font-bold text-slate-900">{item.nama}</td>
+                                                    <td className="p-3">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleOpenStudentByNisn(item.nisn)}
+                                                            className="font-bold text-slate-900 hover:text-blue-700 hover:underline text-left cursor-pointer"
+                                                        >
+                                                            {item.nama}
+                                                        </button>
+                                                    </td>
                                                     <td className="p-3 font-mono text-slate-600">{item.kelas}</td>
                                                     <td className="p-3 text-center font-mono font-bold text-slate-800">
-                                                        {item.to1 ? Number(item.to1.score).toFixed(1) : <span className="text-slate-300">-</span>}
+                                                        {item.to1 ? getUnifiedScore(item.to1) : <span className="text-slate-300">-</span>}
                                                     </td>
                                                     <td className="p-3 text-center font-mono font-bold text-slate-800">
-                                                        {item.to2 ? Number(item.to2.score).toFixed(1) : <span className="text-slate-300">-</span>}
+                                                        {item.to2 ? getUnifiedScore(item.to2) : <span className="text-slate-300">-</span>}
                                                     </td>
                                                     <td className="p-3 text-center font-mono font-bold text-slate-800">
-                                                        {item.to3 ? Number(item.to3.score).toFixed(1) : <span className="text-slate-300">-</span>}
+                                                        {item.to3 ? getUnifiedScore(item.to3) : <span className="text-slate-300">-</span>}
                                                     </td>
                                                     <td className="p-3 text-center font-mono">
                                                         {delta === null ? (
                                                             <span className="text-[10.5px] text-slate-400">Baru 1x TO</span>
                                                         ) : delta > 0 ? (
                                                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[11px]">
-                                                                <TrendingUp className="w-3 h-3" /> +{delta.toFixed(1)}
+                                                                <TrendingUp className="w-3 h-3" /> +{delta}
                                                             </span>
                                                         ) : delta < 0 ? (
                                                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold text-[11px]">
-                                                                <TrendingDown className="w-3 h-3" /> {delta.toFixed(1)}
+                                                                <TrendingDown className="w-3 h-3" /> {delta}
                                                             </span>
                                                         ) : (
                                                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold text-[11px]">
-                                                                <Minus className="w-3 h-3" /> 0.0
+                                                                <Minus className="w-3 h-3" /> 0
                                                             </span>
                                                         )}
                                                     </td>
@@ -688,23 +853,23 @@ export default function AdminAnalyticsPage() {
             </div>
 
             {/* ============================================================== */}
-            {/* MODAL RAPOR DIAGNOSTIK INDIVIDUAL 1 MURID (SIAP CETAK A4)     */}
+            {/* MODAL RAPOR DIAGNOSTIK & GRAFIK ANALISIS INDIVIDUAL 1 MURID     */}
             {/* ============================================================== */}
-            {selectedStudentForReport && (
-                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
-                    <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 animate-in zoom-in-95 my-auto text-left">
+            {selectedStudentForReport && reportDiagnostic && (
+                <div className="fixed inset-0 z-50 bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
+                    <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[94vh] flex flex-col shadow-2xl border border-slate-200 my-auto text-left">
                         {/* Action Bar Modal */}
                         <div className="print-hidden p-3.5 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-50 rounded-t-3xl">
                             <div className="flex items-center gap-2.5 min-w-0">
-                                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-bold shrink-0">
-                                    <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-bold shrink-0">
+                                    <GraduationCap className="w-5 h-5" />
                                 </div>
                                 <div className="min-w-0">
                                     <h3 className="font-bold text-xs sm:text-sm text-slate-900 truncate">
-                                        Lembar Rapor Individual: {selectedStudentForReport.nama}
+                                        Analisis Diagnostik & Rapor Individual: {selectedStudentForReport.nama}
                                     </h3>
                                     <p className="text-[10px] sm:text-[11px] text-slate-500 font-mono truncate">
-                                        NISN: {selectedStudentForReport.nisn} • Kelas {selectedStudentForReport.kelas}
+                                        NISN: {selectedStudentForReport.nisn} • Kelas: {selectedStudentForReport.kelas}
                                     </p>
                                 </div>
                             </div>
@@ -728,9 +893,9 @@ export default function AdminAnalyticsPage() {
                             </div>
                         </div>
 
-                        {/* AREA DOKUMEN CETAK RESMI A4 */}
-                        <div className="p-4 sm:p-8 lg:p-9 overflow-y-auto flex-1 text-slate-900 space-y-4 sm:space-y-5 print-sheet">
-                            {/* KOP SURAT STANDAR RESMI SIMETRIS */}
+                        {/* AREA DOKUMEN CETAK & VISUALISASI GRAFIK */}
+                        <div className="p-4 sm:p-8 overflow-y-auto flex-1 text-slate-900 space-y-5 print-sheet">
+                            {/* KOP SURAT RESMI */}
                             <div className="pb-1 overflow-x-auto">
                                 <div className="flex items-center justify-between gap-3 min-w-[540px] sm:min-w-0">
                                     <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 flex items-center justify-center overflow-hidden">
@@ -772,8 +937,8 @@ export default function AdminAnalyticsPage() {
                                 <div className="w-full kop-divider-thin mt-[2px]" />
                             </div>
 
-                            {/* JUDUL DOKUMEN RAPOR */}
-                            <div className="text-center space-y-0.5 pt-0.5">
+                            {/* JUDUL DOKUMEN */}
+                            <div className="text-center space-y-0.5">
                                 <h2 className="text-sm sm:text-base font-black tracking-tight underline uppercase">
                                     LEMBAR HASIL EVALUASI DIAGNOSTIK SIMULASI UTBK-SNBT
                                 </h2>
@@ -782,85 +947,244 @@ export default function AdminAnalyticsPage() {
                                 </p>
                             </div>
 
-                            {/* BIODATA SISWA */}
-                            <div className="border border-slate-900 p-2.5 sm:p-3 bg-slate-50/50 overflow-x-auto">
-                                <table className="w-full text-[11px] sm:text-xs min-w-[500px] sm:min-w-0">
-                                    <tbody>
-                                        <tr>
-                                            <td className="py-1 w-[20%] text-slate-600">Nama Siswa</td>
-                                            <td className="py-1 w-[35%] font-bold text-slate-900">: {selectedStudentForReport.nama}</td>
-                                            <td className="py-1 w-[22%] text-slate-600">Pilihan Kampus 1</td>
-                                            <td className="py-1 w-[23%] font-bold text-blue-900 truncate">
-                                                : {selectedStudentForReport.pilihan_kampus_1 || "-"}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="py-1 text-slate-600">NISN Peserta</td>
-                                            <td className="py-1 font-mono font-bold">: {selectedStudentForReport.nisn}</td>
-                                            <td className="py-1 text-slate-600">Pilihan Kampus 2</td>
-                                            <td className="py-1 font-bold text-blue-900 truncate">
-                                                : {selectedStudentForReport.pilihan_kampus_2 || "-"}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="py-1 text-slate-600">Kelas / Rombel</td>
-                                            <td className="py-1 font-mono font-bold">: {selectedStudentForReport.kelas}</td>
-                                            <td className="py-1 text-slate-600">Kepatuhan Kiosk</td>
-                                            <td className="py-1 font-bold text-emerald-800">
+                            {/* BIODATA & TARGET PTN */}
+                            <div className="border border-slate-900 p-3 bg-slate-50/60 rounded-xl">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                    <div className="space-y-1">
+                                        <div className="flex">
+                                            <span className="w-32 text-slate-600">Nama Siswa</span>
+                                            <span className="font-bold text-slate-900">: {selectedStudentForReport.nama}</span>
+                                        </div>
+                                        <div className="flex">
+                                            <span className="w-32 text-slate-600">NISN / Kelas</span>
+                                            <span className="font-mono font-bold">: {selectedStudentForReport.nisn} / {selectedStudentForReport.kelas}</span>
+                                        </div>
+                                        <div className="flex">
+                                            <span className="w-32 text-slate-600">Kepatuhan Kiosk</span>
+                                            <span className="font-bold text-emerald-800">
                                                 : {Number(selectedStudentForReport.violations) === 0 ? "Tertib (0 Pelanggaran)" : `${selectedStudentForReport.violations}x Pelanggaran`}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {/* RINGKASAN SKOR TOTAL */}
-                            <div className="p-3.5 sm:p-4 rounded-xl border border-slate-900 text-center bg-slate-50 space-y-1">
-                                <div className="text-[10px] sm:text-[11px] font-mono tracking-widest text-slate-600 uppercase font-bold">
-                                    SKOR AKHIR IRT (ITEM RESPONSE THEORY)
-                                </div>
-                                <div className="text-3xl sm:text-4xl font-black text-slate-900">
-                                    {(Number(selectedStudentForReport.score) || 0).toFixed(1)}
-                                </div>
-                                <div className="text-[10px] sm:text-[10.5px] text-slate-600 font-mono">
-                                    Benar: {selectedStudentForReport.benar ?? 0} • Salah: {selectedStudentForReport.salah ?? 0} • Kosong: {selectedStudentForReport.kosong ?? 0} • Status:{" "}
-                                    <strong className={Number(selectedStudentForReport.score) >= 650 ? "text-emerald-700" : "text-amber-700"}>
-                                        {Number(selectedStudentForReport.score) >= 650 ? "Peluang Sangat Tinggi" : "Perlu Pendalaman Materi"}
-                                    </strong>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="flex">
+                                            <span className="w-32 text-slate-600 shrink-0">PTN Pilihan 1</span>
+                                            <span className="font-bold text-blue-900">: {selectedStudentForReport.pilihan_kampus_1 || "Belum ditentukan"}</span>
+                                        </div>
+                                        <div className="flex">
+                                            <span className="w-32 text-slate-600 shrink-0">PTN Pilihan 2</span>
+                                            <span className="font-bold text-blue-900">: {selectedStudentForReport.pilihan_kampus_2 || "Belum ditentukan"}</span>
+                                        </div>
+                                        <div className="flex">
+                                            <span className="w-32 text-slate-600 shrink-0">Rerata TPS / Lit</span>
+                                            <span className="font-mono font-bold">: {reportDiagnostic.unifiedTps} / {reportDiagnostic.unifiedLit}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* TABEL SKOR ASLI 7 SUBTES DARI SUPABASE */}
-                            <div className="space-y-1.5 overflow-x-auto">
-                                <div className="font-bold font-mono text-[10.5px] sm:text-[11px] uppercase tracking-wide">
-                                    RINCIAN CAPAIAN AKTUAL 7 SUBTES NASIONAL:
+                            {/* BARIS 1 VISUAL: SKOR TOTAL + DIAGRAM LINGKARAN PROPORSI JAWABAN */}
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+                                {/* Kartu Skor Akhir IRT */}
+                                <div className="md:col-span-5 p-4 rounded-2xl border border-slate-900 bg-gradient-to-br from-blue-900 to-indigo-950 text-white flex flex-col justify-center text-center space-y-1.5">
+                                    <div className="text-[10px] font-mono tracking-widest text-blue-200 uppercase font-bold">
+                                        NILAI RATA-RATA KESELURUHAN (IRT)
+                                    </div>
+                                    <div className="text-4xl sm:text-5xl font-black tracking-tight">
+                                        {reportDiagnostic.unifiedScore}
+                                    </div>
+                                    <div className="text-[11px] font-mono text-blue-200">
+                                        Skala Nasional 200 s.d. 1000
+                                    </div>
+                                    <div className="pt-1">
+                                        <span
+                                            className={`inline-block px-3 py-1 rounded-full text-[10.5px] font-bold ${reportDiagnostic.unifiedScore >= 650
+                                                    ? "bg-emerald-500/25 text-emerald-200 border border-emerald-400/40"
+                                                    : "bg-amber-400/20 text-amber-200 border border-amber-300/40"
+                                                }`}
+                                        >
+                                            {reportDiagnostic.unifiedScore >= 650 ? "Kompetitif / Peluang Tinggi" : "Perlu Penguatan Intensif"}
+                                        </span>
+                                    </div>
                                 </div>
-                                <table className="w-full text-xs border border-slate-900 text-left border-collapse min-w-[540px]">
-                                    <thead className="bg-slate-100 border-b border-slate-900 font-mono text-[9.5px] sm:text-[10px]">
+
+                                {/* Diagram Lingkaran (Donut Chart) Proporsi Jawaban */}
+                                <div className="md:col-span-7 p-4 rounded-2xl border border-slate-300 bg-white flex flex-col sm:flex-row items-center gap-4">
+                                    {(() => {
+                                        const { benar, salah, kosong, totalSoal, akurasiJawab } = reportDiagnostic;
+                                        const pBenar = (benar / totalSoal) * 100;
+                                        const pSalah = (salah / totalSoal) * 100;
+                                        const pKosong = Math.max(0, 100 - pBenar - pSalah);
+
+                                        const r = 42;
+                                        const circ = 2 * Math.PI * r;
+                                        const lenBenar = (pBenar / 100) * circ;
+                                        const lenSalah = (pSalah / 100) * circ;
+                                        const lenKosong = (pKosong / 100) * circ;
+
+                                        return (
+                                            <>
+                                                <div className="relative w-32 h-32 shrink-0 flex items-center justify-center">
+                                                    <svg viewBox="0 0 110 110" className="w-full h-full -rotate-90">
+                                                        <circle cx="55" cy="55" r={r} fill="transparent" stroke="#e2e8f0" strokeWidth="14" />
+                                                        <circle
+                                                            cx="55"
+                                                            cy="55"
+                                                            r={r}
+                                                            fill="transparent"
+                                                            stroke="#10b981"
+                                                            strokeWidth="14"
+                                                            strokeDasharray={`${lenBenar} ${circ}`}
+                                                            strokeDashoffset={0}
+                                                        />
+                                                        <circle
+                                                            cx="55"
+                                                            cy="55"
+                                                            r={r}
+                                                            fill="transparent"
+                                                            stroke="#f43f5e"
+                                                            strokeWidth="14"
+                                                            strokeDasharray={`${lenSalah} ${circ}`}
+                                                            strokeDashoffset={-lenBenar}
+                                                        />
+                                                        <circle
+                                                            cx="55"
+                                                            cy="55"
+                                                            r={r}
+                                                            fill="transparent"
+                                                            stroke="#94a3b8"
+                                                            strokeWidth="14"
+                                                            strokeDasharray={`${lenKosong} ${circ}`}
+                                                            strokeDashoffset={-(lenBenar + lenSalah)}
+                                                        />
+                                                    </svg>
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                                                        <span className="text-base font-black text-slate-900 font-mono">{akurasiJawab}%</span>
+                                                        <span className="text-[9px] font-mono text-slate-500 uppercase">Akurasi</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex-1 w-full space-y-2 text-xs">
+                                                    <div className="font-bold font-mono text-[11px] text-slate-800 uppercase">
+                                                        PROPORSI JAWABAN ({totalSoal} BUTIR SOAL)
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="flex items-center gap-2 font-semibold text-emerald-700">
+                                                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                                                                Jawaban Benar
+                                                            </span>
+                                                            <span className="font-mono font-bold text-slate-900">
+                                                                {benar} soal ({pBenar.toFixed(1)}%)
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="flex items-center gap-2 font-semibold text-rose-700">
+                                                                <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                                                                Jawaban Salah
+                                                            </span>
+                                                            <span className="font-mono font-bold text-slate-900">
+                                                                {salah} soal ({pSalah.toFixed(1)}%)
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="flex items-center gap-2 font-semibold text-slate-600">
+                                                                <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+                                                                Tidak Dijawab (Kosong)
+                                                            </span>
+                                                            <span className="font-mono font-bold text-slate-900">
+                                                                {kosong} soal ({pKosong.toFixed(1)}%)
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
+                                </div>
+                            </div>
+
+                            {/* BARIS 2 VISUAL: KEUNGGULAN UTAMA VS KEKURANGAN PRIORITAS */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                <div className="p-3.5 rounded-2xl border border-emerald-300 bg-emerald-50/60 space-y-2">
+                                    <div className="flex items-center gap-1.5 text-emerald-800 font-bold font-mono text-xs uppercase">
+                                        <Award className="w-4 h-4 text-emerald-600 shrink-0" />
+                                        <span>KEUNGGULAN UTAMA SISWA (TOP 2 SUBTES)</span>
+                                    </div>
+                                    <div className="space-y-1.5 text-xs">
+                                        {reportDiagnostic.strengths.map((st, i) => (
+                                            <div key={st.code} className="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-emerald-200">
+                                                <span className="font-bold text-slate-900">
+                                                    {i + 1}. {st.name}
+                                                </span>
+                                                <span className="font-mono font-black text-emerald-700">{st.score.toFixed(1)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="p-3.5 rounded-2xl border border-rose-300 bg-rose-50/60 space-y-2">
+                                    <div className="flex items-center gap-1.5 text-rose-800 font-bold font-mono text-xs uppercase">
+                                        <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                                        <span>PRIORITAS PERBAIKAN (2 SUBTES TERENDAH)</span>
+                                    </div>
+                                    <div className="space-y-1.5 text-xs">
+                                        {reportDiagnostic.weaknesses.map((wk, i) => (
+                                            <div key={wk.code} className="bg-white px-3 py-2 rounded-xl border border-rose-200 space-y-0.5">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-bold text-slate-900">
+                                                        {i + 1}. {wk.name}
+                                                    </span>
+                                                    <span className="font-mono font-black text-rose-700">{wk.score.toFixed(1)}</span>
+                                                </div>
+                                                <p className="text-[10.5px] text-slate-600 leading-snug">{wk.rekomendasi}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* GRAFIK BATANG PERBANDINGAN 7 SUBTES & TABEL RINCIAN */}
+                            <div className="space-y-2 overflow-x-auto">
+                                <div className="font-bold font-mono text-[11px] uppercase tracking-wide text-slate-900">
+                                    PETA CAPAIAN & GRAFIK KOMPARASI 7 SUBTES NASIONAL (TARGET PG: 650):
+                                </div>
+                                <table className="w-full text-xs border border-slate-900 text-left border-collapse min-w-[600px]">
+                                    <thead className="bg-slate-100 border-b border-slate-900 font-mono text-[10px]">
                                         <tr>
-                                            <th className="p-2 border-r border-slate-900 w-10 text-center">NO</th>
+                                            <th className="p-2 border-r border-slate-900 w-9 text-center">NO</th>
                                             <th className="p-2 border-r border-slate-900">KOMPONEN & SUBTES UJIAN</th>
-                                            <th className="p-2 border-r border-slate-900 text-center w-24">AMBANG (PG)</th>
-                                            <th className="p-2 border-r border-slate-900 text-center w-24">SKOR SISWA</th>
-                                            <th className="p-2 text-center w-28">DIAGNOSIS</th>
+                                            <th className="p-2 border-r border-slate-900 w-44">GRAFIK CAPAIAN (200-1000)</th>
+                                            <th className="p-2 border-r border-slate-900 text-center w-20">SKOR</th>
+                                            <th className="p-2 border-r border-slate-900 text-center w-20">SELISIH</th>
+                                            <th className="p-2 text-center w-28">STATUS</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-300 font-medium text-[11px] sm:text-xs">
-                                        {SUBTEST_LABELS.map((sub, i) => {
-                                            const actualScore = Number((selectedStudentForReport as any)[sub.key]) || Number(selectedStudentForReport.score) || 200;
-                                            const isLulus = actualScore >= 650;
+                                    <tbody className="divide-y divide-slate-300 font-medium text-[11px]">
+                                        {reportDiagnostic.subtestScores.map((sub, i) => {
+                                            const barPct = Math.min(100, Math.max(4, ((sub.score - 200) / 800) * 100));
+                                            const barColor = sub.score >= 650 ? "bg-emerald-600" : sub.score >= 500 ? "bg-amber-500" : "bg-blue-700";
 
                                             return (
                                                 <tr key={sub.code}>
                                                     <td className="p-2 text-center font-mono border-r border-slate-300">{i + 1}</td>
                                                     <td className="p-2 border-r border-slate-300 font-semibold">{sub.name}</td>
-                                                    <td className="p-2 text-center font-mono border-r border-slate-300">650</td>
-                                                    <td className="p-2 text-center font-mono font-bold text-blue-900 border-r border-slate-300">
-                                                        {actualScore.toFixed(1)}
+                                                    <td className="p-2 border-r border-slate-300">
+                                                        <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                                                            <div className={`h-full rounded-full ${barColor}`} style={{ width: `${barPct}%` }} />
+                                                        </div>
                                                     </td>
-                                                    <td className="p-2 text-center font-bold text-[10px] sm:text-[10.5px]">
-                                                        <span className={isLulus ? "text-emerald-700" : "text-amber-700"}>
-                                                            {isLulus ? "Memenuhi" : "Perlu Bimbingan"}
+                                                    <td className="p-2 text-center font-mono font-black text-blue-950 border-r border-slate-300">
+                                                        {sub.score.toFixed(1)}
+                                                    </td>
+                                                    <td className="p-2 text-center font-mono font-bold border-r border-slate-300">
+                                                        <span className={sub.gap >= 0 ? "text-emerald-700" : "text-rose-700"}>
+                                                            {sub.gap >= 0 ? `+${sub.gap}` : sub.gap}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-2 text-center font-bold text-[10px]">
+                                                        <span className={sub.isPassed ? "text-emerald-700" : "text-amber-700"}>
+                                                            {sub.isPassed ? "Memenuhi PG" : "Perlu Bimbingan"}
                                                         </span>
                                                     </td>
                                                 </tr>
@@ -870,63 +1194,77 @@ export default function AdminAnalyticsPage() {
                                 </table>
                             </div>
 
-                            {/* REKAP RIWAYAT TRYOUT SISWA (JIKA LEBIH DARI 1X TO) */}
-                            {selectedStudentAttempts.length > 0 && (
-                                <div className="space-y-1.5 overflow-x-auto">
-                                    <div className="font-bold font-mono text-[10.5px] sm:text-[11px] uppercase tracking-wide">
-                                        REKAPITULASI PERKEMBANGAN SKOR LINTAS TRYOUT:
+                            {/* GRAFIK & TABEL PROGRES PENGERJAAN LINTAS TRYOUT */}
+                            {reportDiagnostic.studentAttempts.length > 0 && (
+                                <div className="space-y-2 border border-slate-300 rounded-2xl p-3.5 bg-slate-50/40">
+                                    <div className="font-bold font-mono text-[11px] uppercase tracking-wide text-slate-900">
+                                        GRAFIK & RIWAYAT PROGRES PENGERJAAN TRYOUT ({reportDiagnostic.studentAttempts.length} SESI):
                                     </div>
-                                    <table className="w-full text-xs border border-slate-900 text-left border-collapse min-w-[540px]">
-                                        <thead className="bg-slate-100 border-b border-slate-900 font-mono text-[9.5px]">
-                                            <tr>
-                                                <th className="p-1.5 border-r border-slate-900">PAKET TRYOUT</th>
-                                                <th className="p-1.5 border-r border-slate-900 text-center">RERATA TPS</th>
-                                                <th className="p-1.5 border-r border-slate-900 text-center">RERATA LITERASI</th>
-                                                <th className="p-1.5 text-center">SKOR TOTAL IRT</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-300 font-mono text-[11px]">
-                                            {selectedStudentAttempts.map((att) => (
-                                                <tr key={att.id}>
-                                                    <td className="p-1.5 border-r border-slate-300 font-bold">{att.paket.replace("_", " ")}</td>
-                                                    <td className="p-1.5 border-r border-slate-300 text-center">{Number(att.nilai_tps).toFixed(1)}</td>
-                                                    <td className="p-1.5 border-r border-slate-300 text-center">{Number(att.nilai_literasi).toFixed(1)}</td>
-                                                    <td className="p-1.5 text-center font-bold text-blue-900">{Number(att.score).toFixed(1)}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+
+                                    {/* Visual Bar Progres Lintas TO */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                                        {reportDiagnostic.studentAttempts.map((att, idx) => {
+                                            const prevScore = idx > 0 ? reportDiagnostic.studentAttempts[idx - 1].unifiedScore : null;
+                                            const diff = prevScore !== null ? att.unifiedScore - prevScore : null;
+                                            const heightPct = Math.min(100, Math.max(12, ((att.unifiedScore - 200) / 800) * 100));
+
+                                            return (
+                                                <div key={att.id} className="bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3">
+                                                    <div className="space-y-0.5">
+                                                        <div className="text-[10px] font-mono font-bold text-slate-500">
+                                                            SESI #{idx + 1} • {att.paket.replace("_", " ")}
+                                                        </div>
+                                                        <div className="text-xl font-black font-mono text-blue-900">
+                                                            {att.unifiedScore}
+                                                        </div>
+                                                        <div className="text-[10px] font-mono text-slate-600">
+                                                            TPS: {att.unifiedTps} | Lit: {att.unifiedLit}
+                                                        </div>
+                                                        {diff !== null && (
+                                                            <div className={`text-[10px] font-mono font-bold ${diff >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
+                                                                {diff >= 0 ? `▲ Naik +${diff} poin` : `▼ Turun ${diff} poin`}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="w-6 h-16 bg-slate-100 rounded-lg flex items-end overflow-hidden border border-slate-200 shrink-0">
+                                                        <div className="w-full bg-blue-700 rounded-t-sm" style={{ height: `${heightPct}%` }} />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             )}
 
-                            {/* CATATAN DAN REKOMENDASI GURU BK */}
+                            {/* CATATAN & REKOMENDASI PEMBINAAN */}
                             <div className="space-y-1">
                                 <div className="font-bold font-mono text-[10.5px] sm:text-[11px] uppercase tracking-wide">
-                                    CATATAN & REKOMENDASI PEMBINAAN:
+                                    KESIMPULAN & REKOMENDASI PEMBINAAN GURU / WALI KELAS:
                                 </div>
-                                <div className="p-2.5 sm:p-3 border border-slate-900 bg-white min-h-[45px] text-xs leading-relaxed italic text-slate-800">
-                                    {Number(selectedStudentForReport.score) >= 650
-                                        ? `"Siswa menunjukkan penguasaan materi yang sangat baik pada literasi dan penalaran. Pertahankan konsistensi latihan soal berkala pada subtes kuantitatif dan penalaran matematika untuk mengamankan tiket PTN Pilihan 1."`
-                                        : `"Diperlukan penguatan konsep mendalam pada subtes penalaran matematika dan pemahaman bacaan. Disarankan mengikuti klinik pembelajaran dan bimbingan intensif berkala bersama guru mata pelajaran."`}
+                                <div className="p-3 border border-slate-900 bg-white text-xs leading-relaxed italic text-slate-800">
+                                    “Ananda <strong>{selectedStudentForReport.nama}</strong> memiliki kekuatan paling menonjol pada subtes{" "}
+                                    <strong>{reportDiagnostic.strengths[0]?.name}</strong> ({reportDiagnostic.strengths[0]?.score.toFixed(1)}) dan{" "}
+                                    <strong>{reportDiagnostic.strengths[1]?.name}</strong> ({reportDiagnostic.strengths[1]?.score.toFixed(1)}). Untuk mendongkrak skor akhir menuju target PTN pilihan, disarankan mengikuti klinik pendalaman intensif pada subtes{" "}
+                                    <strong>{reportDiagnostic.weaknesses[0]?.name}</strong> serta meningkatkan efektivitas pengerjaan soal (tingkat akurasi saat ini {reportDiagnostic.akurasiJawab}% dari soal yang dijawab).”
                                 </div>
                             </div>
 
-                            {/* TANDA TANGAN PEJABAT MANUAL */}
-                            <div className="pt-4 sm:pt-6 grid grid-cols-2 text-xs text-center border-t border-slate-300">
+                            {/* TANDA TANGAN PEJABAT */}
+                            <div className="pt-4 grid grid-cols-2 text-xs text-center border-t border-slate-300">
                                 <div>
                                     <p>Mengetahui,</p>
                                     <p className="font-semibold mt-0.5">Kepala SMA Muhammadiyah 18 Jakarta</p>
-                                    <div className="h-14 sm:h-16" />
+                                    <div className="h-14" />
                                     <p className="font-bold underline text-slate-900">{officials.kepalaSekolahNama}</p>
-                                    <p className="text-[9.5px] sm:text-[10px] text-slate-600 font-mono">NIP/NBM. {officials.kepalaSekolahNbm}</p>
+                                    <p className="text-[10px] text-slate-600 font-mono">NIP/NBM. {officials.kepalaSekolahNbm}</p>
                                 </div>
 
                                 <div>
                                     <p>Jakarta, {new Date().toLocaleDateString("id-ID", { dateStyle: "long" })}</p>
                                     <p className="font-semibold mt-0.5">{officials.koordinatorJabatan}</p>
-                                    <div className="h-14 sm:h-16" />
+                                    <div className="h-14" />
                                     <p className="font-bold underline text-slate-900">{officials.koordinatorNama}</p>
-                                    <p className="text-[9.5px] sm:text-[10px] text-slate-600 font-mono">NIP/NBM. {officials.koordinatorNbm}</p>
+                                    <p className="text-[10px] text-slate-600 font-mono">NIP/NBM. {officials.koordinatorNbm}</p>
                                 </div>
                             </div>
                         </div>
