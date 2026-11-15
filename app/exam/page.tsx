@@ -195,6 +195,7 @@ function OfficialExamChamberContent() {
     const [sessionTitle, setSessionTitle] = useState("RUANG UJIAN RESMI");
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState("");
+    const [serverCompletedNotice, setServerCompletedNotice] = useState(false);
 
     const [currentSubtestIndex, setCurrentSubtestIndex] = useState(0);
     const [currentQIndexInSubtest, setCurrentQIndexInSubtest] = useState(0);
@@ -298,6 +299,21 @@ function OfficialExamChamberContent() {
         const queryPkg = searchParams.get("package") || searchParams.get("paket");
         const activePkg = queryPkg || sessionData.packageId || "PAKET_1";
         setSessionTitle(`RUANG UJIAN RESMI • ${activePkg.replace("_", " ")}`);
+
+        // Cek status server siswa di Supabase agar siswa yang sudah selesai terkunci total
+        const cleanNisn = String(sessionData.nisn).replace(/\D/g, "").trim();
+        fetch(`/api/students?nisn=${cleanNisn}&_t=${Date.now()}`, { cache: "no-store" })
+            .then((r) => r.json())
+            .then((res) => {
+                if (res.status === "success" && res.data) {
+                    const st = String(res.data.status || "").toLowerCase();
+                    if (st.includes("selesai")) {
+                        setServerCompletedNotice(true);
+                        setIsExamCompleted(true);
+                    }
+                }
+            })
+            .catch(() => { });
 
         fetch(`/api/session?_t=${Date.now()}`, { cache: "no-store" })
             .then((r) => r.json())
@@ -680,33 +696,6 @@ function OfficialExamChamberContent() {
         if (cleanNisn) {
             localStorage.removeItem(`cbt_progress_${cleanNisn}`);
 
-            const gasPayload = {
-                action: "update_student_status",
-                nisn: cleanNisn,
-                nama_siswa: studentSession?.candidateName || "-",
-                kelas: studentSession?.kelas || "XII",
-                paket: studentSession?.packageId || "PAKET_1",
-                status: "Selesai",
-                nilai_total: scoreResults.scaledScore,
-                nilai_tps: scoreResults.tpsAvg,
-                nilai_literasi: scoreResults.litAvg,
-                skor_pu: scoreResults.subtestBreakdown["PU"]?.scoreIRT || 200,
-                skor_ppu: scoreResults.subtestBreakdown["PPU"]?.scoreIRT || 200,
-                skor_pbm: scoreResults.subtestBreakdown["PBM"]?.scoreIRT || 200,
-                skor_pk: scoreResults.subtestBreakdown["PK"]?.scoreIRT || 200,
-                skor_lit_indo: scoreResults.subtestBreakdown["LIT_INDO"]?.scoreIRT || 200,
-                skor_lit_eng: scoreResults.subtestBreakdown["LIT_ENG"]?.scoreIRT || 200,
-                skor_pm: scoreResults.subtestBreakdown["PM"]?.scoreIRT || 200,
-                benar: scoreResults.correct,
-                salah: scoreResults.incorrect,
-                kosong: scoreResults.unattempted,
-                violations: violationCount,
-                waktu_mulai: examStartTimeStr || "-",
-                waktu_selesai: timeStr,
-                pilihan_kampus_1: pilihanKampus1 || "-",
-                pilihan_kampus_2: pilihanKampus2 || "-"
-            };
-
             fetch("/api/students", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -746,7 +735,7 @@ function OfficialExamChamberContent() {
     };
 
     const enterExamChamber = async () => {
-        if (isSessionLockedByProctor || loadError) return;
+        if (isSessionLockedByProctor || loadError || serverCompletedNotice) return;
 
         const now = new Date();
         const startStr = `${now.getHours().toString().padStart(2, "0")}:${now
@@ -885,10 +874,74 @@ function OfficialExamChamberContent() {
         });
     }, [ptnBenchmarks, scoreResults.scaledScore]);
 
-    // TAHAP 1: GERBANG KARANTINA (RESPONSIF MOBILE / TABLET / LAPTOP)
+    // Cetak Rapor Instan (Menyalin stylesheet halaman langsung agar tampilan berwarna & kop surat tetap utuh 100%)
+    const handleInstantPrint = () => {
+        const printContent = document.getElementById("printable-exam-report");
+        if (!printContent) {
+            window.print();
+            return;
+        }
+        const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+            .map((el) => el.outerHTML)
+            .join("\n");
+
+        const win = window.open("", "_blank", "width=1024,height=768");
+        if (win) {
+            win.document.write(`
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <title>Rapor Hasil Ujian - ${studentSession?.candidateName || "Siswa"}</title>
+                        ${styles}
+                        <style>
+                            body { background: #ffffff !important; padding: 12px !important; margin: 0 !important; }
+                            .print-card { box-shadow: none !important; border: none !important; max-width: 100% !important; padding: 0 !important; }
+                            @page { size: A4 portrait; margin: 10mm; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="print-card">${printContent.innerHTML}</div>
+                        <script>
+                            window.onload = function() {
+                                setTimeout(function() {
+                                    window.print();
+                                    window.close();
+                                }, 250);
+                            };
+                        </script>
+                    </body>
+                </html>
+            `);
+            win.document.close();
+        } else {
+            window.print();
+        }
+    };
+
+    // TAHAP 1: GERBANG KARANTINA (DITAMBAHKAN BLOKIR JIKA SUDAH SELESAI DI SERVER)
     if (!isInExam) {
         return (
             <div className="min-h-screen bg-slate-100 flex items-center justify-center p-3.5 sm:p-6 font-sans text-slate-800">
+                {serverCompletedNotice && (
+                    <div className="fixed inset-0 z-[99999] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4">
+                        <div className="bg-white rounded-3xl border border-blue-200 max-w-md w-full p-6 text-center space-y-4 shadow-2xl">
+                            <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center mx-auto">
+                                <CheckCircle2 className="w-7 h-7" />
+                            </div>
+                            <h3 className="text-base sm:text-lg font-black text-slate-900">Ujian Telah Diselesaikan</h3>
+                            <p className="text-xs text-slate-600 leading-relaxed">
+                                Akun Anda tercatat sudah menyelesaikan sesi ujian ini di server sekolah. Anda tidak dapat memasuki bilik soal kembali kecuali Proktor memberikan izin Ujian Ulang.
+                            </p>
+                            <button
+                                onClick={handleExitToHome}
+                                className="w-full py-3 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-xs cursor-pointer"
+                            >
+                                Kembali ke Beranda
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {showPTNDatabaseModal && (
                     <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3.5 sm:p-4">
                         <div className="bg-white rounded-3xl border border-slate-200 max-w-2xl w-full p-4 sm:p-6 space-y-4 shadow-2xl animate-in fade-in max-h-[92vh] flex flex-col text-left">
@@ -1189,8 +1242,8 @@ function OfficialExamChamberContent() {
                     <div className="pt-1">
                         <button
                             onClick={enterExamChamber}
-                            disabled={isLoading || Boolean(loadError) || isSessionLockedByProctor}
-                            className={`w-full py-3.5 px-6 rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer ${isLoading || loadError || isSessionLockedByProctor
+                            disabled={isLoading || Boolean(loadError) || isSessionLockedByProctor || serverCompletedNotice}
+                            className={`w-full py-3.5 px-6 rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer ${isLoading || loadError || isSessionLockedByProctor || serverCompletedNotice
                                 ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
                                 : "bg-[#1e3a8a] hover:bg-blue-900 text-white shadow-blue-900/25 active:scale-[0.99]"
                                 }`}
@@ -1233,7 +1286,7 @@ function OfficialExamChamberContent() {
         );
     }
 
-    // LAYAR JEDA TRANSISI ANTAR-SUBTES (DITAMBAHKAN SESUAI REFERENSI)
+    // LAYAR JEDA TRANSISI ANTAR-SUBTES
     if (isWaitingNextSubtest) {
         const finishedSubtest = subtestsList[currentSubtestIndex];
         const nextSubtest = subtestsList[currentSubtestIndex + 1];
@@ -1297,7 +1350,7 @@ function OfficialExamChamberContent() {
         );
     }
 
-    // TAHAP 4: RAPOR SKOR LENGKAP & EVALUASI DIAGNOSTIK
+    // TAHAP 4: RAPOR SKOR LENGKAP & EVALUASI DIAGNOSTIK (100% UTUH)
     if (isExamCompleted) {
         const p1Eval = benchmarkData1 ? renderAdmissionProbabilityBadge(benchmarkData1.passingGradeMin, scoreResults.scaledScore) : null;
         const p2Eval = benchmarkData2 ? renderAdmissionProbabilityBadge(benchmarkData2.passingGradeMin, scoreResults.scaledScore) : null;
@@ -1460,7 +1513,7 @@ function OfficialExamChamberContent() {
                         </button>
 
                         <button
-                            onClick={() => window.print()}
+                            onClick={handleInstantPrint}
                             className="px-3 sm:px-3.5 py-1.5 rounded-xl bg-[#1e3a8a] hover:bg-blue-900 text-white font-bold text-[11px] sm:text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
                         >
                             <Printer className="w-3.5 h-3.5" />
@@ -1470,7 +1523,7 @@ function OfficialExamChamberContent() {
                 </div>
 
                 {/* RAPOR RESMI BENTUK DOKUMEN CETAK */}
-                <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200 shadow-xl p-4 sm:p-10 space-y-5 sm:space-y-6 print-card text-left">
+                <div id="printable-exam-report" className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200 shadow-xl p-4 sm:p-10 space-y-5 sm:space-y-6 print-card text-left">
                     {/* 2. KOP SURAT */}
                     <div className="flex items-center gap-3 sm:gap-4 border-b-2 border-slate-900 pb-3 sm:pb-4 text-center">
                         <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 flex items-center justify-center p-0.5">
@@ -1936,7 +1989,7 @@ function OfficialExamChamberContent() {
                     </div>
 
                     {/* 12. BANNER SIMULATOR RASIONALISASI */}
-                    <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-left">
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-left print-hidden">
                         <div className="space-y-1">
                             <div className="flex items-center gap-1.5 text-xs font-bold">
                                 <TrendingUp className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -2012,19 +2065,8 @@ function OfficialExamChamberContent() {
                         </div>
                     </div>
 
-                    {/* 14. FOOTER ACTION */}
-                    <div className="pt-2 border-t flex flex-col sm:flex-row items-center justify-between gap-3 print-hidden">
-                        <button
-                            onClick={() => {
-                                safeExitFullscreen();
-                                localStorage.removeItem("cbt_exam_result");
-                                window.location.reload();
-                            }}
-                            className="w-full sm:w-auto px-6 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs cursor-pointer"
-                        >
-                            Ulangi Sesi Ini
-                        </button>
-
+                    {/* 14. FOOTER ACTION (Hanya Kembali ke Halaman Utama, tanpa tombol Ulangi Sesi bagi siswa) */}
+                    <div className="pt-2 border-t flex flex-col sm:flex-row items-center justify-end gap-3 print-hidden">
                         <button
                             onClick={handleExitToHome}
                             disabled={isExitingToHome}
@@ -2357,7 +2399,7 @@ function OfficialExamChamberContent() {
                 </button>
             </div>
 
-            {/* MODAL KONFIRMASI PENGUMPULAN SUBTES (Disesuaikan Sesuai Referensi) */}
+            {/* MODAL KONFIRMASI PENGUMPULAN SUBTES */}
             {showSubtestConfirmModal && (
                 <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
                     <div className="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 text-center animate-in zoom-in-95 shadow-2xl">
