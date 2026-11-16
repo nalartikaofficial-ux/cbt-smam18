@@ -880,7 +880,6 @@ function OfficialExamChamberContent() {
         const p1Parsed = parseTargetSelection(pilihanKampus1);
         const p2Parsed = parseTargetSelection(pilihanKampus2);
 
-        // Ekstrak kata kunci prodi dari Pilihan 1 & 2 (misal: "teknik", "elektro", "industri", "manajemen")
         const rawKeywords = `${p1Parsed?.cleanProdi || ""} ${p2Parsed?.cleanProdi || ""}`
             .split(/\s+/)
             .filter((w) => w.length >= 4 && !["dan", "ilmu", "pendidikan", "program", "studi"].includes(w));
@@ -888,7 +887,28 @@ function OfficialExamChamberContent() {
         const targetRumpun = benchmarkData1?.rumpun || benchmarkData2?.rumpun || null;
         const studentScore = scoreResults.scaledScore;
 
-        // Filter kampus yang bukan pilihan 1 & 2 yang sama persis
+        // Daftar kata kunci PTN/Politeknik di Wilayah Jabodetabek, Banten, Jabar, & Pulau Jawa
+        const jabodetabekJabarKeywords = [
+            "indonesia", "jakarta", "unj", "upn \"veteran\" jakarta", "upnvj", "ipb", "bogor",
+            "tirtayasa", "untirta", "singaperbangsa", "unsika", "padjadjaran", "unpad",
+            "bandung", "itb", "upi", "polban", "polimedia", "pnj", "siliwangi", "unsil",
+            "sunan gunung djati", "uin syarif hidayatullah"
+        ];
+        const jawaLainnyaKeywords = [
+            "diponegoro", "undip", "sebelas maret", "uns", "semarang", "unnes",
+            "soedirman", "unsoed", "tidar", "untidar", "gadjah mada", "ugm",
+            "yogyakarta", "uny", "upn \"veteran\" yogyakarta", "airlangga", "unair",
+            "sepuluh nopember", "its", "brawijaya", "ub", "malang", "um",
+            "jember", "unej", "trunojoyo", "upn \"veteran\" jawa timur", "surabaya", "unesa"
+        ];
+
+        const getRegionBonus = (kampusName: string) => {
+            const k = kampusName.toLowerCase();
+            if (jabodetabekJabarKeywords.some((kw) => k.includes(kw))) return 80; // Prioritas Utama (Dekat Jakarta)
+            if (jawaLainnyaKeywords.some((kw) => k.includes(kw))) return 55;     // Prioritas Kedua (Pulau Jawa)
+            return -50; // Luar Pulau Jawa (hindari kecuali terpaksa)
+        };
+
         const candidates = ptnBenchmarks.filter((b) => {
             const fullLabel = `${b.kampus} - ${b.prodi} (${b.jenjang || "S1"})`.toLowerCase();
             if (pilihanKampus1 && fullLabel === pilihanKampus1.toLowerCase()) return false;
@@ -896,27 +916,32 @@ function OfficialExamChamberContent() {
             return true;
         });
 
-        // Beri skor relevansi & kelayakan untuk setiap kandidat prodi
         const scoredCandidates = candidates.map((b) => {
             const prodiLower = b.prodi.toLowerCase();
-            let relevanceScore = 0;
+            let relevanceScore = getRegionBonus(b.kampus);
 
             // 1. Kecocokan nama prodi / kata kunci jurusan
-            if (p1Parsed?.cleanProdi && prodiLower.includes(p1Parsed.cleanProdi)) relevanceScore += 50;
-            if (p2Parsed?.cleanProdi && prodiLower.includes(p2Parsed.cleanProdi)) relevanceScore += 40;
+            if (p1Parsed?.cleanProdi && prodiLower.includes(p1Parsed.cleanProdi)) relevanceScore += 60;
+            if (p2Parsed?.cleanProdi && prodiLower.includes(p2Parsed.cleanProdi)) relevanceScore += 45;
             rawKeywords.forEach((kw) => {
-                if (prodiLower.includes(kw)) relevanceScore += 20;
+                if (prodiLower.includes(kw)) relevanceScore += 25;
             });
 
             // 2. Kecocokan rumpun (SAINTEK / SOSHUM)
-            if (targetRumpun && b.rumpun === targetRumpun) relevanceScore += 15;
+            if (targetRumpun && b.rumpun === targetRumpun) relevanceScore += 20;
 
-            // 3. Kedekatan passing grade dengan skor siswa (prioritaskan yang realistis/aman)
+            // 3. Kedekatan passing grade dengan skor siswa
             const diff = studentScore - b.passingGradeMin;
             const gapPenalty = Math.abs(diff);
-            const feasibilityBonus = diff >= 0 ? 25 : diff >= -40 ? 15 : 0;
+            const feasibilityBonus = diff >= 0 ? 30 : diff >= -45 ? 15 : 0;
 
-            const totalRankScore = relevanceScore + feasibilityBonus - gapPenalty * 0.15;
+            const totalRankScore = relevanceScore + feasibilityBonus - gapPenalty * 0.12;
+
+            // Hitung keketatan akurat dari dayaTampung / peminat jika data tersedia
+            const computedKeketatan =
+                b.peminat > 0 && b.dayaTampung > 0
+                    ? `${((b.dayaTampung / b.peminat) * 100).toFixed(2)}%`
+                    : formatKeketatan(b.keketatan);
 
             let status = "Target Menantang";
             let badgeClass = "bg-rose-50 text-rose-700 border-rose-200";
@@ -934,6 +959,7 @@ function OfficialExamChamberContent() {
 
             return {
                 ...b,
+                keketatan: computedKeketatan,
                 totalRankScore,
                 kelulusanStatus: status,
                 badgeClass,
@@ -941,7 +967,6 @@ function OfficialExamChamberContent() {
             };
         });
 
-        // Ambil maksimal 3 PTN berbeda yang paling relevan dan realistis
         const sorted = scoredCandidates.sort((a, b) => b.totalRankScore - a.totalRankScore);
         const top3UniqueCampus: typeof sorted = [];
         const usedCampuses = new Set<string>();

@@ -150,7 +150,11 @@ const supabaseClient = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl
 
 // KOMPRESI & UNGGAH OTOMATIS GAMBAR BASE64 KE SUPABASE STORAGE (cbt-assets)
 async function uploadBase64ToSupabaseStorage(dataUrl: string, prefix = "soal"): Promise<string> {
-    if (!dataUrl || !dataUrl.startsWith("data:image/") || !supabaseClient) return dataUrl;
+    if (!dataUrl || !dataUrl.startsWith("data:image/")) return dataUrl;
+    if (!supabaseClient) {
+        alert("Konfigurasi Supabase (NEXT_PUBLIC_SUPABASE_URL / ANON_KEY) belum terbaca!");
+        return "";
+    }
     try {
         const img = new Image();
         img.src = dataUrl;
@@ -169,9 +173,9 @@ async function uploadBase64ToSupabaseStorage(dataUrl: string, prefix = "soal"): 
         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
 
         const webpBlob: Blob | null = await new Promise((resolve) =>
-            canvas.toBlob((blob) => resolve(blob), "image/webp", 0.82)
+            canvas.toBlob((blob) => resolve(blob), "image/webp", 0.85)
         );
-        if (!webpBlob) return dataUrl;
+        if (!webpBlob) return "";
 
         const fileName = `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}.webp`;
         const { error } = await supabaseClient.storage
@@ -179,14 +183,15 @@ async function uploadBase64ToSupabaseStorage(dataUrl: string, prefix = "soal"): 
             .upload(fileName, webpBlob, { contentType: "image/webp", upsert: true });
 
         if (error) {
-            console.error("Gagal upload ke Supabase Storage:", error.message);
-            return dataUrl;
+            alert(`Gagal mengunggah gambar ${prefix} ke Supabase Storage: ${error.message}\nPastikan bucket 'cbt-assets' bersifat PUBLIC dan memiliki policy INSERT untuk anon.`);
+            return "";
         }
 
         const { data: pub } = supabaseClient.storage.from("cbt-assets").getPublicUrl(fileName);
-        return pub?.publicUrl || dataUrl;
-    } catch {
-        return dataUrl;
+        return pub?.publicUrl || "";
+    } catch (err) {
+        console.error("Format gambar Word tidak didukung browser (kemungkinan WMF/EMF):", err);
+        return "";
     }
 }
 
