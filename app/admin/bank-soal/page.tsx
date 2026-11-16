@@ -511,7 +511,13 @@ function WordImporterSection({
             blocks.forEach((block) => {
                 const { text, imgUrl } = block;
 
-                if (imgUrl) currentImage = imgUrl;
+                if (imgUrl) {
+                    if (current && !current.opsi_a && !current.image_url) {
+                        current.image_url = imgUrl;
+                    } else {
+                        currentImage = imgUrl;
+                    }
+                }
                 if (!text) return;
 
                 // 1. Tangkap Tag Subtes [SUBTES: PK] atau === SUBTES: PK ===
