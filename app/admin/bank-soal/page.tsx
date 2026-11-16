@@ -1555,12 +1555,6 @@ export default function AdminBankSoalPage() {
                                         <span className="text-[10px] bg-blue-200/70 text-blue-900 px-1.5 py-0.5 rounded font-mono">
                                             {showCsvPreview ? "Tutup ▲" : "Lihat Hasil ▼"}
                                         </span>
-                                        {showCsvPreview && (
-                                            <StagingPreviewList
-                                                questions={batchQuestions}
-                                                title="Pratinjau Hasil Impor CSV / Excel"
-                                            />
-                                        )}
                                     </button>
 
                                     <div className="flex items-center gap-2 flex-wrap">
@@ -1582,6 +1576,12 @@ export default function AdminBankSoalPage() {
                                             <Send className="w-3.5 h-3.5" />
                                             <span>{isSubmitting ? "Menyimpan ke File..." : `Gabungkan & Simpan ke ${selectedPaket}`}</span>
                                         </button>
+                                        {showCsvPreview && (
+                                            <StagingPreviewList
+                                                questions={batchQuestions}
+                                                title="Pratinjau Hasil Impor CSV / Excel"
+                                            />
+                                        )}
                                     </div>
                                 </div>
                             </div>
