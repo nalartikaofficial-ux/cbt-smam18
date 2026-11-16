@@ -1576,14 +1576,14 @@ export default function AdminBankSoalPage() {
                                             <Send className="w-3.5 h-3.5" />
                                             <span>{isSubmitting ? "Menyimpan ke File..." : `Gabungkan & Simpan ke ${selectedPaket}`}</span>
                                         </button>
-                                        {showCsvPreview && (
-                                            <StagingPreviewList
-                                                questions={batchQuestions}
-                                                title="Pratinjau Hasil Impor CSV / Excel"
-                                            />
-                                        )}
                                     </div>
                                 </div>
+                                {showCsvPreview && (
+                                    <StagingPreviewList
+                                        questions={batchQuestions}
+                                        title="Pratinjau Hasil Impor CSV / Excel"
+                                    />
+                                )}
                             </div>
                         )}
                     </div>
