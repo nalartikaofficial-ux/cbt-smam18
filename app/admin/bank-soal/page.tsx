@@ -202,6 +202,161 @@ const SNBT_STRUCTURE = [
 ];
 
 // ========================================================
+// KOMPONEN PRATINJAU INTERAKTIF SEBELUM SIMPAN (WORD & CSV)
+// ========================================================
+function StagingPreviewList({
+    questions,
+    title = "Pratinjau Butir Soal Sebelum Disimpan"
+}: {
+    questions: ParsedQuestion[];
+    title?: string;
+}) {
+    const [previewSubtest, setPreviewSubtest] = useState<string>("ALL");
+
+    const availableSubtests = useMemo(() => {
+        return Array.from(new Set(questions.map((q) => (q.subtes_code || "PU").toUpperCase())));
+    }, [questions]);
+
+    const filteredList = useMemo(() => {
+        if (previewSubtest === "ALL") return questions;
+        return questions.filter((q) => (q.subtes_code || "").toUpperCase() === previewSubtest);
+    }, [questions, previewSubtest]);
+
+    if (!questions || questions.length === 0) return null;
+
+    return (
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 sm:p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-200">
+                <div className="flex items-center gap-2">
+                    <Eye className="w-4 h-4 text-blue-700 shrink-0" />
+                    <span className="text-xs sm:text-sm font-black text-slate-900">
+                        {title} ({filteredList.length} dari {questions.length} Soal)
+                    </span>
+                </div>
+
+                {availableSubtests.length > 1 && (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <button
+                            type="button"
+                            onClick={() => setPreviewSubtest("ALL")}
+                            className={`px-2.5 py-1 rounded-lg text-[10.5px] font-mono font-bold cursor-pointer transition-all ${previewSubtest === "ALL"
+                                ? "bg-blue-800 text-white"
+                                : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                                }`}
+                        >
+                            SEMUA ({questions.length})
+                        </button>
+                        {availableSubtests.map((sub) => (
+                            <button
+                                key={sub}
+                                type="button"
+                                onClick={() => setPreviewSubtest(sub)}
+                                className={`px-2.5 py-1 rounded-lg text-[10.5px] font-mono font-bold cursor-pointer transition-all ${previewSubtest === sub
+                                    ? "bg-blue-800 text-white"
+                                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                                    }`}
+                            >
+                                {sub}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <div className="space-y-3.5 max-h-[540px] overflow-y-auto pr-1">
+                {filteredList.map((q, idx) => (
+                    <div
+                        key={`${q.subtes_code}-${q.no_soal}-${idx}`}
+                        className="p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2.5 text-left"
+                    >
+                        <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-100 flex-wrap">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="px-2 py-0.5 rounded bg-indigo-700 text-white font-mono font-bold text-[10px]">
+                                    NO. {q.no_soal}
+                                </span>
+                                <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono font-bold text-[10px]">
+                                    {q.subtes_code}
+                                </span>
+                                <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-300 font-mono text-[10px] font-bold">
+                                    KUNCI: {q.kunci}
+                                </span>
+                            </div>
+                            {q.image_url && (
+                                <span className="text-[10px] font-mono text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                                    {q.image_url.includes("supabase.co") ? "Gambar WebP Cloud" : "Gambar Terlampir"}
+                                </span>
+                            )}
+                        </div>
+
+                        {q.stimulus && (
+                            <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-700 leading-relaxed italic overflow-x-auto">
+                                <MathRenderer content={q.stimulus} />
+                            </div>
+                        )}
+
+                        {q.image_url && (
+                            <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200/80 flex justify-center">
+                                <img
+                                    src={convertToDirectImageUrl(q.image_url)}
+                                    alt={`Pratinjau Gambar No. ${q.no_soal}`}
+                                    referrerPolicy="no-referrer"
+                                    className="max-h-52 object-contain rounded-lg shadow-2xs"
+                                />
+                            </div>
+                        )}
+
+                        <div className="text-xs font-semibold text-slate-900 leading-relaxed overflow-x-auto">
+                            <MathRenderer content={q.pertanyaan} />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                            {[
+                                { label: "A", text: q.opsi_a, img: q.opsi_a_img },
+                                { label: "B", text: q.opsi_b, img: q.opsi_b_img },
+                                { label: "C", text: q.opsi_c, img: q.opsi_c_img },
+                                { label: "D", text: q.opsi_d, img: q.opsi_d_img },
+                                { label: "E", text: q.opsi_e, img: q.opsi_e_img }
+                            ].map((opt) => {
+                                const isKey = String(q.kunci).trim().toUpperCase() === opt.label;
+                                return (
+                                    <div
+                                        key={opt.label}
+                                        className={`p-2 rounded-xl border text-xs flex items-start gap-2 ${isKey
+                                            ? "bg-emerald-50 border-emerald-400 font-bold text-emerald-950"
+                                            : "bg-white border-slate-200 text-slate-700"
+                                            }`}
+                                    >
+                                        <span className="font-mono font-bold shrink-0">{opt.label}.</span>
+                                        <div className="flex-1 overflow-x-auto space-y-1">
+                                            {opt.text && <MathRenderer content={opt.text} />}
+                                            {opt.img && (
+                                                <img
+                                                    src={convertToDirectImageUrl(opt.img)}
+                                                    alt={`Opsi ${opt.label}`}
+                                                    className="max-h-24 object-contain rounded border border-slate-200"
+                                                />
+                                            )}
+                                            {!opt.text && !opt.img && <span>-</span>}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {q.pembahasan && (
+                            <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/80 text-[11px] text-slate-700 leading-relaxed">
+                                <span className="font-bold text-amber-900">Pembahasan: </span>
+                                <MathRenderer content={q.pembahasan} />
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// ========================================================
 // MESIN IMPORT WORD DENGAN TEMPLATE BAKU & ANTI-TUMPANG TINDIH
 // ========================================================
 function WordImporterSection({
@@ -594,44 +749,51 @@ function WordImporterSection({
             </div>
 
             {stagedList.length > 0 && (
-                <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-2xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 shadow-md">
-                    <div className="space-y-0.5 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <span className="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-xs font-mono">
-                                {stagedList.length} Soal Berhasil Dipisahkan
-                            </span>
-                            <span className="text-xs text-slate-300">
-                                Subtes: <strong>{Array.from(new Set(stagedList.map((q) => q.subtes_code))).join(", ")}</strong> → {selectedPaket.replace("_", " ")}
-                            </span>
+                <div className="space-y-4">
+                    <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-2xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 shadow-md">
+                        <div className="space-y-0.5 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-xs font-mono">
+                                    {stagedList.length} Soal Berhasil Dipisahkan
+                                </span>
+                                <span className="text-xs text-slate-300">
+                                    Subtes: <strong>{Array.from(new Set(stagedList.map((q) => q.subtes_code))).join(", ")}</strong> → {selectedPaket.replace("_", " ")}
+                                </span>
+                            </div>
+                            <p className="text-[10.5px] sm:text-[11px] text-slate-400">
+                                Periksa pratinjau di bawah sebelum menggabungkan ke {selectedPaket.replace("_", " ")}.
+                            </p>
                         </div>
-                        <p className="text-[10.5px] sm:text-[11px] text-slate-400">
-                            Akan digabungkan otomatis ke {selectedPaket.replace("_", " ")} tanpa menghapus subtes lain yang sudah ada.
-                        </p>
+
+                        <div className="flex items-center gap-2 flex-wrap w-full lg:w-auto justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setStagedList([])}
+                                disabled={isSubmittingServer}
+                                className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs cursor-pointer"
+                            >
+                                Batalkan
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    await onBulkSubmit(stagedList);
+                                    setStagedList([]);
+                                }}
+                                disabled={isSubmittingServer}
+                                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
+                            >
+                                <Send className="w-3.5 h-3.5" />
+                                <span>Gabungkan & Terapkan</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap w-full lg:w-auto justify-end">
-                        <button
-                            type="button"
-                            onClick={() => setStagedList([])}
-                            disabled={isSubmittingServer}
-                            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs cursor-pointer"
-                        >
-                            Batalkan
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={async () => {
-                                await onBulkSubmit(stagedList);
-                                setStagedList([]);
-                            }}
-                            disabled={isSubmittingServer}
-                            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
-                        >
-                            <Send className="w-3.5 h-3.5" />
-                            <span>Gabungkan & Terapkan</span>
-                        </button>
-                    </div>
+                    <StagingPreviewList
+                        questions={stagedList}
+                        title="Pratinjau Hasil Parsing Word (.docx)"
+                    />
                 </div>
             )}
         </div>
@@ -1346,7 +1508,7 @@ export default function AdminBankSoalPage() {
                                     Upload Massal Soal via File CSV / Excel
                                 </h2>
                                 <p className="text-[11px] sm:text-xs text-slate-500">
-                                    Mendukung formula KaTeX serta link Google Drive langsung pada kolom stimulus maupun pilihan Aâ€“E.
+                                    Mendukung formula KaTeX serta link Google Drive langsung pada kolom stimulus maupun pilihan A–E.
                                 </p>
                             </div>
 
@@ -1393,6 +1555,12 @@ export default function AdminBankSoalPage() {
                                         <span className="text-[10px] bg-blue-200/70 text-blue-900 px-1.5 py-0.5 rounded font-mono">
                                             {showCsvPreview ? "Tutup ▲" : "Lihat Hasil ▼"}
                                         </span>
+                                        {showCsvPreview && (
+                                            <StagingPreviewList
+                                                questions={batchQuestions}
+                                                title="Pratinjau Hasil Impor CSV / Excel"
+                                            />
+                                        )}
                                     </button>
 
                                     <div className="flex items-center gap-2 flex-wrap">
