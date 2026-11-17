@@ -511,7 +511,7 @@ function WordImporterSection({
             let sharedStimulusRange: { start: number; end: number; text: string } | null = null;
 
             blocks.forEach((block) => {
-                const { text, imgUrl } = block;
+                let { text, imgUrl } = block;
 
                 if (imgUrl) {
                     if (current && !current.opsi_a && !current.image_url) {
@@ -522,22 +522,36 @@ function WordImporterSection({
                 }
                 if (!text) return;
 
-                // Abaikan judul dokumen / header umum di bagian paling atas file
-                if (/^(?:naskah\s+resmi|sma\s+muhammadiyah|simulasi\s+cbt|paket\s+\d+|waktu\s*:)/i.test(text) && rawQuestions.length === 0 && !current) {
+                // 0. Abaikan header dokumen & baris metadata alokasi waktu/jumlah soal
+                if (
+                    /^(?:naskah\s+resmi|sma\s+muhammadiyah|simulasi\s+cbt|paket\s+\d+|waktu\s*:|alokasi\s+waktu\s*:)/i.test(text)
+                ) {
                     return;
                 }
 
-                // 1. Tangkap Tag Subtes [SUBTES: PK] atau === SUBTES: PK ===
-                const subtestMatch = text.match(/SUBTES:\s*([A-Za-z_]+)/i);
-                if (subtestMatch) {
+                // 1. Tangkap Pembatas Subtes (misal: "=== SUBTES 1: PENALARAN UMUM (PU) ===" atau "=== SUBTES: PK ===")
+                const subtestHeaderMatch = text.match(/={2,}\s*SUBTES[^=]*={2,}/i) || text.match(/^\[?SUBTES\s*\d*\s*[:\-]\s*([^\]]+)\]?$/i);
+                if (subtestHeaderMatch) {
                     commitCurrent();
-                    currentSubtestContext = subtestMatch[1].toUpperCase();
+                    const rawSub = subtestHeaderMatch[0].toUpperCase();
+                    if (rawSub.includes("(PU)") || /SUBTES\s*1\b/.test(rawSub) || /:\s*PU\b/.test(rawSub)) currentSubtestContext = "PU";
+                    else if (rawSub.includes("(PPU)") || /SUBTES\s*2\b/.test(rawSub) || /:\s*PPU\b/.test(rawSub)) currentSubtestContext = "PPU";
+                    else if (rawSub.includes("(PBM)") || /SUBTES\s*3\b/.test(rawSub) || /:\s*PBM\b/.test(rawSub)) currentSubtestContext = "PBM";
+                    else if (rawSub.includes("(PK)") || /SUBTES\s*4\b/.test(rawSub) || /:\s*PK\b/.test(rawSub)) currentSubtestContext = "PK";
+                    else if (rawSub.includes("LIT_INDO") || /SUBTES\s*5\b/.test(rawSub) || /INDONESIA/.test(rawSub)) currentSubtestContext = "LIT_INDO";
+                    else if (rawSub.includes("LIT_ENG") || /SUBTES\s*6\b/.test(rawSub) || /INGGRIS/.test(rawSub)) currentSubtestContext = "LIT_ENG";
+                    else if (rawSub.includes("(PM)") || /SUBTES\s*7\b/.test(rawSub) || /MATEMATIKA/.test(rawSub)) currentSubtestContext = "PM";
+
                     hasExplicitSubtestTag = true;
                     pendingStimulus = "";
                     sharedStimulusRange = null;
                     inPembahasanBlock = false;
                     return;
                 }
+
+                // Bersihkan label "[Wacana / Stimulus]" atau "[Stimulus]" jika menempel di awal paragraf
+                text = text.replace(/^\[(?:wacana\s*\/?\s*stimulus|stimulus|wacana)\]\s*/i, "").trim();
+                if (!text) return;
 
                 // 2. Tangkap Blok Wacana Eksplisit [WACANA] ... [/WACANA]
                 if (/\[WACANA\]/i.test(text)) {
