@@ -1889,70 +1889,268 @@ function OfficialExamChamberContent() {
                         </div>
                     ))}
 
-                    {/* 8. GRAFIK PROFIL SKOR SUBTES VS PASSING GRADE TARGET */}
+                    {/* 8. VISUALISASI GRAFIK DIAGNOSTIK: RADAR 7 SUBTES & KOMPARASI TARGET */}
                     {(() => {
-                        const targetScore = benchmarkData1?.passingGradeMin || 650;
-                        const targetPct = Math.min(96, Math.max(5, ((targetScore - 200) / 800) * 100));
+                        const target1 = benchmarkData1?.passingGradeMin || 650;
+                        const target2 = benchmarkData2?.passingGradeMin || 600;
+
+                        const chartData = subtestsList.map((st) => {
+                            const shortLabels: Record<string, string> = {
+                                PU: "PU",
+                                PPU: "PPU",
+                                PBM: "PBM",
+                                PK: "PK",
+                                LIT_INDO: "Lit. Indo",
+                                LIT_ENG: "Lit. Ing",
+                                PM: "PM"
+                            };
+                            const val = scoreResults.subtestBreakdown[st.code]?.scoreIRT || 200;
+                            return {
+                                code: st.code,
+                                short: shortLabels[st.code] || st.code,
+                                name: st.name,
+                                score: val
+                            };
+                        });
+
+                        // Konfigurasi Radar Chart (SVG 280x260)
+                        const cx = 140;
+                        const cy = 130;
+                        const maxR = 88;
+                        const totalAxes = chartData.length;
+
+                        const getPoint = (index: number, scoreVal: number) => {
+                            const angle = (Math.PI * 2 * index) / totalAxes - Math.PI / 2;
+                            const norm = Math.min(1, Math.max(0.08, (scoreVal - 200) / 800));
+                            const r = norm * maxR;
+                            return {
+                                x: cx + r * Math.cos(angle),
+                                y: cy + r * Math.sin(angle),
+                                labelX: cx + (maxR + 22) * Math.cos(angle),
+                                labelY: cy + (maxR + 18) * Math.sin(angle)
+                            };
+                        };
+
+                        const studentPolygon = chartData
+                            .map((d, i) => {
+                                const pt = getPoint(i, d.score);
+                                return `${pt.x.toFixed(1)},${pt.y.toFixed(1)}`;
+                            })
+                            .join(" ");
+
+                        const targetPolygon = chartData
+                            .map((_, i) => {
+                                const pt = getPoint(i, target1);
+                                return `${pt.x.toFixed(1)},${pt.y.toFixed(1)}`;
+                            })
+                            .join(" ");
+
+                        // Posisi garis horizontal pada Column Chart (tinggi area plot = 150px)
+                        const plotHeight = 150;
+                        const getBarHeight = (val: number) => Math.max(8, Math.min(plotHeight, ((val - 200) / 800) * plotHeight));
+                        const target1Bottom = getBarHeight(target1);
+                        const target2Bottom = getBarHeight(target2);
 
                         return (
-                            <div className="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 text-left space-y-4">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-2.5 gap-2">
+                            <div className="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-white shadow-2xs text-left space-y-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-3 gap-2">
                                     <div>
                                         <h3 className="font-mono font-bold text-[11px] sm:text-xs uppercase text-slate-900 flex items-center gap-1.5">
                                             <BarChart3 className="w-4 h-4 text-blue-700" />
-                                            <span>GRAFIK PROFIL CAPAIAN 7 SUBTES VS TARGET ({targetScore})</span>
+                                            <span>PETA PROFIL KOGNITIF & KOMPARASI TARGET PASSING GRADE</span>
                                         </h3>
                                         <p className="text-[10px] text-slate-500">
-                                            Perbandingan langsung skor setiap subtes terhadap standar passing grade Pilihan 1 (Skala 200 – 1000)
+                                            Visualisasi keseimbangan 7 subtes terhadap ambang batas Pilihan 1 ({target1}) & Pilihan 2 ({target2})
                                         </p>
                                     </div>
-                                    <div className="flex items-center gap-3 text-[9.5px] font-mono font-bold">
-                                        <span className="flex items-center gap-1 text-emerald-700">
-                                            <span className="w-2.5 h-2.5 rounded-xs bg-emerald-500" /> Melampaui Target
-                                        </span>
-                                        <span className="flex items-center gap-1 text-amber-700">
-                                            <span className="w-2.5 h-2.5 rounded-xs bg-amber-500" /> Mendekati
+                                    <div className="flex flex-wrap items-center gap-3 text-[9.5px] font-mono font-bold">
+                                        <span className="flex items-center gap-1 text-blue-800">
+                                            <span className="w-2.5 h-2.5 rounded-xs bg-blue-600/30 border border-blue-600" /> Capaian Siswa
                                         </span>
                                         <span className="flex items-center gap-1 text-rose-700">
-                                            <span className="w-2.5 h-2.5 rounded-xs bg-rose-500" /> Di Bawah Target
+                                            <span className="w-3 border-t-2 border-dashed border-rose-600" /> Target P1 ({target1})
+                                        </span>
+                                        <span className="flex items-center gap-1 text-amber-700">
+                                            <span className="w-3 border-t-2 border-dashed border-amber-500" /> Target P2 ({target2})
                                         </span>
                                     </div>
                                 </div>
 
-                                <div className="space-y-3 relative pt-4">
-                                    {/* Garis Target Presisi Secara Matematis */}
-                                    <div
-                                        className="absolute top-1 bottom-0 w-0.5 bg-slate-900/80 z-10 pointer-events-none"
-                                        style={{ left: `${targetPct}%` }}
-                                    >
-                                        <span className="absolute -top-3 -translate-x-1/2 bg-slate-900 text-white font-mono text-[8.5px] font-black px-1.5 py-0.5 rounded whitespace-nowrap shadow-xs">
-                                            TARGET {targetScore}
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                                    {/* KIRI: RADAR CHART 7 SUBTES */}
+                                    <div className="lg:col-span-5 flex flex-col items-center justify-center p-3 rounded-xl bg-slate-50/80 border border-slate-200/80">
+                                        <span className="text-[9.5px] font-mono font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                            RADAR KESEIMBANGAN 7 SUBTES
                                         </span>
+                                        <svg viewBox="0 0 280 260" className="w-full max-w-[270px] h-auto overflow-visible">
+                                            {/* Jaring Konsentris (Skala 400, 600, 800, 1000) */}
+                                            {[400, 600, 800, 1000].map((ringVal) => {
+                                                const ringPts = chartData
+                                                    .map((_, i) => {
+                                                        const p = getPoint(i, ringVal);
+                                                        return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+                                                    })
+                                                    .join(" ");
+                                                return (
+                                                    <polygon
+                                                        key={ringVal}
+                                                        points={ringPts}
+                                                        fill="none"
+                                                        stroke="#cbd5e1"
+                                                        strokeWidth="0.8"
+                                                    />
+                                                );
+                                            })}
+
+                                            {/* Garis Sumbu Radar */}
+                                            {chartData.map((d, i) => {
+                                                const outer = getPoint(i, 1000);
+                                                return (
+                                                    <g key={d.code}>
+                                                        <line
+                                                            x1={cx}
+                                                            y1={cy}
+                                                            x2={outer.x}
+                                                            y2={outer.y}
+                                                            stroke="#cbd5e1"
+                                                            strokeWidth="0.8"
+                                                        />
+                                                        <text
+                                                            x={outer.labelX}
+                                                            y={outer.labelY}
+                                                            textAnchor="middle"
+                                                            dominantBaseline="middle"
+                                                            className="fill-slate-700 font-mono text-[9.5px] font-bold"
+                                                        >
+                                                            {d.short}
+                                                        </text>
+                                                    </g>
+                                                );
+                                            })}
+
+                                            {/* Poligon Target Passing Grade Pilihan 1 */}
+                                            <polygon
+                                                points={targetPolygon}
+                                                fill="rgba(225, 29, 72, 0.05)"
+                                                stroke="#e11d48"
+                                                strokeWidth="1.4"
+                                                strokeDasharray="4 3"
+                                            />
+
+                                            {/* Poligon Skor Aktual Siswa */}
+                                            <polygon
+                                                points={studentPolygon}
+                                                fill="rgba(37, 99, 235, 0.25)"
+                                                stroke="#1d4ed8"
+                                                strokeWidth="2.2"
+                                            />
+
+                                            {/* Titik Simpul Skor Siswa */}
+                                            {chartData.map((d, i) => {
+                                                const pt = getPoint(i, d.score);
+                                                return (
+                                                    <circle
+                                                        key={d.code}
+                                                        cx={pt.x}
+                                                        cy={pt.y}
+                                                        r="3.5"
+                                                        fill="#1e3a8a"
+                                                        stroke="#ffffff"
+                                                        strokeWidth="1.2"
+                                                    />
+                                                );
+                                            })}
+                                        </svg>
                                     </div>
 
-                                    {subtestsList.map((st) => {
-                                        const s = scoreResults.subtestBreakdown[st.code] || { scoreIRT: 200 };
-                                        const pctWidth = Math.min(100, Math.max(4, ((s.scoreIRT - 200) / 800) * 100));
-                                        const diff = s.scoreIRT - targetScore;
-                                        const barColor = diff >= 0 ? "bg-emerald-600" : diff >= -60 ? "bg-amber-500" : "bg-rose-500";
+                                    {/* KANAN: VERTICAL COLUMN CHART DENGAN GARIS TARGET P1 & P2 */}
+                                    <div className="lg:col-span-7 p-4 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-2">
+                                        <div className="flex items-center justify-between text-[9.5px] font-mono font-bold text-slate-500 uppercase">
+                                            <span>GRAFIK BATANG SKOR IRT PER SUBTES</span>
+                                            <span>SKALA 200 – 1000</span>
+                                        </div>
 
-                                        return (
-                                            <div key={st.code} className="space-y-1">
-                                                <div className="flex justify-between items-center text-xs font-mono">
-                                                    <span className="font-bold text-slate-800 text-[11px]">{st.name}</span>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={`text-[10px] font-bold ${diff >= 0 ? "text-emerald-700" : "text-rose-600"}`}>
-                                                            ({diff >= 0 ? `+${diff}` : diff})
-                                                        </span>
-                                                        <span className="font-black text-slate-900">{s.scoreIRT}.0</span>
-                                                    </div>
-                                                </div>
-                                                <div className="w-full bg-slate-200/80 h-3 rounded-full overflow-hidden relative">
-                                                    <div className={`h-full rounded-full transition-all duration-700 ${barColor}`} style={{ width: `${pctWidth}%` }} />
-                                                </div>
+                                        <div className="relative pt-6 pb-1 pl-8 pr-2">
+                                            {/* Label Skala Y */}
+                                            <div className="absolute left-0 top-6 bottom-7 flex flex-col justify-between text-[9px] font-mono text-slate-400">
+                                                <span>1000</span>
+                                                <span>800</span>
+                                                <span>600</span>
+                                                <span>400</span>
+                                                <span>200</span>
                                             </div>
-                                        );
-                                    })}
+
+                                            {/* Area Plot Batang */}
+                                            <div
+                                                className="relative border-l border-b border-slate-300 grid grid-cols-7 gap-2 sm:gap-3 items-end px-2"
+                                                style={{ height: `${plotHeight}px` }}
+                                            >
+                                                {/* Garis Grid Horizontal Latar */}
+                                                {[25, 50, 75, 100].map((pct) => (
+                                                    <div
+                                                        key={pct}
+                                                        className="absolute inset-x-0 border-t border-slate-200/70 pointer-events-none"
+                                                        style={{ bottom: `${pct}%` }}
+                                                    />
+                                                ))}
+
+                                                {/* Garis Target Pilihan 2 */}
+                                                {target2 !== target1 && (
+                                                    <div
+                                                        className="absolute inset-x-0 border-t-2 border-dashed border-amber-500 z-10 pointer-events-none"
+                                                        style={{ bottom: `${target2Bottom}px` }}
+                                                    >
+                                                        <span className="absolute right-1 -top-4 bg-amber-500 text-white font-mono text-[8px] font-black px-1.5 py-0.2 rounded">
+                                                            P2: {target2}
+                                                        </span>
+                                                    </div>
+                                                )}
+
+                                                {/* Garis Target Pilihan 1 */}
+                                                <div
+                                                    className="absolute inset-x-0 border-t-2 border-dashed border-rose-600 z-10 pointer-events-none"
+                                                    style={{ bottom: `${target1Bottom}px` }}
+                                                >
+                                                    <span className="absolute left-1 -top-4 bg-rose-600 text-white font-mono text-[8px] font-black px-1.5 py-0.2 rounded">
+                                                        P1: {target1}
+                                                    </span>
+                                                </div>
+
+                                                {/* Batang Skor Tiap Subtes */}
+                                                {chartData.map((d) => {
+                                                    const barH = getBarHeight(d.score);
+                                                    const barGradient =
+                                                        d.score >= target1
+                                                            ? "from-emerald-600 to-emerald-400"
+                                                            : d.score >= target2
+                                                                ? "from-amber-500 to-amber-300"
+                                                                : "from-blue-800 to-blue-500";
+
+                                                    return (
+                                                        <div key={d.code} className="flex flex-col items-center justify-end h-full z-20 group">
+                                                            <span className="text-[9.5px] font-mono font-black text-slate-800 mb-1">
+                                                                {d.score}
+                                                            </span>
+                                                            <div
+                                                                className={`w-full max-w-[34px] rounded-t-lg bg-gradient-to-t ${barGradient} shadow-xs transition-all duration-700`}
+                                                                style={{ height: `${barH}px` }}
+                                                                title={`${d.name}: ${d.score}`}
+                                                            />
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {/* Label Sumbu X di Bawah Garis */}
+                                            <div className="grid grid-cols-7 gap-2 sm:gap-3 px-2 pt-1.5 text-center">
+                                                {chartData.map((d) => (
+                                                    <span key={d.code} className="text-[9px] sm:text-[9.5px] font-mono font-bold text-slate-700 truncate">
+                                                        {d.short}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         );
