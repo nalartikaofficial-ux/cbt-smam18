@@ -1977,90 +1977,146 @@ function OfficialExamChamberContent() {
                                 </div>
 
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-                                    {/* KIRI: RADAR CHART 7 SUBTES */}
-                                    <div className="lg:col-span-5 flex flex-col items-center justify-center p-3 rounded-xl bg-slate-50/80 border border-slate-200/80">
-                                        <span className="text-[9.5px] font-mono font-bold text-slate-500 uppercase tracking-wider mb-1">
-                                            RADAR KESEIMBANGAN 7 SUBTES
-                                        </span>
-                                        <svg viewBox="0 0 280 260" className="w-full max-w-[270px] h-auto overflow-visible">
-                                            {/* Jaring Konsentris (Skala 400, 600, 800, 1000) */}
-                                            {[400, 600, 800, 1000].map((ringVal) => {
-                                                const ringPts = chartData
-                                                    .map((_, i) => {
-                                                        const p = getPoint(i, ringVal);
-                                                        return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
-                                                    })
-                                                    .join(" ");
-                                                return (
-                                                    <polygon
-                                                        key={ringVal}
-                                                        points={ringPts}
-                                                        fill="none"
-                                                        stroke="#cbd5e1"
-                                                        strokeWidth="0.8"
-                                                    />
-                                                );
-                                            })}
+                                    {/* KIRI: RADAR CHART 7 SUBTES + TELAAH OTOMATIS */}
+                                    <div className="lg:col-span-5 flex flex-col justify-between p-3.5 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-2.5">
+                                        <div className="text-center">
+                                            <span className="text-[9.5px] font-mono font-bold text-slate-700 uppercase tracking-wider block">
+                                                RADAR KESEIMBANGAN 7 SUBTES
+                                            </span>
+                                            <span className="text-[9px] text-slate-500">
+                                                Area biru = skor siswa • Garis merah = target P1 ({target1})
+                                            </span>
+                                        </div>
 
-                                            {/* Garis Sumbu Radar */}
-                                            {chartData.map((d, i) => {
-                                                const outer = getPoint(i, 1000);
-                                                return (
-                                                    <g key={d.code}>
-                                                        <line
-                                                            x1={cx}
-                                                            y1={cy}
-                                                            x2={outer.x}
-                                                            y2={outer.y}
-                                                            stroke="#cbd5e1"
-                                                            strokeWidth="0.8"
+                                        <div className="flex justify-center py-1">
+                                            <svg viewBox="0 0 300 285" className="w-full max-w-[285px] h-auto overflow-visible">
+                                                {/* Jaring Konsentris + Angka Skala (400, 600, 800, 1000) */}
+                                                {[400, 600, 800, 1000].map((ringVal) => {
+                                                    const ringPts = chartData
+                                                        .map((_, i) => {
+                                                            const p = getPoint(i, ringVal);
+                                                            return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+                                                        })
+                                                        .join(" ");
+                                                    const topPt = getPoint(0, ringVal);
+                                                    return (
+                                                        <g key={ringVal}>
+                                                            <polygon
+                                                                points={ringPts}
+                                                                fill="none"
+                                                                stroke="#cbd5e1"
+                                                                strokeWidth="0.8"
+                                                            />
+                                                            <text
+                                                                x={topPt.x + 4}
+                                                                y={topPt.y + 3}
+                                                                className="fill-slate-400 font-mono text-[7.5px] font-semibold"
+                                                            >
+                                                                {ringVal}
+                                                            </text>
+                                                        </g>
+                                                    );
+                                                })}
+
+                                                {/* Garis Sumbu & Label Subtes + Angka Skor Aktual */}
+                                                {chartData.map((d, i) => {
+                                                    const outer = getPoint(i, 1000);
+                                                    const isAboveP1 = d.score >= target1;
+                                                    return (
+                                                        <g key={d.code}>
+                                                            <line
+                                                                x1={cx}
+                                                                y1={cy}
+                                                                x2={outer.x}
+                                                                y2={outer.y}
+                                                                stroke="#cbd5e1"
+                                                                strokeWidth="0.8"
+                                                            />
+                                                            <text
+                                                                x={outer.labelX}
+                                                                y={outer.labelY - 5}
+                                                                textAnchor="middle"
+                                                                dominantBaseline="middle"
+                                                                className="fill-slate-800 font-mono text-[9.5px] font-bold"
+                                                            >
+                                                                {d.short}
+                                                            </text>
+                                                            <text
+                                                                x={outer.labelX}
+                                                                y={outer.labelY + 7}
+                                                                textAnchor="middle"
+                                                                dominantBaseline="middle"
+                                                                className={`font-mono text-[8.5px] font-black ${isAboveP1 ? "fill-emerald-700" : "fill-blue-800"}`}
+                                                            >
+                                                                ({d.score})
+                                                            </text>
+                                                        </g>
+                                                    );
+                                                })}
+
+                                                {/* Poligon Target Passing Grade Pilihan 1 */}
+                                                <polygon
+                                                    points={targetPolygon}
+                                                    fill="rgba(225, 29, 72, 0.05)"
+                                                    stroke="#e11d48"
+                                                    strokeWidth="1.4"
+                                                    strokeDasharray="4 3"
+                                                />
+
+                                                {/* Poligon Skor Aktual Siswa */}
+                                                <polygon
+                                                    points={studentPolygon}
+                                                    fill="rgba(37, 99, 235, 0.25)"
+                                                    stroke="#1d4ed8"
+                                                    strokeWidth="2.2"
+                                                />
+
+                                                {/* Titik Simpul Skor Siswa */}
+                                                {chartData.map((d, i) => {
+                                                    const pt = getPoint(i, d.score);
+                                                    return (
+                                                        <circle
+                                                            key={d.code}
+                                                            cx={pt.x}
+                                                            cy={pt.y}
+                                                            r="3.5"
+                                                            fill="#1e3a8a"
+                                                            stroke="#ffffff"
+                                                            strokeWidth="1.2"
                                                         />
-                                                        <text
-                                                            x={outer.labelX}
-                                                            y={outer.labelY}
-                                                            textAnchor="middle"
-                                                            dominantBaseline="middle"
-                                                            className="fill-slate-700 font-mono text-[9.5px] font-bold"
-                                                        >
-                                                            {d.short}
-                                                        </text>
-                                                    </g>
-                                                );
-                                            })}
+                                                    );
+                                                })}
+                                            </svg>
+                                        </div>
 
-                                            {/* Poligon Target Passing Grade Pilihan 1 */}
-                                            <polygon
-                                                points={targetPolygon}
-                                                fill="rgba(225, 29, 72, 0.05)"
-                                                stroke="#e11d48"
-                                                strokeWidth="1.4"
-                                                strokeDasharray="4 3"
-                                            />
+                                        {/* Kotak Telaah Radar Otomatis */}
+                                        {(() => {
+                                            const passedCount = chartData.filter((d) => d.score >= target1).length;
+                                            const scoresOnly = chartData.map((d) => d.score);
+                                            const maxSub = Math.max(...scoresOnly);
+                                            const minSub = Math.min(...scoresOnly);
+                                            const spread = maxSub - minSub;
+                                            const balanceStatus =
+                                                spread <= 80
+                                                    ? "Merata / Seimbang antar subtes"
+                                                    : spread <= 160
+                                                        ? "Cukup bervariasi (perlu pemerataan)"
+                                                        : "Timpang / Jomplang (fokus pada subtes terendah)";
 
-                                            {/* Poligon Skor Aktual Siswa */}
-                                            <polygon
-                                                points={studentPolygon}
-                                                fill="rgba(37, 99, 235, 0.25)"
-                                                stroke="#1d4ed8"
-                                                strokeWidth="2.2"
-                                            />
-
-                                            {/* Titik Simpul Skor Siswa */}
-                                            {chartData.map((d, i) => {
-                                                const pt = getPoint(i, d.score);
-                                                return (
-                                                    <circle
-                                                        key={d.code}
-                                                        cx={pt.x}
-                                                        cy={pt.y}
-                                                        r="3.5"
-                                                        fill="#1e3a8a"
-                                                        stroke="#ffffff"
-                                                        strokeWidth="1.2"
-                                                    />
-                                                );
-                                            })}
-                                        </svg>
+                                            return (
+                                                <div className="p-2.5 rounded-lg bg-white border border-slate-200 text-[10px] leading-relaxed text-slate-700 space-y-1">
+                                                    <div className="font-mono font-bold text-slate-900 uppercase text-[9.5px]">
+                                                        Telaah Bentuk Jaring Radar:
+                                                    </div>
+                                                    <p>
+                                                        • <strong>{passedCount} dari 7 subtes</strong> menembus garis merah Target P1 ({target1}).
+                                                    </p>
+                                                    <p>
+                                                        • Rentang skor tertinggi–terendah <strong>{spread} poin</strong> ({minSub}–{maxSub}): <em>{balanceStatus}</em>.
+                                                    </p>
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
 
                                     {/* KANAN: VERTICAL COLUMN CHART DENGAN GARIS TARGET P1 & P2 */}

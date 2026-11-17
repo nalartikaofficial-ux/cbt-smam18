@@ -21,7 +21,9 @@ import {
     Layers,
     Award,
     AlertTriangle,
-    PieChart
+    PieChart,
+    EyeOff,
+    Eye
 } from "lucide-react";
 
 export interface RealStudentResult {
@@ -127,7 +129,11 @@ const SUBTEST_LABELS = [
     }
 ] as const;
 
-// Kalkulasi skor akhir seragam (identik dengan layar ujian siswa)
+function isDummyAccount(nisn: string): boolean {
+    const clean = (nisn || "").trim();
+    return clean === "0000000000" || clean === "1111111111" || /^0+$/.test(clean) || /^1+$/.test(clean);
+}
+
 function getUnifiedScore(item: Partial<RealStudentResult>): number {
     const subs = [
         Number(item.skor_pu) || 0,
@@ -177,6 +183,7 @@ export default function AdminAnalyticsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedClass, setSelectedClass] = useState("ALL");
+    const [hideDummyData, setHideDummyData] = useState(false);
     const [activeTab, setActiveTab] = useState<"ranking" | "progres_to" | "subtes_angkatan">("ranking");
 
     const [officials, setOfficials] = useState({
@@ -224,19 +231,27 @@ export default function AdminAnalyticsPage() {
         fetchStudents();
     }, []);
 
+    const activeStudentsPool = useMemo(() => {
+        return hideDummyData ? students.filter((s) => !isDummyAccount(s.nisn)) : students;
+    }, [students, hideDummyData]);
+
+    const activeAttemptsPool = useMemo(() => {
+        return hideDummyData ? attempts.filter((a) => !isDummyAccount(a.nisn)) : attempts;
+    }, [attempts, hideDummyData]);
+
     const finishedStudents = useMemo(() => {
-        return students
+        return activeStudentsPool
             .filter((s) => s.status === "Selesai" || Number(s.score) > 0)
             .sort((a, b) => getUnifiedScore(b) - getUnifiedScore(a));
-    }, [students]);
+    }, [activeStudentsPool]);
 
     const availableClasses = useMemo(() => {
         const setCls = new Set<string>();
-        students.forEach((s) => {
+        activeStudentsPool.forEach((s) => {
             if (s.kelas && s.kelas.trim()) setCls.add(s.kelas.trim());
         });
         return Array.from(setCls).sort();
-    }, [students]);
+    }, [activeStudentsPool]);
 
     const filteredStudents = useMemo(() => {
         return finishedStudents.filter((s) => {
@@ -250,6 +265,7 @@ export default function AdminAnalyticsPage() {
         });
     }, [finishedStudents, selectedClass, searchQuery]);
 
+    // Perbandingan Progres Kronologis TO-1 -> TO-2 -> TO-3 (Bebas Bug Urutan & Encoding)
     const studentProgressionList = useMemo(() => {
         const map = new Map<
             string,
@@ -264,7 +280,11 @@ export default function AdminAnalyticsPage() {
             }
         >();
 
-        attempts.forEach((att) => {
+        const chronoAttempts = [...activeAttemptsPool].sort(
+            (a, b) => new Date(a.completed_at || 0).getTime() - new Date(b.completed_at || 0).getTime()
+        );
+
+        chronoAttempts.forEach((att) => {
             if (!map.has(att.nisn)) {
                 map.set(att.nisn, {
                     nisn: att.nisn,
@@ -287,7 +307,72 @@ export default function AdminAnalyticsPage() {
             const matchSearch = item.nama.toLowerCase().includes(q) || item.nisn.includes(searchQuery);
             return matchClass && matchSearch;
         });
-    }, [attempts, selectedClass, searchQuery]);
+    }, [activeAttemptsPool, selectedClass, searchQuery]);
+
+    // Analitik Agregat Lintas TO (Sebelum vs Sesudah), Distribusi Kesiapan, & Perbandingan Kelas
+    const executiveAnalytics = useMemo(() => {
+        const totalSelesai = finishedStudents.length;
+        const totalTerdaftar = activeStudentsPool.length;
+        const avgScore =
+            totalSelesai > 0
+                ? Math.round((finishedStudents.reduce((acc, curr) => acc + getUnifiedScore(curr), 0) / totalSelesai) * 10) / 10
+                : 0;
+
+        const amanCount = finishedStudents.filter((s) => getUnifiedScore(s) >= 650).length;
+        const kompetitifCount = finishedStudents.filter((s) => {
+            const sc = getUnifiedScore(s);
+            return sc >= 520 && sc < 650;
+        }).length;
+        const bimbinganCount = finishedStudents.filter((s) => getUnifiedScore(s) < 520).length;
+
+        const persentaseTarget = totalSelesai > 0 ? Math.round((amanCount / totalSelesai) * 100) : 0;
+        const totalPelanggaran = finishedStudents.reduce((acc, curr) => acc + (Number(curr.violations) || 0), 0);
+        const integritasRate = Math.max(0, 100 - totalPelanggaran * 3);
+
+        // Perbandingan Rata-rata Kelas
+        const classGroups = new Map<string, { total: number; count: number }>();
+        finishedStudents.forEach((s) => {
+            const cls = (s.kelas || "Umum").trim();
+            const prev = classGroups.get(cls) || { total: 0, count: 0 };
+            classGroups.set(cls, { total: prev.total + getUnifiedScore(s), count: prev.count + 1 });
+        });
+        const classComparison = Array.from(classGroups.entries())
+            .map(([kelas, val]) => ({
+                kelas,
+                avg: Math.round((val.total / val.count) * 10) / 10,
+                count: val.count
+            }))
+            .sort((a, b) => b.avg - a.avg);
+
+        // Perbandingan Rata-rata Sebelum vs Sesudah (TO-1 vs TO-2 vs TO-3)
+        const paketList = ["PAKET_1", "PAKET_2", "PAKET_3"] as const;
+        const tryoutTrend = paketList.map((pkt, idx) => {
+            const matched = activeAttemptsPool.filter((a) => (a.paket || "").toUpperCase() === pkt);
+            const avg =
+                matched.length > 0
+                    ? Math.round((matched.reduce((sum, item) => sum + getUnifiedScore(item), 0) / matched.length) * 10) / 10
+                    : 0;
+            return {
+                label: `TO-${idx + 1}`,
+                paket: pkt,
+                avg,
+                participants: matched.length
+            };
+        });
+
+        return {
+            totalTerdaftar,
+            totalSelesai,
+            avgScore,
+            amanCount,
+            kompetitifCount,
+            bimbinganCount,
+            persentaseTarget,
+            integritasRate,
+            classComparison,
+            tryoutTrend
+        };
+    }, [finishedStudents, activeStudentsPool, activeAttemptsPool]);
 
     const subtestClassAverages = useMemo(() => {
         const count = filteredStudents.length;
@@ -298,20 +383,15 @@ export default function AdminAnalyticsPage() {
         });
     }, [filteredStudents]);
 
-    const overallStats = useMemo(() => {
-        const totalSelesai = finishedStudents.length;
-        const totalTerdaftar = students.length;
-        const avgScore =
-            totalSelesai > 0
-                ? Math.round((finishedStudents.reduce((acc, curr) => acc + getUnifiedScore(curr), 0) / totalSelesai) * 10) / 10
-                : 0;
-        const tembusTarget = finishedStudents.filter((s) => getUnifiedScore(s) >= 650).length;
-        const persentaseTarget = totalSelesai > 0 ? Math.round((tembusTarget / totalSelesai) * 100) : 0;
-        const totalPelanggaran = finishedStudents.reduce((acc, curr) => acc + (Number(curr.violations) || 0), 0);
-        const integritasRate = Math.max(0, 100 - totalPelanggaran * 3);
-
-        return { totalTerdaftar, totalSelesai, avgScore, tembusTarget, persentaseTarget, integritasRate };
-    }, [finishedStudents, students]);
+    const subtestHighlights = useMemo(() => {
+        if (filteredStudents.length === 0) return { strongest: [], weakest: [] };
+        const sortedDesc = [...subtestClassAverages].sort((a, b) => b.avg - a.avg);
+        const sortedAsc = [...subtestClassAverages].sort((a, b) => a.avg - b.avg);
+        return {
+            strongest: sortedDesc.slice(0, 2),
+            weakest: sortedAsc.slice(0, 2)
+        };
+    }, [subtestClassAverages, filteredStudents.length]);
 
     // Analisis Mendalam untuk Siswa yang Diklik pada Modal Rapor
     const reportDiagnostic = useMemo(() => {
@@ -345,6 +425,7 @@ export default function AdminAnalyticsPage() {
 
         const studentAttempts = attempts
             .filter((a) => a.nisn === selectedStudentForReport.nisn)
+            .sort((a, b) => new Date(a.completed_at || 0).getTime() - new Date(b.completed_at || 0).getTime())
             .map((a) => ({
                 ...a,
                 unifiedScore: getUnifiedScore(a),
@@ -454,7 +535,19 @@ export default function AdminAnalyticsPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                    <div className="flex items-center gap-2 self-end sm:self-auto shrink-0 flex-wrap">
+                        <button
+                            type="button"
+                            onClick={() => setHideDummyData(!hideDummyData)}
+                            className={`px-3 py-1.5 sm:py-2 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${hideDummyData
+                                ? "bg-amber-50 border-amber-300 text-amber-800"
+                                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                                }`}
+                        >
+                            {hideDummyData ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            <span>{hideDummyData ? "Data Uji Coba Disembunyikan" : "Sembunyikan Uji Coba"}</span>
+                        </button>
+
                         <button
                             onClick={fetchStudents}
                             disabled={isLoading}
@@ -553,10 +646,10 @@ export default function AdminAnalyticsPage() {
                             <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-black text-blue-900 mt-1 sm:mt-2 font-mono">
-                            {overallStats.avgScore}
+                            {executiveAnalytics.avgScore}
                         </div>
                         <div className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5">
-                            Dari {overallStats.totalSelesai} Siswa Selesai
+                            Dari {executiveAnalytics.totalSelesai} Siswa Selesai
                         </div>
                     </div>
 
@@ -566,10 +659,10 @@ export default function AdminAnalyticsPage() {
                             <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-black text-emerald-700 mt-1 sm:mt-2 font-mono">
-                            {overallStats.tembusTarget} <span className="text-xs font-normal text-slate-500">/ {overallStats.totalSelesai}</span>
+                            {executiveAnalytics.amanCount} <span className="text-xs font-normal text-slate-500">/ {executiveAnalytics.totalSelesai}</span>
                         </div>
                         <div className="text-[10px] sm:text-[11px] text-emerald-700 font-semibold mt-0.5 truncate">
-                            {overallStats.persentaseTarget}% Peluang Tinggi
+                            {executiveAnalytics.persentaseTarget}% Peluang Tinggi
                         </div>
                     </div>
 
@@ -579,10 +672,10 @@ export default function AdminAnalyticsPage() {
                             <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-700" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 sm:mt-2 font-mono">
-                            {attempts.length}
+                            {activeAttemptsPool.length}
                         </div>
                         <div className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5">
-                            Dari {overallStats.totalTerdaftar} Peserta Terdaftar
+                            Dari {executiveAnalytics.totalTerdaftar} Peserta Terdaftar
                         </div>
                     </div>
 
@@ -592,10 +685,110 @@ export default function AdminAnalyticsPage() {
                             <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
                         </div>
                         <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 sm:mt-2 font-mono">
-                            {overallStats.integritasRate}%
+                            {executiveAnalytics.integritasRate}%
                         </div>
                         <div className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">
                             Kepatuhan Layar Kiosk
+                        </div>
+                    </div>
+                </div>
+
+                {/* PANEL GRAFIK RINGKASAN EKSEKUTIF (DISTRIBUSI, ANTAR KELAS, & SEBELUM VS SESUDAH) */}
+                <div className="print-hidden grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    {/* GRAFIK 1: DISTRIBUSI KESIAPAN SISWA */}
+                    <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                            <span className="text-xs font-bold font-mono text-slate-900 uppercase">
+                                DISTRIBUSI KESIAPAN SNBT
+                            </span>
+                            <PieChart className="w-4 h-4 text-blue-700" />
+                        </div>
+
+                        <div className="space-y-3 pt-1 text-xs">
+                            {[
+                                { label: "Sangat Kompetitif (≥ 650)", count: executiveAnalytics.amanCount, color: "bg-emerald-500", text: "text-emerald-700" },
+                                { label: "Cukup Kompetitif (520–649)", count: executiveAnalytics.kompetitifCount, color: "bg-amber-500", text: "text-amber-700" },
+                                { label: "Perlu Klinik Intensif (< 520)", count: executiveAnalytics.bimbinganCount, color: "bg-rose-500", text: "text-rose-700" }
+                            ].map((tier) => {
+                                const pct = executiveAnalytics.totalSelesai > 0 ? Math.round((tier.count / executiveAnalytics.totalSelesai) * 100) : 0;
+                                return (
+                                    <div key={tier.label} className="space-y-1">
+                                        <div className="flex justify-between font-mono text-[11px]">
+                                            <span className="font-semibold text-slate-700">{tier.label}</span>
+                                            <span className={`font-black ${tier.text}`}>{tier.count} ({pct}%)</span>
+                                        </div>
+                                        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                                            <div className={`h-full rounded-full ${tier.color}`} style={{ width: `${Math.max(tier.count > 0 ? 6 : 0, pct)}%` }} />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* GRAFIK 2: KOMPARASI RATA-RATA ANTAR KELAS */}
+                    <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                            <span className="text-xs font-bold font-mono text-slate-900 uppercase">
+                                KOMPARASI RATA-RATA KELAS
+                            </span>
+                            <BarChart3 className="w-4 h-4 text-indigo-700" />
+                        </div>
+
+                        {executiveAnalytics.classComparison.length === 0 ? (
+                            <div className="text-xs text-slate-400 py-6 text-center">Belum ada data kelas selesai.</div>
+                        ) : (
+                            <div className="space-y-2.5 pt-1">
+                                {executiveAnalytics.classComparison.slice(0, 4).map((cls) => {
+                                    const pct = Math.min(100, Math.max(8, ((cls.avg - 200) / 800) * 100));
+                                    return (
+                                        <div key={cls.kelas} className="space-y-1">
+                                            <div className="flex justify-between font-mono text-[11px]">
+                                                <span className="font-bold text-slate-800">{cls.kelas} ({cls.count} siswa)</span>
+                                                <span className="font-black text-blue-900">{cls.avg}</span>
+                                            </div>
+                                            <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                                                <div className="h-full rounded-full bg-indigo-600" style={{ width: `${pct}%` }} />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* GRAFIK 3: PERBANDINGAN SEBELUM VS SESUDAH (TO-1 vs TO-2 vs TO-3) */}
+                    <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                            <span className="text-xs font-bold font-mono text-slate-900 uppercase">
+                                TREN ANGKATAN (TO-1 vs TO-2 vs TO-3)
+                            </span>
+                            <TrendingUp className="w-4 h-4 text-emerald-600" />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2.5 items-end h-28 pt-4 px-2 border-b border-slate-200">
+                            {executiveAnalytics.tryoutTrend.map((to) => {
+                                const hPct = to.avg > 0 ? Math.min(100, Math.max(15, ((to.avg - 200) / 800) * 100)) : 8;
+                                return (
+                                    <div key={to.paket} className="flex flex-col items-center justify-end h-full">
+                                        <span className="text-[10.5px] font-mono font-black text-slate-900 mb-1">
+                                            {to.avg > 0 ? to.avg : "-"}
+                                        </span>
+                                        <div
+                                            className={`w-full max-w-[44px] rounded-t-xl transition-all duration-500 ${to.avg > 0 ? "bg-gradient-to-t from-blue-800 to-blue-500" : "bg-slate-200"}`}
+                                            style={{ height: `${hPct}%` }}
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="grid grid-cols-3 gap-2.5 text-center font-mono text-[10px]">
+                            {executiveAnalytics.tryoutTrend.map((to) => (
+                                <div key={to.paket}>
+                                    <div className="font-bold text-slate-800">{to.label}</div>
+                                    <div className="text-slate-400">{to.participants} sesi</div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -628,7 +821,7 @@ export default function AdminAnalyticsPage() {
                                     }`}
                             >
                                 <BarChart3 className="w-3.5 h-3.5" />
-                                <span>Peta Kekuatan 7 Subtes Kelas</span>
+                                <span>Keunggulan & Kelemahan 7 Subtes</span>
                             </button>
                         </div>
 
@@ -751,7 +944,7 @@ export default function AdminAnalyticsPage() {
                                 Klik <strong>Nama Siswa</strong> untuk membuka grafik progres lengkap lintas tryout (<strong>PAKET 1 = TO-1</strong>, <strong>PAKET 2 = TO-2</strong>, <strong>PAKET 3 = TO-3</strong>).
                             </p>
                             <div className="overflow-x-auto rounded-2xl border border-slate-200">
-                                <table className="w-full text-left text-xs border-collapse min-w-[780px]">
+                                <table className="w-full text-left text-xs border-collapse min-w-[820px]">
                                     <thead className="bg-slate-50 border-b border-slate-200 font-mono text-[10.5px] text-slate-600">
                                         <tr>
                                             <th className="p-3">NISN</th>
@@ -760,13 +953,18 @@ export default function AdminAnalyticsPage() {
                                             <th className="p-3 text-center">Skor TO-1 (Paket 1)</th>
                                             <th className="p-3 text-center">Skor TO-2 (Paket 2)</th>
                                             <th className="p-3 text-center">Skor TO-3 (Paket 3)</th>
-                                            <th className="p-3 text-center">Tren Perubahan (Î”)</th>
+                                            <th className="p-3 text-center">Mini Grafik</th>
+                                            <th className="p-3 text-center">Selisih (Δ)</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 font-medium">
                                         {studentProgressionList.map((item) => {
-                                            const scores = item.history.map((h) => getUnifiedScore(h));
-                                            const delta = scores.length >= 2 ? scores[scores.length - 1] - scores[0] : null;
+                                            const s1 = item.to1 ? getUnifiedScore(item.to1) : null;
+                                            const s2 = item.to2 ? getUnifiedScore(item.to2) : null;
+                                            const s3 = item.to3 ? getUnifiedScore(item.to3) : null;
+
+                                            const orderedScores = [s1, s2, s3].filter((v): v is number => v !== null);
+                                            const delta = orderedScores.length >= 2 ? orderedScores[orderedScores.length - 1] - orderedScores[0] : null;
 
                                             return (
                                                 <tr key={item.nisn} className="hover:bg-blue-50/40 transition-colors">
@@ -782,13 +980,28 @@ export default function AdminAnalyticsPage() {
                                                     </td>
                                                     <td className="p-3 font-mono text-slate-600">{item.kelas}</td>
                                                     <td className="p-3 text-center font-mono font-bold text-slate-800">
-                                                        {item.to1 ? getUnifiedScore(item.to1) : <span className="text-slate-300">-</span>}
+                                                        {s1 !== null ? s1 : <span className="text-slate-300">-</span>}
                                                     </td>
                                                     <td className="p-3 text-center font-mono font-bold text-slate-800">
-                                                        {item.to2 ? getUnifiedScore(item.to2) : <span className="text-slate-300">-</span>}
+                                                        {s2 !== null ? s2 : <span className="text-slate-300">-</span>}
                                                     </td>
                                                     <td className="p-3 text-center font-mono font-bold text-slate-800">
-                                                        {item.to3 ? getUnifiedScore(item.to3) : <span className="text-slate-300">-</span>}
+                                                        {s3 !== null ? s3 : <span className="text-slate-300">-</span>}
+                                                    </td>
+                                                    <td className="p-3">
+                                                        <div className="flex items-end justify-center gap-1.5 h-7">
+                                                            {[s1, s2, s3].map((val, bIdx) => {
+                                                                const h = val ? Math.min(100, Math.max(18, ((val - 200) / 800) * 100)) : 12;
+                                                                return (
+                                                                    <div key={bIdx} className="w-2.5 h-full bg-slate-100 rounded-xs flex items-end overflow-hidden">
+                                                                        <div
+                                                                            className={`w-full rounded-t-xs ${val ? "bg-blue-700" : "bg-slate-200"}`}
+                                                                            style={{ height: `${h}%` }}
+                                                                        />
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
                                                     </td>
                                                     <td className="p-3 text-center font-mono">
                                                         {delta === null ? (
@@ -813,8 +1026,8 @@ export default function AdminAnalyticsPage() {
 
                                         {studentProgressionList.length === 0 && (
                                             <tr>
-                                                <td colSpan={7} className="text-center py-10 text-slate-400 font-medium">
-                                                    Belum ada riwayat percobaan tryout pada tabel exam_attempts.
+                                                <td colSpan={8} className="text-center py-10 text-slate-400 font-medium">
+                                                    Belum ada riwayat percobaan tryout.
                                                 </td>
                                             </tr>
                                         )}
@@ -824,9 +1037,46 @@ export default function AdminAnalyticsPage() {
                         </div>
                     )}
 
-                    {/* TAB 3: PETA KEKUATAN 7 SUBTES ANGKATAN / KELAS */}
+                    {/* TAB 3: KEUNGGULAN & KELEMAHAN 7 SUBTES ANGKATAN / KELAS */}
                     {activeTab === "subtes_angkatan" && (
-                        <div className="space-y-4">
+                        <div className="space-y-5">
+                            {filteredStudents.length > 0 && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="p-4 rounded-2xl border border-emerald-200 bg-emerald-50/50 space-y-2.5">
+                                        <div className="flex items-center gap-1.5 text-emerald-800 font-mono font-bold text-xs uppercase">
+                                            <Award className="w-4 h-4 text-emerald-600" />
+                                            <span>KEUNGGULAN KOMPETENSI ANGKATAN (TOP 2)</span>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {subtestHighlights.strongest.map((st, idx) => (
+                                                <div key={st.code} className="p-3 rounded-xl bg-white border border-emerald-200 flex items-center justify-between text-xs">
+                                                    <span className="font-bold text-slate-900">{idx + 1}. {st.name}</span>
+                                                    <span className="font-mono font-black text-emerald-700">{st.avg.toFixed(1)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 rounded-2xl border border-rose-200 bg-rose-50/50 space-y-2.5">
+                                        <div className="flex items-center gap-1.5 text-rose-800 font-mono font-bold text-xs uppercase">
+                                            <AlertTriangle className="w-4 h-4 text-rose-600" />
+                                            <span>KELEMAHAN & PRIORITAS KLINIK GURU (TERENDAH)</span>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {subtestHighlights.weakest.map((wk, idx) => (
+                                                <div key={wk.code} className="p-3 rounded-xl bg-white border border-rose-200 space-y-1 text-xs">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="font-bold text-slate-900">{idx + 1}. {wk.name}</span>
+                                                        <span className="font-mono font-black text-rose-700">{wk.avg.toFixed(1)}</span>
+                                                    </div>
+                                                    <p className="text-[11px] text-slate-600">{wk.rekomendasi}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <p className="text-xs text-slate-500">
                                 Rata-rata capaian skor IRT per subtes untuk menentukan fokus klinik pendalaman materi bagi tim guru pengajar (target minimal: <strong>650.0</strong>).
                             </p>
@@ -853,7 +1103,7 @@ export default function AdminAnalyticsPage() {
             </div>
 
             {/* ============================================================== */}
-            {/* MODAL RAPOR DIAGNOSTIK & GRAFIK ANALISIS INDIVIDUAL 1 MURID     */}
+            {/* MODAL RAPOR DIAGNOSTIK & GRAFIK ANALISIS INDIVIDUAL 1 MURID      */}
             {/* ============================================================== */}
             {selectedStudentForReport && reportDiagnostic && (
                 <div className="fixed inset-0 z-50 bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
@@ -985,7 +1235,6 @@ export default function AdminAnalyticsPage() {
 
                             {/* BARIS 1 VISUAL: SKOR TOTAL + DIAGRAM LINGKARAN PROPORSI JAWABAN */}
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
-                                {/* Kartu Skor Akhir IRT */}
                                 <div className="md:col-span-5 p-4 rounded-2xl border border-slate-900 bg-gradient-to-br from-blue-900 to-indigo-950 text-white flex flex-col justify-center text-center space-y-1.5">
                                     <div className="text-[10px] font-mono tracking-widest text-blue-200 uppercase font-bold">
                                         NILAI RATA-RATA KESELURUHAN (IRT)
@@ -999,8 +1248,8 @@ export default function AdminAnalyticsPage() {
                                     <div className="pt-1">
                                         <span
                                             className={`inline-block px-3 py-1 rounded-full text-[10.5px] font-bold ${reportDiagnostic.unifiedScore >= 650
-                                                    ? "bg-emerald-500/25 text-emerald-200 border border-emerald-400/40"
-                                                    : "bg-amber-400/20 text-amber-200 border border-amber-300/40"
+                                                ? "bg-emerald-500/25 text-emerald-200 border border-emerald-400/40"
+                                                : "bg-amber-400/20 text-amber-200 border border-amber-300/40"
                                                 }`}
                                         >
                                             {reportDiagnostic.unifiedScore >= 650 ? "Kompetitif / Peluang Tinggi" : "Perlu Penguatan Intensif"}
@@ -1008,7 +1257,6 @@ export default function AdminAnalyticsPage() {
                                     </div>
                                 </div>
 
-                                {/* Diagram Lingkaran (Donut Chart) Proporsi Jawaban */}
                                 <div className="md:col-span-7 p-4 rounded-2xl border border-slate-300 bg-white flex flex-col sm:flex-row items-center gap-4">
                                     {(() => {
                                         const { benar, salah, kosong, totalSoal, akurasiJawab } = reportDiagnostic;
@@ -1201,7 +1449,6 @@ export default function AdminAnalyticsPage() {
                                         GRAFIK & RIWAYAT PROGRES PENGERJAAN TRYOUT ({reportDiagnostic.studentAttempts.length} SESI):
                                     </div>
 
-                                    {/* Visual Bar Progres Lintas TO */}
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
                                         {reportDiagnostic.studentAttempts.map((att, idx) => {
                                             const prevScore = idx > 0 ? reportDiagnostic.studentAttempts[idx - 1].unifiedScore : null;
@@ -1242,10 +1489,10 @@ export default function AdminAnalyticsPage() {
                                     KESIMPULAN & REKOMENDASI PEMBINAAN GURU / WALI KELAS:
                                 </div>
                                 <div className="p-3 border border-slate-900 bg-white text-xs leading-relaxed italic text-slate-800">
-                                    â€œAnanda <strong>{selectedStudentForReport.nama}</strong> memiliki kekuatan paling menonjol pada subtes{" "}
+                                    “Ananda <strong>{selectedStudentForReport.nama}</strong> memiliki kekuatan paling menonjol pada subtes{" "}
                                     <strong>{reportDiagnostic.strengths[0]?.name}</strong> ({reportDiagnostic.strengths[0]?.score.toFixed(1)}) dan{" "}
                                     <strong>{reportDiagnostic.strengths[1]?.name}</strong> ({reportDiagnostic.strengths[1]?.score.toFixed(1)}). Untuk mendongkrak skor akhir menuju target PTN pilihan, disarankan mengikuti klinik pendalaman intensif pada subtes{" "}
-                                    <strong>{reportDiagnostic.weaknesses[0]?.name}</strong> serta meningkatkan efektivitas pengerjaan soal (tingkat akurasi saat ini {reportDiagnostic.akurasiJawab}% dari soal yang dijawab).â€
+                                    <strong>{reportDiagnostic.weaknesses[0]?.name}</strong> serta meningkatkan efektivitas pengerjaan soal (tingkat akurasi saat ini {reportDiagnostic.akurasiJawab}% dari soal yang dijawab).”
                                 </div>
                             </div>
 
