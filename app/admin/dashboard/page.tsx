@@ -1394,44 +1394,87 @@ export default function AdminAnalyticsPage() {
 
                             {/* GRAFIK BATANG PERBANDINGAN 7 SUBTES & TABEL RINCIAN */}
                             <div className="space-y-2 overflow-x-auto">
-                                <div className="font-bold font-mono text-[11px] uppercase tracking-wide text-slate-900">
-                                    PETA CAPAIAN & GRAFIK KOMPARASI 7 SUBTES NASIONAL (TARGET PG: 650):
+                                <div className="flex items-center justify-between">
+                                    <span className="font-bold font-mono text-[11px] uppercase tracking-wide text-slate-900">
+                                        PETA CAPAIAN & GRAFIK KOMPARASI 7 SUBTES NASIONAL (TARGET PG: 650)
+                                    </span>
+                                    <span className="text-[10px] font-mono text-rose-700 font-bold flex items-center gap-1">
+                                        <span className="inline-block w-0.5 h-3 bg-rose-600" /> Garis Merah = Batas Target 650
+                                    </span>
                                 </div>
-                                <table className="w-full text-xs border border-slate-900 text-left border-collapse min-w-[600px]">
+
+                                <table className="w-full text-xs border border-slate-900 text-left border-collapse min-w-[620px]">
                                     <thead className="bg-slate-100 border-b border-slate-900 font-mono text-[10px]">
                                         <tr>
                                             <th className="p-2 border-r border-slate-900 w-9 text-center">NO</th>
                                             <th className="p-2 border-r border-slate-900">KOMPONEN & SUBTES UJIAN</th>
-                                            <th className="p-2 border-r border-slate-900 w-44">GRAFIK CAPAIAN (200-1000)</th>
-                                            <th className="p-2 border-r border-slate-900 text-center w-20">SKOR</th>
-                                            <th className="p-2 border-r border-slate-900 text-center w-20">SELISIH</th>
-                                            <th className="p-2 text-center w-28">STATUS</th>
+                                            <th className="p-2 border-r border-slate-900 w-48">VISUAL CAPAIAN VS TARGET (650)</th>
+                                            <th className="p-2 border-r border-slate-900 text-center w-16">SKOR</th>
+                                            <th className="p-2 border-r border-slate-900 text-center w-20">GAP PG</th>
+                                            <th className="p-2 text-center w-28">PREDIKAT</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-300 font-medium text-[11px]">
                                         {reportDiagnostic.subtestScores.map((sub, i) => {
                                             const barPct = Math.min(100, Math.max(4, ((sub.score - 200) / 800) * 100));
-                                            const barColor = sub.score >= 650 ? "bg-emerald-600" : sub.score >= 500 ? "bg-amber-500" : "bg-blue-700";
+                                            const targetMarkerPct = ((650 - 200) / 800) * 100; // 56.25%
+                                            const barColor =
+                                                sub.score >= 650
+                                                    ? "bg-emerald-600"
+                                                    : sub.score >= 520
+                                                        ? "bg-amber-500"
+                                                        : "bg-blue-700";
+
+                                            const isTopStrength = reportDiagnostic.strengths[0]?.code === sub.code;
+                                            const isTopWeakness = reportDiagnostic.weaknesses[0]?.code === sub.code;
 
                                             return (
-                                                <tr key={sub.code}>
+                                                <tr key={sub.code} className={isTopStrength ? "bg-emerald-50/40" : isTopWeakness ? "bg-rose-50/30" : ""}>
                                                     <td className="p-2 text-center font-mono border-r border-slate-300">{i + 1}</td>
-                                                    <td className="p-2 border-r border-slate-300 font-semibold">{sub.name}</td>
                                                     <td className="p-2 border-r border-slate-300">
-                                                        <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                                                            <div className={`h-full rounded-full ${barColor}`} style={{ width: `${barPct}%` }} />
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <span className="font-semibold text-slate-900">{sub.name}</span>
+                                                            {isTopStrength && (
+                                                                <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-[9px] font-bold shrink-0">
+                                                                    TERKUAT
+                                                                </span>
+                                                            )}
+                                                            {isTopWeakness && (
+                                                                <span className="px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-mono text-[9px] font-bold shrink-0">
+                                                                    PRIORITAS
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-2 border-r border-slate-300">
+                                                        <div className="relative w-full h-3 bg-slate-200 rounded-full overflow-hidden">
+                                                            <div
+                                                                className={`h-full rounded-full ${barColor}`}
+                                                                style={{ width: `${barPct}%` }}
+                                                            />
+                                                            {/* Garis Marker Target PG 650 */}
+                                                            <div
+                                                                className="absolute top-0 bottom-0 w-0.5 bg-rose-600 z-10"
+                                                                style={{ left: `${targetMarkerPct}%` }}
+                                                                title="Target PG: 650"
+                                                            />
                                                         </div>
                                                     </td>
                                                     <td className="p-2 text-center font-mono font-black text-blue-950 border-r border-slate-300">
-                                                        {sub.score.toFixed(1)}
+                                                        {Math.round(sub.score)}
                                                     </td>
                                                     <td className="p-2 text-center font-mono font-bold border-r border-slate-300">
                                                         <span className={sub.gap >= 0 ? "text-emerald-700" : "text-rose-700"}>
-                                                            {sub.gap >= 0 ? `+${sub.gap}` : sub.gap}
+                                                            {sub.gap >= 0 ? `+${Math.round(sub.gap)}` : Math.round(sub.gap)}
                                                         </span>
                                                     </td>
                                                     <td className="p-2 text-center font-bold text-[10px]">
-                                                        <span className={sub.isPassed ? "text-emerald-700" : "text-amber-700"}>
+                                                        <span
+                                                            className={`px-2 py-0.5 rounded-full ${sub.isPassed
+                                                                ? "bg-emerald-100 text-emerald-800"
+                                                                : "bg-amber-100 text-amber-800"
+                                                                }`}
+                                                        >
                                                             {sub.isPassed ? "Memenuhi PG" : "Perlu Bimbingan"}
                                                         </span>
                                                     </td>
@@ -1442,46 +1485,215 @@ export default function AdminAnalyticsPage() {
                                 </table>
                             </div>
 
-                            {/* GRAFIK & TABEL PROGRES PENGERJAAN LINTAS TRYOUT */}
-                            {reportDiagnostic.studentAttempts.length > 0 && (
-                                <div className="space-y-2 border border-slate-300 rounded-2xl p-3.5 bg-slate-50/40">
-                                    <div className="font-bold font-mono text-[11px] uppercase tracking-wide text-slate-900">
-                                        GRAFIK & RIWAYAT PROGRES PENGERJAAN TRYOUT ({reportDiagnostic.studentAttempts.length} SESI):
-                                    </div>
+                            {/* GRAFIK KURVA TREN & RIWAYAT PROGRES LINTAS TRYOUT */}
+                            {reportDiagnostic.studentAttempts.length > 0 && (() => {
+                                const recentAttempts = reportDiagnostic.studentAttempts.slice(-6);
+                                const firstScore = recentAttempts[0].unifiedScore;
+                                const lastScore = recentAttempts[recentAttempts.length - 1].unifiedScore;
+                                const netChange = lastScore - firstScore;
+                                const bestScore = Math.max(...recentAttempts.map((a) => a.unifiedScore));
+                                const avgAttemptScore = Math.round(
+                                    recentAttempts.reduce((sum, a) => sum + a.unifiedScore, 0) / recentAttempts.length
+                                );
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
-                                        {reportDiagnostic.studentAttempts.map((att, idx) => {
-                                            const prevScore = idx > 0 ? reportDiagnostic.studentAttempts[idx - 1].unifiedScore : null;
-                                            const diff = prevScore !== null ? att.unifiedScore - prevScore : null;
-                                            const heightPct = Math.min(100, Math.max(12, ((att.unifiedScore - 200) / 800) * 100));
+                                // Konfigurasi SVG Line Chart (600 x 165)
+                                const svgW = 600;
+                                const svgH = 165;
+                                const padL = 42;
+                                const padR = 28;
+                                const padT = 24;
+                                const padB = 34;
+                                const plotW = svgW - padL - padR;
+                                const plotH = svgH - padT - padB;
 
-                                            return (
-                                                <div key={att.id} className="bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3">
-                                                    <div className="space-y-0.5">
-                                                        <div className="text-[10px] font-mono font-bold text-slate-500">
-                                                            SESI #{idx + 1} • {att.paket.replace("_", " ")}
-                                                        </div>
-                                                        <div className="text-xl font-black font-mono text-blue-900">
-                                                            {att.unifiedScore}
-                                                        </div>
-                                                        <div className="text-[10px] font-mono text-slate-600">
-                                                            TPS: {att.unifiedTps} | Lit: {att.unifiedLit}
-                                                        </div>
-                                                        {diff !== null && (
-                                                            <div className={`text-[10px] font-mono font-bold ${diff >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
-                                                                {diff >= 0 ? `▲ Naik +${diff} poin` : `▼ Turun ${diff} poin`}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="w-6 h-16 bg-slate-100 rounded-lg flex items-end overflow-hidden border border-slate-200 shrink-0">
-                                                        <div className="w-full bg-blue-700 rounded-t-sm" style={{ height: `${heightPct}%` }} />
-                                                    </div>
+                                const points = recentAttempts.map((att, idx) => {
+                                    const x =
+                                        recentAttempts.length === 1
+                                            ? padL + plotW / 2
+                                            : padL + (idx / (recentAttempts.length - 1)) * plotW;
+                                    const normY = Math.min(1, Math.max(0, (att.unifiedScore - 200) / 800));
+                                    const y = padT + plotH - normY * plotH;
+                                    const prev = idx > 0 ? recentAttempts[idx - 1].unifiedScore : null;
+                                    const delta = prev !== null ? att.unifiedScore - prev : null;
+                                    return { ...att, x, y, delta, idx };
+                                });
+
+                                const linePath = points
+                                    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
+                                    .join(" ");
+
+                                const areaPath =
+                                    points.length > 1
+                                        ? `${linePath} L ${points[points.length - 1].x.toFixed(1)} ${(padT + plotH).toFixed(1)} L ${points[0].x.toFixed(1)} ${(padT + plotH).toFixed(1)} Z`
+                                        : "";
+
+                                const targetY = padT + plotH - ((650 - 200) / 800) * plotH;
+
+                                return (
+                                    <div className="space-y-3 border border-slate-300 rounded-2xl p-4 bg-slate-50/50">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2">
+                                            <div>
+                                                <div className="font-bold font-mono text-[11px] uppercase tracking-wide text-slate-900">
+                                                    GRAFIK KURVA PERKEMBANGAN SKOR LINTAS SESI ({recentAttempts.length} TRYOUT TERAKHIR)
                                                 </div>
-                                            );
-                                        })}
+                                                <div className="text-[10px] text-slate-500">
+                                                    Memantau konsistensi kenaikan nilai IRT & keseimbangan TPS vs Literasi antar-percobaan
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2 font-mono text-[10px]">
+                                                <span className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 font-bold text-slate-700">
+                                                    Tertinggi: <strong className="text-blue-900">{bestScore}</strong>
+                                                </span>
+                                                <span className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 font-bold text-slate-700">
+                                                    Rerata: <strong className="text-blue-900">{avgAttemptScore}</strong>
+                                                </span>
+                                                {recentAttempts.length >= 2 && (
+                                                    <span
+                                                        className={`px-2 py-0.5 rounded-lg font-bold ${netChange >= 0
+                                                            ? "bg-emerald-100 text-emerald-800"
+                                                            : "bg-rose-100 text-rose-800"
+                                                            }`}
+                                                    >
+                                                        Tren: {netChange >= 0 ? `+${netChange}` : netChange} poin
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* SVG Line + Area Chart */}
+                                        <div className="bg-white rounded-xl border border-slate-200 p-2.5">
+                                            <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full h-auto overflow-visible">
+                                                <defs>
+                                                    <linearGradient id="scoreAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="0%" stopColor="#1d4ed8" stopOpacity="0.22" />
+                                                        <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0.01" />
+                                                    </linearGradient>
+                                                </defs>
+
+                                                {/* Grid Horizontal Skala 200 - 1000 */}
+                                                {[200, 400, 600, 800, 1000].map((val) => {
+                                                    const gy = padT + plotH - ((val - 200) / 800) * plotH;
+                                                    return (
+                                                        <g key={val}>
+                                                            <line
+                                                                x1={padL}
+                                                                y1={gy}
+                                                                x2={svgW - padR}
+                                                                y2={gy}
+                                                                stroke="#e2e8f0"
+                                                                strokeWidth="1"
+                                                            />
+                                                            <text
+                                                                x={padL - 8}
+                                                                y={gy + 3}
+                                                                textAnchor="end"
+                                                                className="fill-slate-400 font-mono text-[9px]"
+                                                            >
+                                                                {val}
+                                                            </text>
+                                                        </g>
+                                                    );
+                                                })}
+
+                                                {/* Garis Ambang Target PG 650 */}
+                                                <line
+                                                    x1={padL}
+                                                    y1={targetY}
+                                                    x2={svgW - padR}
+                                                    y2={targetY}
+                                                    stroke="#e11d48"
+                                                    strokeWidth="1.2"
+                                                    strokeDasharray="4 3"
+                                                />
+                                                <text
+                                                    x={svgW - padR}
+                                                    y={targetY - 4}
+                                                    textAnchor="end"
+                                                    className="fill-rose-600 font-mono text-[8.5px] font-bold"
+                                                >
+                                                    Target PG (650)
+                                                </text>
+
+                                                {/* Area & Garis Kurva */}
+                                                {areaPath && <path d={areaPath} fill="url(#scoreAreaGrad)" />}
+                                                {points.length > 1 && (
+                                                    <path
+                                                        d={linePath}
+                                                        fill="none"
+                                                        stroke="#1e3a8a"
+                                                        strokeWidth="2.6"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                )}
+
+                                                {/* Titik Simpul & Label Nilai */}
+                                                {points.map((p) => (
+                                                    <g key={p.id}>
+                                                        <circle
+                                                            cx={p.x}
+                                                            cy={p.y}
+                                                            r="4.5"
+                                                            fill="#1e3a8a"
+                                                            stroke="#ffffff"
+                                                            strokeWidth="1.8"
+                                                        />
+                                                        <text
+                                                            x={p.x}
+                                                            y={p.y - 10}
+                                                            textAnchor="middle"
+                                                            className="fill-slate-900 font-mono text-[10px] font-black"
+                                                        >
+                                                            {p.unifiedScore}
+                                                            {p.delta !== null && p.delta !== 0
+                                                                ? ` (${p.delta > 0 ? `+${p.delta}` : p.delta})`
+                                                                : ""}
+                                                        </text>
+                                                        <text
+                                                            x={p.x}
+                                                            y={padT + plotH + 14}
+                                                            textAnchor="middle"
+                                                            className="fill-slate-700 font-mono text-[9px] font-bold"
+                                                        >
+                                                            Sesi #{p.idx + 1} ({p.paket.replace("_", " ")})
+                                                        </text>
+                                                        <text
+                                                            x={p.x}
+                                                            y={padT + plotH + 25}
+                                                            textAnchor="middle"
+                                                            className="fill-slate-400 font-mono text-[8px]"
+                                                        >
+                                                            TPS:{p.unifiedTps} | Lit:{p.unifiedLit}
+                                                        </text>
+                                                    </g>
+                                                ))}
+                                            </svg>
+                                        </div>
+
+                                        {/* Telaah Otomatis Dinamika Progres */}
+                                        <div className="p-2.5 rounded-xl bg-white border border-slate-200 text-[11px] text-slate-700 leading-relaxed">
+                                            <strong className="font-mono text-slate-900 uppercase text-[10px]">Telaah Progres: </strong>
+                                            {recentAttempts.length === 1 ? (
+                                                <span>
+                                                    Peserta baru menyelesaikan <strong>1 sesi tryout</strong> dengan skor dasar <strong>{lastScore}</strong> (TPS: {recentAttempts[0].unifiedTps}, Literasi: {recentAttempts[0].unifiedLit}). Hasil ini menjadi titik awal pemetaan sebelum mengikuti sesi berikutnya.
+                                                </span>
+                                            ) : netChange > 0 ? (
+                                                <span>
+                                                    Terjadi tren <strong>kenaikan positif sebesar +{netChange} poin</strong> dari sesi awal (<strong>{firstScore}</strong>) ke sesi terakhir (<strong>{lastScore}</strong>). Konsistensi latihan pada subtes lemah akan mempercepat pencapaian target PG 650.
+                                                </span>
+                                            ) : netChange < 0 ? (
+                                                <span>
+                                                    Skor mengalami <strong>penurunan sebesar {netChange} poin</strong> dibanding sesi awal (<strong>{firstScore}</strong> ke <strong>{lastScore}</strong>). Perlu evaluasi manajemen waktu pengerjaan dan ketelitian pada soal-soal penalaran.
+                                                </span>
+                                            ) : (
+                                                <span>
+                                                    Performa siswa berada pada fase <strong>stagnan ({lastScore} poin)</strong> antar-sesi. Diperlukan variasi strategi belajar dan klinik pembahasan soal HOTS agar skor dapat menembus ambang batas baru.
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                );
+                            })()}
 
                             {/* CATATAN & REKOMENDASI PEMBINAAN */}
                             <div className="space-y-1">
