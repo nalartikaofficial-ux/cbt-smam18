@@ -625,6 +625,7 @@ function OfficialExamChamberContent() {
         };
     }, [isInExam, isSyncingServer, isExamCompleted, recordViolation]);
 
+    // KALKULASI TUNGGAL (100% SERAGAM UNTUK MURID, PROKTOR, & DASHBOARD ANALISIS)
     const scoreResults = useMemo(() => {
         let correct = 0;
         let incorrect = 0;
@@ -666,16 +667,17 @@ function OfficialExamChamberContent() {
             item.scoreIRT = Math.round(200 + ratio * 650);
         });
 
-        const scaledScore = Math.round(200 + (correct / (allQuestions.length || 1)) * 650);
-
         const tpsCodes = ["PU", "PPU", "PBM", "PK"];
         const litCodes = ["LIT_INDO", "LIT_ENG", "PM"];
 
         const tpsScores = tpsCodes.map((c) => subtestBreakdown[c]?.scoreIRT || 200);
-        const tpsAvg = Math.round(tpsScores.reduce((a, b) => a + b, 0) / (tpsScores.length || 1));
+        const tpsAvg = Math.round(tpsScores.reduce((a, b) => a + b, 0) / tpsCodes.length);
 
         const litScores = litCodes.map((c) => subtestBreakdown[c]?.scoreIRT || 200);
-        const litAvg = Math.round(litScores.reduce((a, b) => a + b, 0) / (litScores.length || 1));
+        const litAvg = Math.round(litScores.reduce((a, b) => a + b, 0) / litCodes.length);
+
+        const allSevenScores = [...tpsScores, ...litScores];
+        const scaledScore = Math.round(allSevenScores.reduce((a, b) => a + b, 0) / allSevenScores.length);
 
         return {
             correct,
@@ -690,9 +692,10 @@ function OfficialExamChamberContent() {
         };
     }, [answers, allQuestions, subtestsList]);
 
-    const executeFinalSubmission = () => {
+    const executeFinalSubmission = async () => {
         setShowSubtestConfirmModal(false);
         setIsWaitingNextSubtest(false);
+        setIsSyncingServer(true);
 
         const now = new Date();
         const timeStr = `${now.getHours().toString().padStart(2, "0")}:${now
@@ -727,37 +730,39 @@ function OfficialExamChamberContent() {
         if (cleanNisn) {
             localStorage.removeItem(`cbt_progress_${cleanNisn}`);
 
-            fetch("/api/students", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    action: "finish_exam",
-                    student: {
-                        nisn: cleanNisn,
-                        nama: studentSession?.candidateName || "-",
-                        kelas: studentSession?.kelas || "XII",
-                        paket: studentSession?.packageId || "PAKET_1",
-                        score: scoreResults.scaledScore,
-                        nilai_tps: scoreResults.tpsAvg,
-                        nilai_literasi: scoreResults.litAvg,
-                        skor_pu: scoreResults.subtestBreakdown["PU"]?.scoreIRT || 200,
-                        skor_ppu: scoreResults.subtestBreakdown["PPU"]?.scoreIRT || 200,
-                        skor_pbm: scoreResults.subtestBreakdown["PBM"]?.scoreIRT || 200,
-                        skor_pk: scoreResults.subtestBreakdown["PK"]?.scoreIRT || 200,
-                        skor_lit_indo: scoreResults.subtestBreakdown["LIT_INDO"]?.scoreIRT || 200,
-                        skor_lit_eng: scoreResults.subtestBreakdown["LIT_ENG"]?.scoreIRT || 200,
-                        skor_pm: scoreResults.subtestBreakdown["PM"]?.scoreIRT || 200,
-                        benar: scoreResults.correct,
-                        salah: scoreResults.incorrect,
-                        kosong: scoreResults.unattempted,
-                        violations: violationCount,
-                        waktu_mulai: examStartTimeStr || "-",
-                        waktu_selesai: timeStr,
-                        pilihan_kampus_1: pilihanKampus1 || "-",
-                        pilihan_kampus_2: pilihanKampus2 || "-"
-                    }
-                })
-            }).catch(() => { });
+            try {
+                await fetch("/api/students", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "finish_exam",
+                        student: {
+                            nisn: cleanNisn,
+                            nama: studentSession?.candidateName || "-",
+                            kelas: studentSession?.kelas || "XII",
+                            paket: studentSession?.packageId || "PAKET_1",
+                            score: scoreResults.scaledScore,
+                            nilai_tps: scoreResults.tpsAvg,
+                            nilai_literasi: scoreResults.litAvg,
+                            skor_pu: scoreResults.subtestBreakdown["PU"]?.scoreIRT || 200,
+                            skor_ppu: scoreResults.subtestBreakdown["PPU"]?.scoreIRT || 200,
+                            skor_pbm: scoreResults.subtestBreakdown["PBM"]?.scoreIRT || 200,
+                            skor_pk: scoreResults.subtestBreakdown["PK"]?.scoreIRT || 200,
+                            skor_lit_indo: scoreResults.subtestBreakdown["LIT_INDO"]?.scoreIRT || 200,
+                            skor_lit_eng: scoreResults.subtestBreakdown["LIT_ENG"]?.scoreIRT || 200,
+                            skor_pm: scoreResults.subtestBreakdown["PM"]?.scoreIRT || 200,
+                            benar: scoreResults.correct,
+                            salah: scoreResults.incorrect,
+                            kosong: scoreResults.unattempted,
+                            violations: violationCount,
+                            waktu_mulai: examStartTimeStr || "-",
+                            waktu_selesai: timeStr,
+                            pilihan_kampus_1: pilihanKampus1 || "-",
+                            pilihan_kampus_2: pilihanKampus2 || "-"
+                        }
+                    })
+                });
+            } catch { }
         }
 
         safeExitFullscreen();
@@ -901,7 +906,6 @@ function OfficialExamChamberContent() {
         const targetRumpun = benchmarkData1?.rumpun || benchmarkData2?.rumpun || null;
         const studentScore = scoreResults.scaledScore;
 
-        // Daftar kata kunci PTN/Politeknik di Wilayah Jabodetabek, Banten, Jabar, & Pulau Jawa
         const jabodetabekJabarKeywords = [
             "indonesia", "jakarta", "unj", "upn \"veteran\" jakarta", "upnvj", "ipb", "bogor",
             "tirtayasa", "untirta", "singaperbangsa", "unsika", "padjadjaran", "unpad",
@@ -918,9 +922,9 @@ function OfficialExamChamberContent() {
 
         const getRegionBonus = (kampusName: string) => {
             const k = kampusName.toLowerCase();
-            if (jabodetabekJabarKeywords.some((kw) => k.includes(kw))) return 80; // Prioritas Utama (Dekat Jakarta)
-            if (jawaLainnyaKeywords.some((kw) => k.includes(kw))) return 55;     // Prioritas Kedua (Pulau Jawa)
-            return -50; // Luar Pulau Jawa (hindari kecuali terpaksa)
+            if (jabodetabekJabarKeywords.some((kw) => k.includes(kw))) return 80;
+            if (jawaLainnyaKeywords.some((kw) => k.includes(kw))) return 55;
+            return -50;
         };
 
         const candidates = ptnBenchmarks.filter((b) => {
@@ -934,24 +938,20 @@ function OfficialExamChamberContent() {
             const prodiLower = b.prodi.toLowerCase();
             let relevanceScore = getRegionBonus(b.kampus);
 
-            // 1. Kecocokan nama prodi / kata kunci jurusan
             if (p1Parsed?.cleanProdi && prodiLower.includes(p1Parsed.cleanProdi)) relevanceScore += 60;
             if (p2Parsed?.cleanProdi && prodiLower.includes(p2Parsed.cleanProdi)) relevanceScore += 45;
             rawKeywords.forEach((kw) => {
                 if (prodiLower.includes(kw)) relevanceScore += 25;
             });
 
-            // 2. Kecocokan rumpun (SAINTEK / SOSHUM)
             if (targetRumpun && b.rumpun === targetRumpun) relevanceScore += 20;
 
-            // 3. Kedekatan passing grade dengan skor siswa
             const diff = studentScore - b.passingGradeMin;
             const gapPenalty = Math.abs(diff);
             const feasibilityBonus = diff >= 0 ? 30 : diff >= -45 ? 15 : 0;
 
             const totalRankScore = relevanceScore + feasibilityBonus - gapPenalty * 0.12;
 
-            // Hitung keketatan akurat dari dayaTampung / peminat jika data tersedia
             const computedKeketatan =
                 b.peminat > 0 && b.dayaTampung > 0
                     ? `${((b.dayaTampung / b.peminat) * 100).toFixed(2)}%`
@@ -996,7 +996,6 @@ function OfficialExamChamberContent() {
         return top3UniqueCampus;
     }, [ptnBenchmarks, pilihanKampus1, pilihanKampus2, benchmarkData1, benchmarkData2, scoreResults.scaledScore, parseTargetSelection]);
 
-    // Cetak Rapor Instan (Menyalin stylesheet halaman langsung agar tampilan berwarna & kop surat tetap utuh 100%)
     const handleInstantPrint = () => {
         const printContent = document.getElementById("printable-exam-report");
         if (!printContent) {
@@ -1040,7 +1039,7 @@ function OfficialExamChamberContent() {
         }
     };
 
-    // TAHAP 1: GERBANG KARANTINA (DITAMBAHKAN BLOKIR JIKA SUDAH SELESAI DI SERVER)
+    // TAHAP 1: GERBANG KARANTINA
     if (!isInExam) {
         return (
             <div className="min-h-screen bg-slate-100 flex items-center justify-center p-3.5 sm:p-6 font-sans text-slate-800">
@@ -1472,7 +1471,7 @@ function OfficialExamChamberContent() {
         );
     }
 
-    // TAHAP 4: RAPOR SKOR LENGKAP & EVALUASI DIAGNOSTIK (100% UTUH)
+    // TAHAP 4: RAPOR SKOR LENGKAP & EVALUASI DIAGNOSTIK
     if (isExamCompleted) {
         const p1Eval = benchmarkData1 ? renderAdmissionProbabilityBadge(benchmarkData1.passingGradeMin, scoreResults.scaledScore) : null;
         const p2Eval = benchmarkData2 ? renderAdmissionProbabilityBadge(benchmarkData2.passingGradeMin, scoreResults.scaledScore) : null;
@@ -1913,9 +1912,8 @@ function OfficialExamChamberContent() {
                             };
                         });
 
-                        // Konfigurasi Radar Chart (SVG 280x260)
-                        const cx = 140;
-                        const cy = 130;
+                        const cx = 150;
+                        const cy = 142;
                         const maxR = 88;
                         const totalAxes = chartData.length;
 
@@ -1926,8 +1924,8 @@ function OfficialExamChamberContent() {
                             return {
                                 x: cx + r * Math.cos(angle),
                                 y: cy + r * Math.sin(angle),
-                                labelX: cx + (maxR + 22) * Math.cos(angle),
-                                labelY: cy + (maxR + 18) * Math.sin(angle)
+                                labelX: cx + (maxR + 24) * Math.cos(angle),
+                                labelY: cy + (maxR + 20) * Math.sin(angle)
                             };
                         };
 
@@ -1945,7 +1943,6 @@ function OfficialExamChamberContent() {
                             })
                             .join(" ");
 
-                        // Posisi garis horizontal pada Column Chart (tinggi area plot = 150px)
                         const plotHeight = 150;
                         const getBarHeight = (val: number) => Math.max(8, Math.min(plotHeight, ((val - 200) / 800) * plotHeight));
                         const target1Bottom = getBarHeight(target1);
@@ -1990,7 +1987,6 @@ function OfficialExamChamberContent() {
 
                                         <div className="flex justify-center py-1">
                                             <svg viewBox="0 0 300 285" className="w-full max-w-[285px] h-auto overflow-visible">
-                                                {/* Jaring Konsentris + Angka Skala (400, 600, 800, 1000) */}
                                                 {[400, 600, 800, 1000].map((ringVal) => {
                                                     const ringPts = chartData
                                                         .map((_, i) => {
@@ -2018,7 +2014,6 @@ function OfficialExamChamberContent() {
                                                     );
                                                 })}
 
-                                                {/* Garis Sumbu & Label Subtes + Angka Skor Aktual */}
                                                 {chartData.map((d, i) => {
                                                     const outer = getPoint(i, 1000);
                                                     const isAboveP1 = d.score >= target1;
@@ -2054,7 +2049,6 @@ function OfficialExamChamberContent() {
                                                     );
                                                 })}
 
-                                                {/* Poligon Target Passing Grade Pilihan 1 */}
                                                 <polygon
                                                     points={targetPolygon}
                                                     fill="rgba(225, 29, 72, 0.05)"
@@ -2063,7 +2057,6 @@ function OfficialExamChamberContent() {
                                                     strokeDasharray="4 3"
                                                 />
 
-                                                {/* Poligon Skor Aktual Siswa */}
                                                 <polygon
                                                     points={studentPolygon}
                                                     fill="rgba(37, 99, 235, 0.25)"
@@ -2071,7 +2064,6 @@ function OfficialExamChamberContent() {
                                                     strokeWidth="2.2"
                                                 />
 
-                                                {/* Titik Simpul Skor Siswa */}
                                                 {chartData.map((d, i) => {
                                                     const pt = getPoint(i, d.score);
                                                     return (
@@ -2089,7 +2081,6 @@ function OfficialExamChamberContent() {
                                             </svg>
                                         </div>
 
-                                        {/* Kotak Telaah Radar Otomatis */}
                                         {(() => {
                                             const passedCount = chartData.filter((d) => d.score >= target1).length;
                                             const scoresOnly = chartData.map((d) => d.score);
@@ -2127,7 +2118,6 @@ function OfficialExamChamberContent() {
                                         </div>
 
                                         <div className="relative pt-6 pb-1 pl-8 pr-2">
-                                            {/* Label Skala Y */}
                                             <div className="absolute left-0 top-6 bottom-7 flex flex-col justify-between text-[9px] font-mono text-slate-400">
                                                 <span>1000</span>
                                                 <span>800</span>
@@ -2136,12 +2126,10 @@ function OfficialExamChamberContent() {
                                                 <span>200</span>
                                             </div>
 
-                                            {/* Area Plot Batang */}
                                             <div
                                                 className="relative border-l border-b border-slate-300 grid grid-cols-7 gap-2 sm:gap-3 items-end px-2"
                                                 style={{ height: `${plotHeight}px` }}
                                             >
-                                                {/* Garis Grid Horizontal Latar */}
                                                 {[25, 50, 75, 100].map((pct) => (
                                                     <div
                                                         key={pct}
@@ -2150,7 +2138,6 @@ function OfficialExamChamberContent() {
                                                     />
                                                 ))}
 
-                                                {/* Garis Target Pilihan 2 */}
                                                 {target2 !== target1 && (
                                                     <div
                                                         className="absolute inset-x-0 border-t-2 border-dashed border-amber-500 z-10 pointer-events-none"
@@ -2162,7 +2149,6 @@ function OfficialExamChamberContent() {
                                                     </div>
                                                 )}
 
-                                                {/* Garis Target Pilihan 1 */}
                                                 <div
                                                     className="absolute inset-x-0 border-t-2 border-dashed border-rose-600 z-10 pointer-events-none"
                                                     style={{ bottom: `${target1Bottom}px` }}
@@ -2172,7 +2158,6 @@ function OfficialExamChamberContent() {
                                                     </span>
                                                 </div>
 
-                                                {/* Batang Skor Tiap Subtes */}
                                                 {chartData.map((d) => {
                                                     const barH = getBarHeight(d.score);
                                                     const barGradient =
@@ -2197,7 +2182,6 @@ function OfficialExamChamberContent() {
                                                 })}
                                             </div>
 
-                                            {/* Label Sumbu X di Bawah Garis */}
                                             <div className="grid grid-cols-7 gap-2 sm:gap-3 px-2 pt-1.5 text-center">
                                                 {chartData.map((d) => (
                                                     <span key={d.code} className="text-[9px] sm:text-[9.5px] font-mono font-bold text-slate-700 truncate">
@@ -2378,7 +2362,7 @@ function OfficialExamChamberContent() {
                         </div>
                     </div>
 
-                    {/* 14. FOOTER ACTION (Hanya Kembali ke Halaman Utama, tanpa tombol Ulangi Sesi bagi siswa) */}
+                    {/* 14. FOOTER ACTION */}
                     <div className="pt-2 border-t flex flex-col sm:flex-row items-center justify-end gap-3 print-hidden">
                         <button
                             onClick={handleExitToHome}
@@ -2403,10 +2387,9 @@ function OfficialExamChamberContent() {
         );
     }
 
-    // TAHAP 2 & 3: BILIK SOAL (RESPONSIF MOBILE / TABLET / DESKTOP)
+    // TAHAP 2 & 3: BILIK SOAL
     return (
         <div className="min-h-screen bg-slate-100 flex flex-col font-sans select-none text-slate-800 relative pb-20 lg:pb-6 text-left">
-            {/* DRAWER MATRIX KISI-KISI KHUSUS TABLET & HP */}
             {showMobileMatrix && (
                 <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex flex-col justify-end lg:hidden animate-in fade-in">
                     <div className="bg-white rounded-t-3xl border-t border-slate-200 p-5 space-y-4 max-h-[80vh] flex flex-col shadow-2xl">
@@ -2520,7 +2503,6 @@ function OfficialExamChamberContent() {
                         ))}
                     </div>
 
-                    {/* TOMBOL BUKA KISI-KISI DI HP & TABLET */}
                     <button
                         onClick={() => setShowMobileMatrix(true)}
                         className="lg:hidden px-2.5 py-1.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1 cursor-pointer"
@@ -2621,7 +2603,7 @@ function OfficialExamChamberContent() {
                                 : "bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-900"
                                 }`}
                         >
-                            {doubtfuls[currentQ?.id] ? "âœ“ Ragu-Ragu (Ditandai)" : "Ragu-Ragu"}
+                            {doubtfuls[currentQ?.id] ? "✓ Ragu-Ragu (Ditandai)" : "Ragu-Ragu"}
                         </button>
 
                         <button
@@ -2695,7 +2677,7 @@ function OfficialExamChamberContent() {
                         : "bg-amber-50 border-amber-300 text-amber-900"
                         }`}
                 >
-                    {doubtfuls[currentQ?.id] ? "âœ“ Ragu" : "Ragu"}
+                    {doubtfuls[currentQ?.id] ? "✓ Ragu" : "Ragu"}
                 </button>
 
                 <button
