@@ -42,6 +42,15 @@ export interface StudentItem {
     status: string;
     violations: number;
     score: number;
+    nilai_tps?: number;
+    nilai_literasi?: number;
+    skor_pu?: number;
+    skor_ppu?: number;
+    skor_pbm?: number;
+    skor_pk?: number;
+    skor_lit_indo?: number;
+    skor_lit_eng?: number;
+    skor_pm?: number;
     subtesAktif?: string;
     waktu_selesai?: string;
 }
@@ -53,6 +62,57 @@ export interface MasterSession {
     status_akses: "DIBUKA" | "TERKUNCI" | "SELESAI";
     waktu_mulai: string;
     waktu_selesai: string;
+}
+
+function normalizeSubtest(val: unknown): number {
+    const n = Number(val);
+    if (!n || isNaN(n)) return 200;
+    return Math.max(200, Math.min(1000, Math.round(n)));
+}
+
+// Kalkulasi tunggal (100% identik dengan Layar Siswa & Dashboard Analisis)
+function getUnifiedScore(item: Partial<StudentItem>): number {
+    const subs = [
+        Number(item.skor_pu) || 0,
+        Number(item.skor_ppu) || 0,
+        Number(item.skor_pbm) || 0,
+        Number(item.skor_pk) || 0,
+        Number(item.skor_lit_indo) || 0,
+        Number(item.skor_lit_eng) || 0,
+        Number(item.skor_pm) || 0
+    ];
+    if (subs.some((v) => v > 0)) {
+        const normalized = subs.map((v) => normalizeSubtest(v));
+        return Math.round(normalized.reduce((a, b) => a + b, 0) / 7);
+    }
+    return Math.round(Number(item.score) || 0);
+}
+
+function getUnifiedTps(item: Partial<StudentItem>): number {
+    const tps = [
+        Number(item.skor_pu) || 0,
+        Number(item.skor_ppu) || 0,
+        Number(item.skor_pbm) || 0,
+        Number(item.skor_pk) || 0
+    ];
+    if (tps.some((v) => v > 0)) {
+        const normalized = tps.map((v) => normalizeSubtest(v));
+        return Math.round(normalized.reduce((a, b) => a + b, 0) / 4);
+    }
+    return Math.round(Number(item.nilai_tps) || 0);
+}
+
+function getUnifiedLiterasi(item: Partial<StudentItem>): number {
+    const lit = [
+        Number(item.skor_lit_indo) || 0,
+        Number(item.skor_lit_eng) || 0,
+        Number(item.skor_pm) || 0
+    ];
+    if (lit.some((v) => v > 0)) {
+        const normalized = lit.map((v) => normalizeSubtest(v));
+        return Math.round(normalized.reduce((a, b) => a + b, 0) / 3);
+    }
+    return Math.round(Number(item.nilai_literasi) || 0);
 }
 
 function formatScheduleIndonesia(startStr: string, endStr: string): string {
@@ -170,6 +230,15 @@ export default function ProctorMasterDashboard() {
                     status: String(item.status || "Belum Hadir").trim(),
                     violations: Number(item.violations || 0),
                     score: Number(item.score || 0),
+                    nilai_tps: Number(item.nilai_tps || 0),
+                    nilai_literasi: Number(item.nilai_literasi || 0),
+                    skor_pu: Number(item.skor_pu || 0),
+                    skor_ppu: Number(item.skor_ppu || 0),
+                    skor_pbm: Number(item.skor_pbm || 0),
+                    skor_pk: Number(item.skor_pk || 0),
+                    skor_lit_indo: Number(item.skor_lit_indo || 0),
+                    skor_lit_eng: Number(item.skor_lit_eng || 0),
+                    skor_pm: Number(item.skor_pm || 0),
                     waktu_selesai: String(item.waktu_selesai || "-").trim()
                 }));
                 setStudents(cleanList);
@@ -356,7 +425,22 @@ export default function ProctorMasterDashboard() {
             setStudents((prev) =>
                 prev.map((s) =>
                     s.nisn === student.nisn
-                        ? { ...s, status: "Belum Hadir", violations: 0, score: 0, waktu_selesai: "-" }
+                        ? {
+                            ...s,
+                            status: "Belum Hadir",
+                            violations: 0,
+                            score: 0,
+                            nilai_tps: 0,
+                            nilai_literasi: 0,
+                            skor_pu: 0,
+                            skor_ppu: 0,
+                            skor_pbm: 0,
+                            skor_pk: 0,
+                            skor_lit_indo: 0,
+                            skor_lit_eng: 0,
+                            skor_pm: 0,
+                            waktu_selesai: "-"
+                        }
                         : s
                 )
             );
@@ -583,6 +667,12 @@ export default function ProctorMasterDashboard() {
         });
     }, [students, searchQuery, filterStatus, filterKelas]);
 
+    const rankedFinishedStudents = useMemo(() => {
+        return students
+            .filter((s) => s.status.toLowerCase().includes("selesai") || Number(s.score) > 0)
+            .sort((a, b) => getUnifiedScore(b) - getUnifiedScore(a));
+    }, [students]);
+
     if (!isAuthorized) {
         return <div className="min-h-screen bg-slate-900" />;
     }
@@ -682,8 +772,8 @@ export default function ProctorMasterDashboard() {
                             type="button"
                             onClick={toggleSessionLock}
                             className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition-all ${masterSession.status_akses === "DIBUKA"
-                                    ? "bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100"
-                                    : "bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100"
+                                ? "bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100"
+                                : "bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100"
                                 }`}
                         >
                             {masterSession.status_akses === "DIBUKA" ? (
@@ -742,8 +832,8 @@ export default function ProctorMasterDashboard() {
                                     Status Sesi:{" "}
                                     <strong
                                         className={`px-2 py-0.5 rounded font-mono text-[11px] ${masterSession.status_akses === "DIBUKA"
-                                                ? "bg-emerald-500/30 text-emerald-300 border border-emerald-400/40"
-                                                : "bg-rose-500/30 text-rose-300 border border-rose-400/40"
+                                            ? "bg-emerald-500/30 text-emerald-300 border border-emerald-400/40"
+                                            : "bg-rose-500/30 text-rose-300 border border-rose-400/40"
                                             }`}
                                     >
                                         {masterSession.status_akses}
@@ -1088,12 +1178,12 @@ export default function ProctorMasterDashboard() {
                                                 <td className="p-3.5">
                                                     <span
                                                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${s.status.toLowerCase().includes("mengerjakan")
-                                                                ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                                                : s.status.toLowerCase().includes("selesai") || s.score > 0
-                                                                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                                                    : s.status.toLowerCase().includes("kunci") || s.violations >= 3
-                                                                        ? "bg-rose-100 text-rose-800 border border-rose-300"
-                                                                        : "bg-slate-100 text-slate-600 border border-slate-200"
+                                                            ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                                            : s.status.toLowerCase().includes("selesai") || s.score > 0
+                                                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                                                : s.status.toLowerCase().includes("kunci") || s.violations >= 3
+                                                                    ? "bg-rose-100 text-rose-800 border border-rose-300"
+                                                                    : "bg-slate-100 text-slate-600 border border-slate-200"
                                                             }`}
                                                     >
                                                         {s.status}
@@ -1479,7 +1569,7 @@ export default function ProctorMasterDashboard() {
                                         <tbody>
                                             <tr className="border-b border-slate-200">
                                                 <td className="w-[30%] py-2 px-3 font-semibold bg-slate-50/70 border-r border-slate-200">Paket Soal Ujian</td>
-                                                <td className="w-[70%] py-2 px-3 font-bold font-mono">: {masterSession.paket_aktif} â€” {masterSession.nama_paket}</td>
+                                                <td className="w-[70%] py-2 px-3 font-bold font-mono">: {masterSession.paket_aktif} — {masterSession.nama_paket}</td>
                                             </tr>
                                             <tr className="border-b border-slate-200">
                                                 <td className="py-2 px-3 font-semibold bg-slate-50/70 border-r border-slate-200">Ruang / Tempat Ujian</td>
@@ -1515,7 +1605,7 @@ export default function ProctorMasterDashboard() {
                                     <div>
                                         <p className="font-bold mb-1.5">Catatan Khusus Selama Pelaksanaan Ujian:</p>
                                         <div className="p-3.5 border border-slate-400 print:border-black min-h-[48px] text-xs italic bg-slate-50/40">
-                                            â€œ{bapData.catatanKhusus}â€
+                                            “{bapData.catatanKhusus}”
                                         </div>
                                     </div>
 
@@ -1546,14 +1636,14 @@ export default function ProctorMasterDashboard() {
                     </div>
                 )}
 
-                {/* TAB 4: REKAPITULASI NILAI IRT */}
+                {/* TAB 4: REKAPITULASI NILAI IRT (TERSERAGAMKAN 100% DENGAN MURID & DASHBOARD) */}
                 {activeTab === "scores" && (
                     <div className="space-y-6 text-left">
                         <div className="print-hidden bg-white rounded-3xl border border-slate-200 p-5 sm:p-7 space-y-4 shadow-sm">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                                 <div>
                                     <h3 className="text-base font-black text-slate-900">Buku Nilai Rekapitulasi IRT 3-Parameter</h3>
-                                    <p className="text-xs text-slate-500">Skor terhitung otomatis pada skala resmi nasional (200 s.d. 1000).</p>
+                                    <p className="text-xs text-slate-500">Skor terhitung seragam pada skala resmi nasional (200 s.d. 1000).</p>
                                 </div>
                                 <button
                                     onClick={() => window.print()}
@@ -1565,7 +1655,7 @@ export default function ProctorMasterDashboard() {
                             </div>
 
                             <div className="overflow-x-auto rounded-2xl border border-slate-200">
-                                <table className="w-full text-left text-xs border-collapse min-w-[680px]">
+                                <table className="w-full text-left text-xs border-collapse min-w-[740px]">
                                     <thead className="bg-slate-50 border-b border-slate-200 font-mono text-[11px] text-slate-600">
                                         <tr>
                                             <th className="p-3.5">Peringkat</th>
@@ -1573,35 +1663,36 @@ export default function ProctorMasterDashboard() {
                                             <th className="p-3.5">Nama Peserta</th>
                                             <th className="p-3.5">Kelas</th>
                                             <th className="p-3.5 text-center">Skor Akhir IRT</th>
+                                            <th className="p-3.5 text-center">TPS / Literasi</th>
                                             <th className="p-3.5">Integritas</th>
                                             <th className="p-3.5 text-center">Waktu Selesai</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 font-medium">
-                                        {students
-                                            .filter((s) => s.status.toLowerCase().includes("selesai") || Number(s.score) > 0)
-                                            .sort((a, b) => Number(b.score) - Number(a.score))
-                                            .map((s, idx) => (
-                                                <tr key={s.nisn} className="hover:bg-slate-50">
-                                                    <td className="p-3.5 font-mono font-bold text-blue-700">#{idx + 1}</td>
-                                                    <td className="p-3.5 font-mono font-bold">{s.nisn}</td>
-                                                    <td className="p-3.5 font-bold text-slate-900">{s.nama}</td>
-                                                    <td className="p-3.5 font-mono text-slate-600">{s.kelas}</td>
-                                                    <td className="p-3.5 font-mono font-black text-sm text-blue-800 text-center">
-                                                        {Number(s.score || 0).toFixed(1)}
-                                                    </td>
-                                                    <td className="p-3.5 text-emerald-700 font-bold">
-                                                        {s.violations === 0 ? "Bersih (0)" : `${s.violations}x Pelanggaran`}
-                                                    </td>
-                                                    <td className="p-3.5 font-mono text-center text-slate-500">
-                                                        {s.waktu_selesai || "-"}
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                        {rankedFinishedStudents.map((s, idx) => (
+                                            <tr key={s.nisn} className="hover:bg-slate-50">
+                                                <td className="p-3.5 font-mono font-bold text-blue-700">#{idx + 1}</td>
+                                                <td className="p-3.5 font-mono font-bold">{s.nisn}</td>
+                                                <td className="p-3.5 font-bold text-slate-900">{s.nama}</td>
+                                                <td className="p-3.5 font-mono text-slate-600">{s.kelas}</td>
+                                                <td className="p-3.5 font-mono font-black text-sm text-blue-800 text-center">
+                                                    {getUnifiedScore(s)}
+                                                </td>
+                                                <td className="p-3.5 font-mono text-xs text-slate-600 text-center">
+                                                    {getUnifiedTps(s)} / {getUnifiedLiterasi(s)}
+                                                </td>
+                                                <td className="p-3.5 text-emerald-700 font-bold">
+                                                    {s.violations === 0 ? "Bersih (0)" : `${s.violations}x Pelanggaran`}
+                                                </td>
+                                                <td className="p-3.5 font-mono text-center text-slate-500">
+                                                    {s.waktu_selesai || "-"}
+                                                </td>
+                                            </tr>
+                                        ))}
 
-                                        {students.filter((s) => s.status.toLowerCase().includes("selesai") || Number(s.score) > 0).length === 0 && (
+                                        {rankedFinishedStudents.length === 0 && (
                                             <tr>
-                                                <td colSpan={7} className="text-center py-6 text-slate-400 font-medium">
+                                                <td colSpan={8} className="text-center py-6 text-slate-400 font-medium">
                                                     Belum ada peserta yang menyelesaikan ujian pada sesi ini.
                                                 </td>
                                             </tr>
@@ -1649,26 +1740,25 @@ export default function ProctorMasterDashboard() {
                                         <th style={{ width: "95px" }}>NISN</th>
                                         <th>Nama Lengkap Peserta</th>
                                         <th style={{ width: "85px" }}>Kelas</th>
-                                        <th style={{ width: "85px" }}>Skor IRT</th>
-                                        <th style={{ width: "95px" }}>Integritas</th>
-                                        <th style={{ width: "70px" }}>Waktu</th>
+                                        <th style={{ width: "75px" }}>Skor IRT</th>
+                                        <th style={{ width: "85px" }}>TPS / Lit</th>
+                                        <th style={{ width: "90px" }}>Integritas</th>
+                                        <th style={{ width: "65px" }}>Waktu</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {students
-                                        .filter((s) => s.status.toLowerCase().includes("selesai") || Number(s.score) > 0)
-                                        .sort((a, b) => Number(b.score) - Number(a.score))
-                                        .map((s, idx) => (
-                                            <tr key={s.nisn}>
-                                                <td style={{ textAlign: "center" }}>{idx + 1}</td>
-                                                <td style={{ fontFamily: "monospace", textAlign: "center" }}>{s.nisn}</td>
-                                                <td style={{ fontWeight: "bold" }}>{s.nama}</td>
-                                                <td style={{ textAlign: "center" }}>{s.kelas}</td>
-                                                <td style={{ textAlign: "center", fontWeight: "bold" }}>{Number(s.score || 0).toFixed(1)}</td>
-                                                <td style={{ textAlign: "center" }}>{s.violations === 0 ? "Bersih" : `${s.violations}x Pelanggaran`}</td>
-                                                <td style={{ textAlign: "center" }}>{s.waktu_selesai || "-"}</td>
-                                            </tr>
-                                        ))}
+                                    {rankedFinishedStudents.map((s, idx) => (
+                                        <tr key={s.nisn}>
+                                            <td style={{ textAlign: "center" }}>{idx + 1}</td>
+                                            <td style={{ fontFamily: "monospace", textAlign: "center" }}>{s.nisn}</td>
+                                            <td style={{ fontWeight: "bold" }}>{s.nama}</td>
+                                            <td style={{ textAlign: "center" }}>{s.kelas}</td>
+                                            <td style={{ textAlign: "center", fontWeight: "bold" }}>{getUnifiedScore(s)}</td>
+                                            <td style={{ textAlign: "center", fontFamily: "monospace" }}>{getUnifiedTps(s)} / {getUnifiedLiterasi(s)}</td>
+                                            <td style={{ textAlign: "center" }}>{s.violations === 0 ? "Bersih" : `${s.violations}x Pelanggaran`}</td>
+                                            <td style={{ textAlign: "center" }}>{s.waktu_selesai || "-"}</td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
 
