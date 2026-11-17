@@ -508,6 +508,8 @@ function WordImporterSection({
                 current = null;
             };
 
+            let sharedStimulusRange: { start: number; end: number; text: string } | null = null;
+
             blocks.forEach((block) => {
                 const { text, imgUrl } = block;
 
@@ -520,6 +522,11 @@ function WordImporterSection({
                 }
                 if (!text) return;
 
+                // Abaikan judul dokumen / header umum di bagian paling atas file
+                if (/^(?:naskah\s+resmi|sma\s+muhammadiyah|simulasi\s+cbt|paket\s+\d+|waktu\s*:)/i.test(text) && rawQuestions.length === 0 && !current) {
+                    return;
+                }
+
                 // 1. Tangkap Tag Subtes [SUBTES: PK] atau === SUBTES: PK ===
                 const subtestMatch = text.match(/SUBTES:\s*([A-Za-z_]+)/i);
                 if (subtestMatch) {
@@ -527,12 +534,16 @@ function WordImporterSection({
                     currentSubtestContext = subtestMatch[1].toUpperCase();
                     hasExplicitSubtestTag = true;
                     pendingStimulus = "";
+                    sharedStimulusRange = null;
+                    inPembahasanBlock = false;
                     return;
                 }
 
-                // 2. Tangkap Blok Wacana [WACANA] ... [/WACANA]
+                // 2. Tangkap Blok Wacana Eksplisit [WACANA] ... [/WACANA]
                 if (/\[WACANA\]/i.test(text)) {
+                    commitCurrent();
                     inWacanaBlock = true;
+                    inPembahasanBlock = false;
                     const clean = text.replace(/\[WACANA\]/i, "").trim();
                     if (clean) pendingStimulus = clean;
                     return;
@@ -548,7 +559,7 @@ function WordImporterSection({
                     return;
                 }
 
-                // 3. Tangkap Tag Soal [SOAL: 1] atau nomor standar 1. / Soal 1.
+                // Deteksi apakah baris ini adalah nomor soal baru
                 const tagSoalMatch = text.match(/\[SOAL:\s*(\d+)\]\s*(.*)$/i);
                 const explicitQ = text.match(/^(?:soal|nomor|no\.?)\s*(\d+)[\.\:\)]?\s*(.*)$/i);
                 const numericQ = text.match(/^(\d+)[\.\)\uff0e]\s*(.*)$/i);
@@ -557,26 +568,66 @@ function WordImporterSection({
                 const isKeyPattern = /(?:\[KUNCI:\s*[A-E]\]|kunci(?:\s*jawaban)?\s*[:=]\s*[A-E])/i.test(text);
 
                 let isNewQuestion = false;
+                let qNumber = 0;
                 let qText = "";
 
                 if (!isOptionPattern && !isKeyPattern) {
                     if (tagSoalMatch) {
                         isNewQuestion = true;
+                        qNumber = Number(tagSoalMatch[1]);
                         qText = tagSoalMatch[2].trim();
                     } else if (explicitQ) {
                         isNewQuestion = true;
+                        qNumber = Number(explicitQ[1]);
                         qText = explicitQ[2].trim();
                     } else if (numericQ) {
                         isNewQuestion = true;
+                        qNumber = Number(numericQ[1]);
                         qText = numericQ[2].trim();
+                    }
+                }
+
+                // 3. Tangkap Wacana Bebas (Tanpa Tag [WACANA]) sebelum soal pertama atau setelah soal sebelumnya selesai
+                const isCurrentFinished = current && current.opsi_a && (current.kunci_terdeteksi || (!inPembahasanBlock && current.pembahasan));
+                if (!isNewQuestion && !isOptionPattern && !isKeyPattern && !/\[\/?PEMBAHASAN\]/i.test(text)) {
+                    if (!current || isCurrentFinished) {
+                        if (isCurrentFinished) {
+                            commitCurrent();
+                            inPembahasanBlock = false;
+                        }
+                        // Cek apakah ada instruksi rentang nomor: "untuk menjawab soal nomor 1 sampai 5" / "(Soal 1-5)"
+                        const rangeMatch = text.match(/(?:soal|nomor|no\.?)\s*(\d+)\s*(?:s\.?d\.?|sampai|hingga|-|–)\s*(\d+)/i);
+                        if (rangeMatch) {
+                            sharedStimulusRange = {
+                                start: Number(rangeMatch[1]),
+                                end: Number(rangeMatch[2]),
+                                text: ""
+                            };
+                        }
+                        pendingStimulus = pendingStimulus ? `${pendingStimulus}\n${text}` : text;
+                        if (sharedStimulusRange) {
+                            sharedStimulusRange.text = pendingStimulus;
+                        }
+                        return;
                     }
                 }
 
                 if (isNewQuestion) {
                     commitCurrent();
+                    inPembahasanBlock = false;
+
+                    // Gunakan wacana pending, atau wacana bersama jika nomor soal masih dalam rentang
+                    let finalStimulus = pendingStimulus.trim();
+                    if (!finalStimulus && sharedStimulusRange && qNumber >= sharedStimulusRange.start && qNumber <= sharedStimulusRange.end) {
+                        finalStimulus = sharedStimulusRange.text.trim();
+                    }
+                    if (sharedStimulusRange && qNumber > sharedStimulusRange.end) {
+                        sharedStimulusRange = null;
+                    }
+
                     current = {
                         subtes_code: currentSubtestContext,
-                        stimulus: pendingStimulus.trim(),
+                        stimulus: finalStimulus,
                         image_url: currentImage,
                         image_position: "above",
                         pertanyaan: qText || "Pertanyaan",
@@ -586,6 +637,7 @@ function WordImporterSection({
                         opsi_d: "",
                         opsi_e: "",
                         kunci: "A",
+                        kunci_terdeteksi: false,
                         tingkat_kesukaran: "Sedang",
                         pembahasan: ""
                     };
@@ -619,6 +671,7 @@ function WordImporterSection({
                 const keyTagMatch = text.match(/\[KUNCI:\s*([A-E])\]/i) || text.match(/(?:kunci(?:\s*jawaban)?|jawaban)\s*[:=]\s*([a-e])/i);
                 if (keyTagMatch) {
                     current.kunci = keyTagMatch[1].toUpperCase();
+                    current.kunci_terdeteksi = true;
                     return;
                 }
 
@@ -640,8 +693,12 @@ function WordImporterSection({
                     return;
                 }
 
+                // Jika belum sampai opsi A, lanjutkan sebagai paragraf pertanyaan
                 if (!current.opsi_a) {
                     current.pertanyaan = current.pertanyaan ? `${current.pertanyaan}\n${text}` : text;
+                } else if (current.kunci_terdeteksi) {
+                    // Teks bebas setelah [KUNCI: X] otomatis masuk ke pembahasan
+                    current.pembahasan = current.pembahasan ? `${current.pembahasan}\n${text}` : text;
                 }
             });
 
