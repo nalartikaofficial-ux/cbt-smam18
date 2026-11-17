@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -9,7 +9,8 @@ import {
     AlertCircle,
     Loader2,
     Layers,
-    Lock
+    Lock,
+    Clock
 } from "lucide-react";
 
 function getPesanErrorSederhana(rawMsg: string): string {
@@ -25,19 +26,32 @@ function getPesanErrorSederhana(rawMsg: string): string {
         return "Token ujian salah, tanyakan pada pengawas!";
     }
     if (msg.includes("selesai")) {
-        return "Selamat, kamu sudah selesai mengerjakan ujian ini.";
+        return "Kamu sudah menyelesaikan ujian ini dan tidak dapat mengerjakan ulang.";
     }
     if (msg.includes("terkunci") || msg.includes("kunci") || msg.includes("blokir")) {
-        return "Akun kamu sedang dikunci pengawas ruang.";
+        return "Akses ujian sedang dikunci pengawas ruang.";
     }
     if (msg.includes("belum dimulai")) {
-        return "Waktu ujian belum dimulai!";
+        return "Waktu ujian belum dimulai! Silakan tunggu sesuai jadwal.";
     }
-    if (msg.includes("berakhir")) {
-        return "Waktu sesi ujian sudah habis.";
+    if (msg.includes("berakhir") || msg.includes("habis")) {
+        return "Batas waktu pelaksanaan sesi ujian telah berakhir. Pintu masuk ditutup otomatis.";
     }
 
     return rawMsg || "Data login salah, silahkan coba lagi!";
+}
+
+function formatJadwalWIB(isoStr?: string): string {
+    if (!isoStr) return "-";
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return isoStr;
+    return d.toLocaleString("id-ID", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    }) + " WIB";
 }
 
 export default function StudentLoginPage() {
@@ -48,6 +62,7 @@ export default function StudentLoginPage() {
     const [examToken, setExamToken] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
     const [isValidating, setIsValidating] = useState(false);
+    const [nowMs, setNowMs] = useState<number>(() => Date.now());
 
     const [activeSession, setActiveSession] = useState<{
         paket_aktif: string;
@@ -58,32 +73,123 @@ export default function StudentLoginPage() {
         waktu_selesai?: string;
     } | null>(null);
 
+    // Jam real-time berjalan setiap detik untuk evaluasi jadwal otomatis
+    useEffect(() => {
+        const clockTimer = setInterval(() => {
+            setNowMs(Date.now());
+        }, 1000);
+        return () => clearInterval(clockTimer);
+    }, []);
+
+    // Sinkronisasi jadwal & status sesi dari server secara berkala (tiap 15 detik)
     useEffect(() => {
         const fetchSession = async () => {
             try {
-                const res = await fetch(`/api/auth/student?_t=${Date.now()}`, {
+                const res = await fetch(`/api/session?_t=${Date.now()}`, {
                     cache: "no-store"
                 });
                 const json = await res.json();
                 if (json.status === "success" && json.data) {
-                    setActiveSession(json.data);
+                    setActiveSession({
+                        paket_aktif: json.data.paket_aktif || "PAKET_1",
+                        nama_paket: json.data.nama_paket || "Simulasi Terstandarisasi SNBT 2026",
+                        status_akses: json.data.status_akses || "TERKUNCI",
+                        durasi_menit: Number(json.data.durasi_menit || 195),
+                        waktu_mulai: json.data.waktu_mulai || "",
+                        waktu_selesai: json.data.waktu_selesai || ""
+                    });
+                    return;
+                }
+            } catch { }
+
+            try {
+                const resFallback = await fetch(`/api/auth/student?_t=${Date.now()}`, {
+                    cache: "no-store"
+                });
+                const jsonFallback = await resFallback.json();
+                if (jsonFallback.status === "success" && jsonFallback.data) {
+                    setActiveSession(jsonFallback.data);
                 }
             } catch {
-                setActiveSession({
+                setActiveSession((prev) => prev || {
                     paket_aktif: "PAKET_1",
                     nama_paket: "Simulasi Terstandarisasi SNBT 2026",
-                    status_akses: "DIBUKA",
+                    status_akses: "TERKUNCI",
                     durasi_menit: 195
                 });
             }
         };
 
         fetchSession();
+        const syncInterval = setInterval(fetchSession, 15000);
+        return () => clearInterval(syncInterval);
     }, []);
+
+    // Evaluasi Gembok Otomatis (Saklar Proktor + Jadwal Real-Time)
+    const gateStatus = useMemo(() => {
+        if (!activeSession) {
+            return { isBlocked: true, badge: "MEMUAT...", buttonText: "Memeriksa Jadwal...", reason: "" };
+        }
+
+        // 1. Saklar Darurat Proktor (Kill-switch semua paket)
+        if (activeSession.status_akses === "TERKUNCI") {
+            return {
+                isBlocked: true,
+                badge: "DIKUNCI PENGAWAS",
+                buttonText: "Sesi Ujian Dikunci Pengawas",
+                reason: "Bilik ujian sedang ditutup sementara oleh Pengawas Ruang."
+            };
+        }
+
+        // 2. Jadwal belum diatur oleh Proktor
+        if (!activeSession.waktu_mulai || !activeSession.waktu_selesai) {
+            return {
+                isBlocked: true,
+                badge: "JADWAL BELUM DIATUR",
+                buttonText: "Menunggu Jadwal Pengawas",
+                reason: "Pengawas belum menetapkan jam mulai dan batas selesai ujian hari ini."
+            };
+        }
+
+        const startMs = new Date(activeSession.waktu_mulai).getTime();
+        const endMs = new Date(activeSession.waktu_selesai).getTime();
+
+        // 3. Belum memasuki jam mulai ujian
+        if (!isNaN(startMs) && nowMs < startMs) {
+            return {
+                isBlocked: true,
+                badge: "BELUM DIMULAI",
+                buttonText: "Ujian Belum Dimulai",
+                reason: `Sesi ujian baru akan dibuka otomatis pada ${formatJadwalWIB(activeSession.waktu_mulai)}.`
+            };
+        }
+
+        // 4. Batas waktu real-time sudah habis (Otomatis terkunci walaupun di Proktor masih DIBUKA)
+        if (!isNaN(endMs) && nowMs >= endMs) {
+            return {
+                isBlocked: true,
+                badge: "WAKTU HABIS",
+                buttonText: "Batas Waktu Ujian Berakhir",
+                reason: `Batas waktu sesi berakhir pada ${formatJadwalWIB(activeSession.waktu_selesai)}. Peserta yang terlambat/tidak hadir tidak dapat mengikuti sesi ini.`
+            };
+        }
+
+        return {
+            isBlocked: false,
+            badge: "DIBUKA",
+            buttonText: "Masuk ke Bilik Ujian",
+            reason: ""
+        };
+    }, [activeSession, nowMs]);
 
     const handleStartOfficialExam = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrorMsg("");
+
+        if (gateStatus.isBlocked) {
+            setErrorMsg(gateStatus.reason || "Akses masuk bilik ujian sedang ditutup.");
+            return;
+        }
 
         const cleanNisn = nisn.trim().replace(/\D/g, "");
         const cleanName = candidateName.trim();
@@ -104,14 +210,35 @@ export default function StudentLoginPage() {
             return;
         }
 
-        if (activeSession?.status_akses === "TERKUNCI") {
-            setErrorMsg("Bilik ujian masih dikunci pengawas.");
-            return;
-        }
-
         setIsValidating(true);
 
         try {
+            // Verifikasi ulang waktu & status ke server tepat sebelum mengizinkan masuk
+            const sessionCheckRes = await fetch(`/api/session?_t=${Date.now()}`, { cache: "no-store" });
+            const sessionCheckJson = await sessionCheckRes.json();
+            if (sessionCheckJson.status === "success" && sessionCheckJson.data) {
+                const srv = sessionCheckJson.data;
+                const serverNow = Date.now();
+                const srvStart = srv.waktu_mulai ? new Date(srv.waktu_mulai).getTime() : NaN;
+                const srvEnd = srv.waktu_selesai ? new Date(srv.waktu_selesai).getTime() : NaN;
+
+                if (srv.status_akses === "TERKUNCI") {
+                    setErrorMsg("Bilik ujian baru saja dikunci oleh pengawas.");
+                    setIsValidating(false);
+                    return;
+                }
+                if (!srv.waktu_mulai || !srv.waktu_selesai || (!isNaN(srvStart) && serverNow < srvStart)) {
+                    setErrorMsg("Waktu ujian belum dimulai! Silakan tunggu sesuai jadwal.");
+                    setIsValidating(false);
+                    return;
+                }
+                if (!isNaN(srvEnd) && serverNow >= srvEnd) {
+                    setErrorMsg("Batas waktu sesi ujian telah berakhir. Pintu masuk sudah ditutup otomatis.");
+                    setIsValidating(false);
+                    return;
+                }
+            }
+
             const res = await fetch("/api/auth/student", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -166,8 +293,10 @@ export default function StudentLoginPage() {
                     </Link>
 
                     <div className="flex items-center gap-1.5 font-mono text-[10px] sm:text-[11px] text-slate-500 truncate">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                        <span className="truncate">SERVER CBT AKTIF</span>
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${gateStatus.isBlocked ? "bg-rose-500" : "bg-emerald-500 animate-pulse"}`} />
+                        <span className="truncate">
+                            {new Date(nowMs).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })} WIB
+                        </span>
                     </div>
                 </div>
             </header>
@@ -205,32 +334,51 @@ export default function StudentLoginPage() {
 
                     {/* Banner Sesi Terpusat dari Proktor */}
                     {activeSession && (
-                        <div className="p-3 sm:p-3.5 bg-blue-50/70 rounded-2xl border border-blue-200 flex flex-col xs:flex-row sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs">
-                            <div className="flex items-center gap-2.5 min-w-0 w-full sm:w-auto">
-                                <div className="p-2 bg-blue-600 text-white rounded-xl shrink-0">
-                                    <Layers className="w-4 h-4" />
+                        <div className={`p-3 sm:p-3.5 rounded-2xl border space-y-2 text-xs ${gateStatus.isBlocked ? "bg-rose-50/70 border-rose-200" : "bg-blue-50/70 border-blue-200"}`}>
+                            <div className="flex flex-col xs:flex-row sm:flex-row items-start sm:items-center justify-between gap-2">
+                                <div className="flex items-center gap-2.5 min-w-0 w-full sm:w-auto">
+                                    <div className={`p-2 text-white rounded-xl shrink-0 ${gateStatus.isBlocked ? "bg-rose-600" : "bg-blue-600"}`}>
+                                        <Layers className="w-4 h-4" />
+                                    </div>
+                                    <div className="text-left min-w-0 flex-1">
+                                        <span className="font-bold text-slate-950 block truncate">
+                                            {activeSession.nama_paket}
+                                        </span>
+                                        <span className="text-[10.5px] sm:text-[11px] font-mono text-slate-600 font-semibold block truncate">
+                                            Target: {activeSession.paket_aktif} • {activeSession.durasi_menit} Menit
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="text-left min-w-0 flex-1">
-                                    <span className="font-bold text-blue-950 block truncate">
-                                        {activeSession.nama_paket}
-                                    </span>
-                                    <span className="text-[10.5px] sm:text-[11px] font-mono text-blue-700 font-semibold block truncate">
-                                        Target: {activeSession.paket_aktif} • {activeSession.durasi_menit} Menit
-                                    </span>
-                                </div>
+                                <span
+                                    className={`self-start sm:self-center px-2.5 py-0.5 rounded-full font-mono text-[9.5px] sm:text-[10px] font-black uppercase shrink-0 ${!gateStatus.isBlocked
+                                        ? "bg-emerald-100 text-emerald-800"
+                                        : "bg-rose-100 text-rose-800"
+                                        }`}
+                                >
+                                    {gateStatus.badge}
+                                </span>
                             </div>
-                            <span
-                                className={`self-start sm:self-center px-2.5 py-0.5 rounded-full font-mono text-[9.5px] sm:text-[10px] font-black uppercase shrink-0 ${activeSession.status_akses === "DIBUKA"
-                                    ? "bg-emerald-100 text-emerald-800"
-                                    : "bg-rose-100 text-rose-800"
-                                    }`}
-                            >
-                                {activeSession.status_akses}
-                            </span>
+
+                            {activeSession.waktu_mulai && activeSession.waktu_selesai && (
+                                <div className="pt-1.5 border-t border-slate-200/70 flex items-center gap-1.5 text-[10px] font-mono text-slate-600">
+                                    <Clock className="w-3.5 h-3.5 shrink-0 text-slate-500" />
+                                    <span>
+                                        Jadwal: <strong>{formatJadwalWIB(activeSession.waktu_mulai)}</strong> s.d. <strong>{formatJadwalWIB(activeSession.waktu_selesai)}</strong>
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     )}
 
-                    {/* Pesan Error */}
+                    {/* Peringatan Otomatis Jika Jadwal Belum Mulai / Sudah Habis / Dikunci */}
+                    {gateStatus.isBlocked && gateStatus.reason && (
+                        <div className="p-3 sm:p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-start gap-2.5">
+                            <Lock className="w-4 h-4 shrink-0 text-amber-700 mt-0.5" />
+                            <span className="font-semibold text-left leading-relaxed">{gateStatus.reason}</span>
+                        </div>
+                    )}
+
+                    {/* Pesan Error Validasi */}
                     {errorMsg && (
                         <div className="p-3 sm:p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5">
                             <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
@@ -298,26 +446,26 @@ export default function StudentLoginPage() {
                         <div className="pt-2">
                             <button
                                 type="submit"
-                                disabled={isValidating || activeSession?.status_akses === "TERKUNCI"}
-                                className={`w-full py-3 sm:py-3.5 px-6 rounded-2xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer ${activeSession?.status_akses === "TERKUNCI"
-                                    ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
-                                    : "bg-[#1e3a8a] hover:bg-blue-900 active:scale-[0.99] text-white shadow-blue-900/25"
-                                    } disabled:opacity-50`}
+                                disabled={isValidating || gateStatus.isBlocked}
+                                className={`w-full py-3 sm:py-3.5 px-6 rounded-2xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 ${gateStatus.isBlocked
+                                    ? "bg-slate-300 text-slate-600 cursor-not-allowed shadow-none"
+                                    : "bg-[#1e3a8a] hover:bg-blue-900 active:scale-[0.99] text-white shadow-blue-900/25 cursor-pointer"
+                                    } disabled:opacity-70`}
                             >
                                 {isValidating ? (
                                     <>
                                         <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                                         <span>Memverifikasi Kredensial...</span>
                                     </>
-                                ) : activeSession?.status_akses === "TERKUNCI" ? (
+                                ) : gateStatus.isBlocked ? (
                                     <>
                                         <Lock className="w-4 h-4 shrink-0" />
-                                        <span>Sesi Ujian Sedang Dikunci</span>
+                                        <span>{gateStatus.buttonText}</span>
                                     </>
                                 ) : (
                                     <>
                                         <Maximize2 className="w-4 h-4 shrink-0" />
-                                        <span>Masuk ke Bilik Ujian</span>
+                                        <span>{gateStatus.buttonText}</span>
                                     </>
                                 )}
                             </button>
@@ -327,7 +475,7 @@ export default function StudentLoginPage() {
                     {/* Footer Info Sistem */}
                     <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2 text-[10px] sm:text-[11px] font-mono text-slate-400">
                         <span>Standar UTBK-SNBT 2026</span>
-                        <span>Kiosk Security On</span>
+                        <span>Auto-Schedule Gate On</span>
                     </div>
                 </div>
             </main>

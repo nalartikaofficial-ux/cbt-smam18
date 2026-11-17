@@ -319,9 +319,23 @@ function OfficialExamChamberContent() {
             .then((r) => r.json())
             .then((res) => {
                 if (res.status === "success" && res.data) {
+                    const now = Date.now();
                     if (res.data.status_akses === "TERKUNCI") {
                         setIsSessionLockedByProctor(true);
                         setSessionLockMessage("Akses ruang ujian sedang dikunci oleh Pengawas.");
+                    } else if (!res.data.waktu_mulai || !res.data.waktu_selesai) {
+                        setIsSessionLockedByProctor(true);
+                        setSessionLockMessage("Jadwal waktu ujian belum ditetapkan oleh Pengawas.");
+                    } else {
+                        const startMs = new Date(res.data.waktu_mulai).getTime();
+                        const endMs = new Date(res.data.waktu_selesai).getTime();
+                        if (!isNaN(startMs) && now < startMs) {
+                            setIsSessionLockedByProctor(true);
+                            setSessionLockMessage("Sesi ujian belum dimulai. Harap tunggu sesuai jadwal.");
+                        } else if (!isNaN(endMs) && now >= endMs) {
+                            setIsSessionLockedByProctor(true);
+                            setSessionLockMessage("Batas waktu pengerjaan sesi ujian telah berakhir. Akses ditutup otomatis.");
+                        }
                     }
                     if (res.data.waktu_selesai) {
                         const endTimestamp = new Date(res.data.waktu_selesai).getTime();
