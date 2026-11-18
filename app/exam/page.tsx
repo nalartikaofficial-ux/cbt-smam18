@@ -904,6 +904,7 @@ function OfficialExamChamberContent() {
             .filter((w) => w.length >= 4 && !["dan", "ilmu", "pendidikan", "program", "studi"].includes(w));
 
         const targetRumpun = benchmarkData1?.rumpun || benchmarkData2?.rumpun || null;
+        const p1PassingGrade = benchmarkData1?.passingGradeMin || 650;
         const studentScore = scoreResults.scaledScore;
 
         const jabodetabekJabarKeywords = [
@@ -922,53 +923,81 @@ function OfficialExamChamberContent() {
 
         const getRegionBonus = (kampusName: string) => {
             const k = kampusName.toLowerCase();
-            if (jabodetabekJabarKeywords.some((kw) => k.includes(kw))) return 80;
-            if (jawaLainnyaKeywords.some((kw) => k.includes(kw))) return 55;
-            return -50;
+            if (jabodetabekJabarKeywords.some((kw) => k.includes(kw))) return 25;
+            if (jawaLainnyaKeywords.some((kw) => k.includes(kw))) return 15;
+            return 0;
         };
 
         const candidates = ptnBenchmarks.filter((b) => {
             const fullLabel = `${b.kampus} - ${b.prodi} (${b.jenjang || "S1"})`.toLowerCase();
             if (pilihanKampus1 && fullLabel === pilihanKampus1.toLowerCase()) return false;
             if (pilihanKampus2 && fullLabel === pilihanKampus2.toLowerCase()) return false;
+            // Hindari merekomendasikan prodi yang passing grade-nya lebih tinggi dari Pilihan 1
+            if (pilihanKampus1 && b.passingGradeMin >= p1PassingGrade) return false;
             return true;
         });
 
-        const scoredCandidates = candidates.map((b) => {
+        const pool = candidates.length > 0 ? candidates : ptnBenchmarks;
+
+        const scoredCandidates = pool.map((b) => {
             const prodiLower = b.prodi.toLowerCase();
             let relevanceScore = getRegionBonus(b.kampus);
 
-            if (p1Parsed?.cleanProdi && prodiLower.includes(p1Parsed.cleanProdi)) relevanceScore += 60;
-            if (p2Parsed?.cleanProdi && prodiLower.includes(p2Parsed.cleanProdi)) relevanceScore += 45;
+            // 1. Kesamaan rumpun (SAINTEK / SOSHUM) & kemiripan bidang studi
+            if (targetRumpun && b.rumpun === targetRumpun) relevanceScore += 35;
+            if (p1Parsed?.cleanProdi && prodiLower.includes(p1Parsed.cleanProdi)) relevanceScore += 20;
+            if (p2Parsed?.cleanProdi && prodiLower.includes(p2Parsed.cleanProdi)) relevanceScore += 15;
             rawKeywords.forEach((kw) => {
-                if (prodiLower.includes(kw)) relevanceScore += 25;
+                if (prodiLower.includes(kw)) relevanceScore += 12;
             });
 
-            if (targetRumpun && b.rumpun === targetRumpun) relevanceScore += 20;
-
+            // 2. Rasionalisasi Passing Grade terhadap Skor Siswa (Prioritas Utama)
             const diff = studentScore - b.passingGradeMin;
-            const gapPenalty = Math.abs(diff);
-            const feasibilityBonus = diff >= 0 ? 30 : diff >= -45 ? 15 : 0;
+            let scoreFit = 0;
+            if (diff >= 0) {
+                // Skor siswa sudah melampaui passing grade (sangat aman, pilih yang paling optimal)
+                scoreFit = 120 - Math.min(40, diff * 0.25);
+            } else {
+                // Passing grade di atas skor siswa: penalti kuat agar mencari PG serendah & serealistis mungkin
+                scoreFit = 100 - Math.abs(diff) * 0.45;
+            }
 
-            const totalRankScore = relevanceScore + feasibilityBonus - gapPenalty * 0.12;
+            // 3. Pertimbangan Keketatan (persentase lebih besar = peluang lolos lebih besar)
+            const ratioKeketatan =
+                b.peminat > 0 && b.dayaTampung > 0
+                    ? (b.dayaTampung / b.peminat) * 100
+                    : parseFloat(String(b.keketatan).replace("%", "").replace(",", ".")) || 5;
+            const keketatanBonus = Math.min(25, ratioKeketatan * 1.2);
+
+            // 4. Pertimbangan Kuota / Daya Tampung Kursi
+            const kuotaBonus = Math.min(20, (b.dayaTampung || 0) * 0.2);
+
+            // Bonus khusus Vokasi (D4/D3) jika skor siswa masih di bawah 560 agar lebih realistis lulus
+            const jenjangBonus = studentScore < 560 && (b.jenjang === "D4" || b.jenjang === "D3") ? 18 : 0;
+
+            const totalRankScore = relevanceScore + scoreFit + keketatanBonus + kuotaBonus + jenjangBonus;
 
             const computedKeketatan =
                 b.peminat > 0 && b.dayaTampung > 0
                     ? `${((b.dayaTampung / b.peminat) * 100).toFixed(2)}%`
                     : formatKeketatan(b.keketatan);
 
-            let status = "Target Menantang";
-            let badgeClass = "bg-rose-50 text-rose-700 border-rose-200";
-            let reason = `Selisih ${Math.abs(diff)} poin di bawah passing grade (${b.passingGradeMin}).`;
+            let status = "Opsi Alternatif Terjangkau";
+            let badgeClass = "bg-blue-50 text-blue-800 border-blue-200";
+            let reason = `Passing grade lebih rendah (${b.passingGradeMin} vs P1: ${p1PassingGrade}) dengan keketatan ${computedKeketatan} & kuota ${b.dayaTampung} kursi.`;
 
             if (diff >= 10) {
                 status = "Peluang Tinggi (Aman)";
                 badgeClass = "bg-emerald-50 text-emerald-800 border-emerald-300";
-                reason = `Skor Anda unggul +${diff} poin di atas estimasi passing grade (${b.passingGradeMin}).`;
-            } else if (diff >= -25) {
+                reason = `Skor Anda (${studentScore}) sudah unggul +${diff} poin di atas PG (${b.passingGradeMin}) dengan ${b.dayaTampung} kursi (keketatan ${computedKeketatan}).`;
+            } else if (diff >= -30) {
                 status = "Kompetitif (Realistis)";
                 badgeClass = "bg-amber-50 text-amber-800 border-amber-300";
-                reason = `Sangat realistis dikejar (hanya terpaut ${Math.abs(diff)} poin dari target ${b.passingGradeMin}).`;
+                reason = `Sangat realistis dikejar (terpaut ${Math.abs(diff)} poin dari PG ${b.passingGradeMin}) dengan kuota ${b.dayaTampung} kursi & keketatan ${computedKeketatan}.`;
+            } else {
+                status = "Opsi Rasional (PG Lebih Rendah)";
+                badgeClass = "bg-indigo-50 text-indigo-800 border-indigo-200";
+                reason = `Lebih terjangkau dibanding Pilihan 1 (PG ${b.passingGradeMin}, kuota ${b.dayaTampung} kursi, keketatan ${computedKeketatan}); butuh tambahan +${Math.abs(diff)} poin.`;
             }
 
             return {
