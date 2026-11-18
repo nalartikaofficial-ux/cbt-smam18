@@ -2383,25 +2383,7 @@ function OfficialExamChamberContent() {
                         </div>
                     </div>
 
-                    {/* 12. BANNER SIMULATOR RASIONALISASI */}
-                    <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-left print-hidden">
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-1.5 text-xs font-bold">
-                                <TrendingUp className="w-4 h-4 text-emerald-400 shrink-0" />
-                                <span>Lanjutkan ke Aplikasi Analisis & Rasionalisasi SNBT</span>
-                            </div>
-                            <p className="text-[10.5px] sm:text-[11px] text-blue-200">
-                                Skor rata-rata Anda ({scoreResults.scaledScore}) dapat langsung diuji ke simulator passing grade dengan data daya tampung seluruh PTN nasional.
-                            </p>
-                        </div>
-                        <button
-                            onClick={() => window.open("/simulation", "_blank")}
-                            className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-blue-950 font-bold text-xs shrink-0 cursor-pointer shadow-xs transition-all flex items-center gap-1.5 w-full sm:w-auto justify-center"
-                        >
-                            <span>Buka Aplikasi Analisis</span>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                        </button>
-                    </div>
+
 
                     {/* 13. TANDA TANGAN RESMI SEKOLAH */}
                     <div className="pt-6 sm:pt-8 pb-3 sm:pb-4 grid grid-cols-2 gap-4 sm:gap-8 text-center text-xs font-serif text-slate-800">
