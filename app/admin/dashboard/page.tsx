@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import { LIST_PRODI_SNBT } from "@/data/prodiDatabase";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
     BarChart3,
@@ -23,7 +24,9 @@ import {
     AlertTriangle,
     PieChart,
     EyeOff,
-    Eye
+    Eye,
+    Target,
+    AlertCircle
 } from "lucide-react";
 
 export interface RealStudentResult {
@@ -76,6 +79,33 @@ export interface ExamAttemptRecord {
     pilihan_kampus_2?: string;
     completed_at: string;
 }
+
+interface PTNBenchmark {
+    id: string;
+    kampus: string;
+    prodi: string;
+    jenjang: string;
+    rumpun: "SAINTEK" | "SOSHUM";
+    dayaTampung: number;
+    peminat: number;
+    keketatan: string;
+    passingGradeMin: number;
+}
+
+const LOCAL_BENCHMARKS: PTNBenchmark[] = (LIST_PRODI_SNBT || []).map((item) => ({
+    id: String(item.id),
+    kampus: item.kampus,
+    prodi: item.prodi,
+    jenjang: item.jenjang || "S1",
+    rumpun: item.kelompok || "SAINTEK",
+    dayaTampung: Number(item.dayaTampung || 0),
+    peminat: Number(item.peminat || 0),
+    keketatan:
+        Number(item.peminat) > 0 && Number(item.dayaTampung) > 0
+            ? `${((Number(item.dayaTampung) / Number(item.peminat)) * 100).toFixed(2)}%`
+            : `${item.keketatan}%`,
+    passingGradeMin: Number(item.passingGrade || 650)
+}));
 
 const SUBTEST_LABELS = [
     {
@@ -134,6 +164,12 @@ function isDummyAccount(nisn: string): boolean {
     return clean === "0000000000" || clean === "1111111111" || /^0+$/.test(clean) || /^1+$/.test(clean);
 }
 
+function normalizeSubtest(val: unknown): number {
+    const n = Number(val);
+    if (!n || isNaN(n)) return 200;
+    return Math.max(200, Math.min(1000, Math.round(n)));
+}
+
 function getUnifiedScore(item: Partial<RealStudentResult>): number {
     const subs = [
         Number(item.skor_pu) || 0,
@@ -144,10 +180,9 @@ function getUnifiedScore(item: Partial<RealStudentResult>): number {
         Number(item.skor_lit_eng) || 0,
         Number(item.skor_pm) || 0
     ];
-    const hasSubtestData = subs.some((v) => v > 0);
-    if (hasSubtestData) {
-        const sum = subs.reduce((a, b) => a + b, 0);
-        return Math.round(sum / 7);
+    if (subs.some((v) => v > 0)) {
+        const normalized = subs.map((v) => normalizeSubtest(v));
+        return Math.round(normalized.reduce((a, b) => a + b, 0) / 7);
     }
     return Math.round(Number(item.score) || 0);
 }
@@ -160,7 +195,8 @@ function getUnifiedTps(item: Partial<RealStudentResult>): number {
         Number(item.skor_pk) || 0
     ];
     if (tps.some((v) => v > 0)) {
-        return Math.round(tps.reduce((a, b) => a + b, 0) / 4);
+        const normalized = tps.map((v) => normalizeSubtest(v));
+        return Math.round(normalized.reduce((a, b) => a + b, 0) / 4);
     }
     return Math.round(Number(item.nilai_tps) || 0);
 }
@@ -172,9 +208,74 @@ function getUnifiedLiterasi(item: Partial<RealStudentResult>): number {
         Number(item.skor_pm) || 0
     ];
     if (lit.some((v) => v > 0)) {
-        return Math.round(lit.reduce((a, b) => a + b, 0) / 3);
+        const normalized = lit.map((v) => normalizeSubtest(v));
+        return Math.round(normalized.reduce((a, b) => a + b, 0) / 3);
     }
     return Math.round(Number(item.nilai_literasi) || 0);
+}
+
+function findExactPTNBenchmark(selectionStr?: string): PTNBenchmark | null {
+    if (!selectionStr || typeof selectionStr !== "string") return null;
+    const trimmed = selectionStr.trim();
+    if (!trimmed.includes(" - ")) return null;
+
+    const parts = trimmed.split(" - ");
+    const rawKampus = parts[0] || "";
+    const rawProdi = parts.slice(1).join(" - ") || "";
+
+    const targetKampus = rawKampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+    const targetProdi = rawProdi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+    const matchJenjang = rawProdi.match(/\b(S1|D4|D3|D2)\b/i);
+    const jenjang = matchJenjang ? matchJenjang[1].toUpperCase() : null;
+
+    const matchingCampusAndJenjang = LOCAL_BENCHMARKS.filter((b) => {
+        const bKampus = b.kampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+        const isKampusMatch = bKampus === targetKampus;
+        const isJenjangMatch = jenjang ? (b.jenjang || "S1").toUpperCase() === jenjang : true;
+        return isKampusMatch && isJenjangMatch;
+    });
+
+    const exactMatch = matchingCampusAndJenjang.find((b) => {
+        const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+        return bProdi === targetProdi;
+    });
+    if (exactMatch) return exactMatch;
+
+    return (
+        matchingCampusAndJenjang.find((b) => {
+            const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+            return bProdi.includes(targetProdi);
+        }) || null
+    );
+}
+
+function evaluateAdmissionStatus(targetMinScore: number, studentScore: number) {
+    const diff = studentScore - targetMinScore;
+    if (diff >= 15) {
+        return {
+            status: "Peluang Sangat Tinggi (Aman)",
+            isPassed: true,
+            badgeClass: "bg-emerald-50 text-emerald-800 border-emerald-300",
+            colorText: "text-emerald-700",
+            note: `Skor siswa (${studentScore}) memenuhi estimasi passing score (+${diff} poin).`
+        };
+    } else if (diff >= -20) {
+        return {
+            status: "Kompetitif (Bersaing Ketat)",
+            isPassed: false,
+            badgeClass: "bg-amber-50 text-amber-800 border-amber-300",
+            colorText: "text-amber-700",
+            note: `Skor siswa (${studentScore}) berada di ambang batas aman (${diff >= 0 ? `+${diff}` : diff} poin).`
+        };
+    } else {
+        return {
+            status: "Perlu Peningkatan Intensif",
+            isPassed: false,
+            badgeClass: "bg-rose-50 text-rose-800 border-rose-300",
+            colorText: "text-rose-700",
+            note: `Skor siswa (${studentScore}) masih terpaut ${Math.abs(diff)} poin di bawah target.`
+        };
+    }
 }
 
 export default function AdminAnalyticsPage() {
@@ -265,7 +366,7 @@ export default function AdminAnalyticsPage() {
         });
     }, [finishedStudents, selectedClass, searchQuery]);
 
-    // Perbandingan Progres Kronologis TO-1 -> TO-2 -> TO-3 (Bebas Bug Urutan & Encoding)
+    // Perbandingan Progres Kronologis TO-1 -> TO-2 -> TO-3
     const studentProgressionList = useMemo(() => {
         const map = new Map<
             string,
@@ -309,7 +410,7 @@ export default function AdminAnalyticsPage() {
         });
     }, [activeAttemptsPool, selectedClass, searchQuery]);
 
-    // Analitik Agregat Lintas TO (Sebelum vs Sesudah), Distribusi Kesiapan, & Perbandingan Kelas
+    // Analitik Agregat Lintas TO, Distribusi Kesiapan, & Perbandingan Kelas
     const executiveAnalytics = useMemo(() => {
         const totalSelesai = finishedStudents.length;
         const totalTerdaftar = activeStudentsPool.length;
@@ -329,7 +430,6 @@ export default function AdminAnalyticsPage() {
         const totalPelanggaran = finishedStudents.reduce((acc, curr) => acc + (Number(curr.violations) || 0), 0);
         const integritasRate = Math.max(0, 100 - totalPelanggaran * 3);
 
-        // Perbandingan Rata-rata Kelas
         const classGroups = new Map<string, { total: number; count: number }>();
         finishedStudents.forEach((s) => {
             const cls = (s.kelas || "Umum").trim();
@@ -344,7 +444,6 @@ export default function AdminAnalyticsPage() {
             }))
             .sort((a, b) => b.avg - a.avg);
 
-        // Perbandingan Rata-rata Sebelum vs Sesudah (TO-1 vs TO-2 vs TO-3)
         const paketList = ["PAKET_1", "PAKET_2", "PAKET_3"] as const;
         const tryoutTrend = paketList.map((pkt, idx) => {
             const matched = activeAttemptsPool.filter((a) => (a.paket || "").toUpperCase() === pkt);
@@ -378,7 +477,7 @@ export default function AdminAnalyticsPage() {
         const count = filteredStudents.length;
         return SUBTEST_LABELS.map((sub) => {
             if (count === 0) return { ...sub, avg: 0 };
-            const total = filteredStudents.reduce((acc, s) => acc + (Number((s as any)[sub.key]) || 0), 0);
+            const total = filteredStudents.reduce((acc, s) => acc + normalizeSubtest((s as any)[sub.key]), 0);
             return { ...sub, avg: Math.round((total / count) * 10) / 10 };
         });
     }, [filteredStudents]);
@@ -393,7 +492,7 @@ export default function AdminAnalyticsPage() {
         };
     }, [subtestClassAverages, filteredStudents.length]);
 
-    // Analisis Mendalam untuk Siswa yang Diklik pada Modal Rapor
+    // Analisis Mendalam Individual (100% Selaras dengan Rapor Siswa)
     const reportDiagnostic = useMemo(() => {
         if (!selectedStudentForReport) return null;
 
@@ -401,13 +500,25 @@ export default function AdminAnalyticsPage() {
         const unifiedTps = getUnifiedTps(selectedStudentForReport);
         const unifiedLit = getUnifiedLiterasi(selectedStudentForReport);
 
+        const bench1 = findExactPTNBenchmark(selectedStudentForReport.pilihan_kampus_1);
+        const bench2 = findExactPTNBenchmark(selectedStudentForReport.pilihan_kampus_2);
+        const targetPg1 = bench1?.passingGradeMin || 650;
+        const targetPg2 = bench2?.passingGradeMin || 600;
+
+        const eval1 = selectedStudentForReport.pilihan_kampus_1
+            ? evaluateAdmissionStatus(targetPg1, unifiedScore)
+            : null;
+        const eval2 = selectedStudentForReport.pilihan_kampus_2
+            ? evaluateAdmissionStatus(targetPg2, unifiedScore)
+            : null;
+
         const subtestScores = SUBTEST_LABELS.map((sub) => {
-            const val = Number((selectedStudentForReport as any)[sub.key]) || 200;
+            const val = normalizeSubtest((selectedStudentForReport as any)[sub.key]);
             return {
                 ...sub,
                 score: val,
-                gap: Math.round((val - 650) * 10) / 10,
-                isPassed: val >= 650
+                gap: Math.round(val - targetPg1),
+                isPassed: val >= targetPg1
             };
         });
 
@@ -437,6 +548,12 @@ export default function AdminAnalyticsPage() {
             unifiedScore,
             unifiedTps,
             unifiedLit,
+            bench1,
+            bench2,
+            targetPg1,
+            targetPg2,
+            eval1,
+            eval2,
             subtestScores,
             strengths,
             weaknesses,
@@ -450,12 +567,15 @@ export default function AdminAnalyticsPage() {
         };
     }, [selectedStudentForReport, attempts]);
 
-    const handleOpenStudentByNisn = (nisn: string) => {
-        const found = students.find((s) => s.nisn === nisn);
-        if (found) {
-            setSelectedStudentForReport(found);
-        }
-    };
+    const handleOpenStudentByNisn = useCallback(
+        (nisn: string) => {
+            const found = students.find((s) => s.nisn === nisn);
+            if (found) {
+                setSelectedStudentForReport(found);
+            }
+        },
+        [students]
+    );
 
     return (
         <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-800">
@@ -693,9 +813,8 @@ export default function AdminAnalyticsPage() {
                     </div>
                 </div>
 
-                {/* PANEL GRAFIK RINGKASAN EKSEKUTIF (DISTRIBUSI, ANTAR KELAS, & SEBELUM VS SESUDAH) */}
+                {/* PANEL GRAFIK RINGKASAN EKSEKUTIF */}
                 <div className="print-hidden grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    {/* GRAFIK 1: DISTRIBUSI KESIAPAN SISWA */}
                     <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
                         <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                             <span className="text-xs font-bold font-mono text-slate-900 uppercase">
@@ -726,7 +845,6 @@ export default function AdminAnalyticsPage() {
                         </div>
                     </div>
 
-                    {/* GRAFIK 2: KOMPARASI RATA-RATA ANTAR KELAS */}
                     <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
                         <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                             <span className="text-xs font-bold font-mono text-slate-900 uppercase">
@@ -757,7 +875,6 @@ export default function AdminAnalyticsPage() {
                         )}
                     </div>
 
-                    {/* GRAFIK 3: PERBANDINGAN SEBELUM VS SESUDAH (TO-1 vs TO-2 vs TO-3) */}
                     <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
                         <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                             <span className="text-xs font-bold font-mono text-slate-900 uppercase">
@@ -856,7 +973,7 @@ export default function AdminAnalyticsPage() {
                     {activeTab === "ranking" && (
                         <div className="space-y-2.5">
                             <p className="text-[11px] text-slate-500">
-                                Klik pada <strong>Nama Siswa</strong> atau tombol <strong>Rapor & Diagram</strong> untuk melihat grafik lingkaran proporsi jawaban, tren progres TO, serta keunggulan & kelemahan per subtes.
+                                Klik pada <strong>Nama Siswa</strong> atau tombol <strong>Rapor & Diagram</strong> untuk melihat analisis peluang PTN pilihan, grafik proporsi jawaban, tren progres TO, serta keunggulan & kelemahan per subtes.
                             </p>
                             <div className="overflow-x-auto rounded-2xl border border-slate-200">
                                 <table className="w-full text-left text-xs border-collapse min-w-[820px]">
@@ -1078,7 +1195,7 @@ export default function AdminAnalyticsPage() {
                             )}
 
                             <p className="text-xs text-slate-500">
-                                Rata-rata capaian skor IRT per subtes untuk menentukan fokus klinik pendalaman materi bagi tim guru pengajar (target minimal: <strong>650.0</strong>).
+                                Rata-rata capaian skor IRT per subtes untuk menentukan fokus klinik pendalaman materi bagi tim guru pengajar (target acuan: <strong>650.0</strong>).
                             </p>
                             <div className="space-y-3">
                                 {subtestClassAverages.map((sub) => {
@@ -1247,12 +1364,12 @@ export default function AdminAnalyticsPage() {
                                     </div>
                                     <div className="pt-1">
                                         <span
-                                            className={`inline-block px-3 py-1 rounded-full text-[10.5px] font-bold ${reportDiagnostic.unifiedScore >= 650
+                                            className={`inline-block px-3 py-1 rounded-full text-[10.5px] font-bold ${reportDiagnostic.unifiedScore >= reportDiagnostic.targetPg1
                                                 ? "bg-emerald-500/25 text-emerald-200 border border-emerald-400/40"
                                                 : "bg-amber-400/20 text-amber-200 border border-amber-300/40"
                                                 }`}
                                         >
-                                            {reportDiagnostic.unifiedScore >= 650 ? "Kompetitif / Peluang Tinggi" : "Perlu Penguatan Intensif"}
+                                            {reportDiagnostic.unifiedScore >= reportDiagnostic.targetPg1 ? "Kompetitif / Peluang Tinggi" : "Perlu Penguatan Intensif"}
                                         </span>
                                     </div>
                                 </div>
@@ -1352,6 +1469,75 @@ export default function AdminAnalyticsPage() {
                                 </div>
                             </div>
 
+                            {/* ANALISIS PELUANG PROGRAM STUDI PILIHAN (SELARAS 100% DENGAN RAPOR SISWA) */}
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-1.5 font-bold font-mono text-[11px] uppercase tracking-wide text-slate-900">
+                                    <Target className="w-4 h-4 text-blue-700" />
+                                    <span>ANALISIS PELUANG PROGRAM STUDI PILIHAN (BENCHMARK SNBT)</span>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {[
+                                        {
+                                            label: "PTN PILIHAN 1 (PRIORITAS)",
+                                            raw: selectedStudentForReport.pilihan_kampus_1,
+                                            bench: reportDiagnostic.bench1,
+                                            evalObj: reportDiagnostic.eval1,
+                                            targetPg: reportDiagnostic.targetPg1
+                                        },
+                                        {
+                                            label: "PTN PILIHAN 2 (ALTERNATIF)",
+                                            raw: selectedStudentForReport.pilihan_kampus_2,
+                                            bench: reportDiagnostic.bench2,
+                                            evalObj: reportDiagnostic.eval2,
+                                            targetPg: reportDiagnostic.targetPg2
+                                        }
+                                    ].map((item, idx) => (
+                                        <div key={idx} className="p-3.5 rounded-2xl border border-slate-300 bg-slate-50/70 space-y-2">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="text-[9.5px] font-mono font-bold text-slate-500 uppercase">{item.label}</span>
+                                                {item.evalObj && (
+                                                    <span className={`px-2 py-0.5 rounded-full border text-[9px] font-mono font-bold ${item.evalObj.badgeClass}`}>
+                                                        {item.evalObj.status}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <div className="text-xs font-black text-slate-900 leading-tight">
+                                                    {item.bench?.kampus || item.raw?.split("-")[0] || `Pilihan ${idx + 1} Belum Dipilih`}
+                                                </div>
+                                                <div className="text-[11px] font-semibold text-blue-800">
+                                                    {item.bench ? `${item.bench.prodi} (${item.bench.jenjang})` : item.raw?.split("-")[1] || "-"}
+                                                </div>
+                                            </div>
+                                            {item.bench && (
+                                                <div className="flex items-center gap-1.5 text-[9.5px] font-mono font-bold flex-wrap">
+                                                    <span className="px-2 py-0.5 rounded bg-rose-50 border border-rose-200 text-rose-700">
+                                                        Keketatan: {item.bench.keketatan}
+                                                    </span>
+                                                    <span className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-700">
+                                                        Kursi: {item.bench.dayaTampung}
+                                                    </span>
+                                                    <span className="px-2 py-0.5 rounded bg-slate-200/80 text-slate-700">
+                                                        Peminat: {item.bench.peminat}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            <div className="pt-1.5 border-t border-slate-200 text-[10.5px] space-y-1">
+                                                <div className="font-mono text-[10px] text-slate-600 flex justify-between">
+                                                    <span>TARGET PASSING SCORE:</span>
+                                                    <strong className="text-slate-900">{item.targetPg}</strong>
+                                                </div>
+                                                <div className={`font-bold flex items-center gap-1 text-[11px] ${item.evalObj?.colorText || "text-slate-500"}`}>
+                                                    {item.evalObj?.isPassed ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
+                                                    <span>{item.evalObj?.note || "Pilihan belum ditentukan"}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* BARIS 2 VISUAL: KEUNGGULAN UTAMA VS KEKURANGAN PRIORITAS */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                 <div className="p-3.5 rounded-2xl border border-emerald-300 bg-emerald-50/60 space-y-2">
@@ -1396,10 +1582,10 @@ export default function AdminAnalyticsPage() {
                             <div className="space-y-2 overflow-x-auto">
                                 <div className="flex items-center justify-between">
                                     <span className="font-bold font-mono text-[11px] uppercase tracking-wide text-slate-900">
-                                        PETA CAPAIAN & GRAFIK KOMPARASI 7 SUBTES NASIONAL (TARGET PG: 650)
+                                        PETA CAPAIAN & GRAFIK KOMPARASI 7 SUBTES (TARGET PG P1: {reportDiagnostic.targetPg1})
                                     </span>
                                     <span className="text-[10px] font-mono text-rose-700 font-bold flex items-center gap-1">
-                                        <span className="inline-block w-0.5 h-3 bg-rose-600" /> Garis Merah = Batas Target 650
+                                        <span className="inline-block w-0.5 h-3 bg-rose-600" /> Garis Merah = Batas Target {reportDiagnostic.targetPg1}
                                     </span>
                                 </div>
 
@@ -1408,7 +1594,7 @@ export default function AdminAnalyticsPage() {
                                         <tr>
                                             <th className="p-2 border-r border-slate-900 w-9 text-center">NO</th>
                                             <th className="p-2 border-r border-slate-900">KOMPONEN & SUBTES UJIAN</th>
-                                            <th className="p-2 border-r border-slate-900 w-48">VISUAL CAPAIAN VS TARGET (650)</th>
+                                            <th className="p-2 border-r border-slate-900 w-48">VISUAL CAPAIAN VS TARGET ({reportDiagnostic.targetPg1})</th>
                                             <th className="p-2 border-r border-slate-900 text-center w-16">SKOR</th>
                                             <th className="p-2 border-r border-slate-900 text-center w-20">GAP PG</th>
                                             <th className="p-2 text-center w-28">PREDIKAT</th>
@@ -1417,11 +1603,11 @@ export default function AdminAnalyticsPage() {
                                     <tbody className="divide-y divide-slate-300 font-medium text-[11px]">
                                         {reportDiagnostic.subtestScores.map((sub, i) => {
                                             const barPct = Math.min(100, Math.max(4, ((sub.score - 200) / 800) * 100));
-                                            const targetMarkerPct = ((650 - 200) / 800) * 100; // 56.25%
+                                            const targetMarkerPct = Math.min(98, Math.max(5, ((reportDiagnostic.targetPg1 - 200) / 800) * 100));
                                             const barColor =
-                                                sub.score >= 650
+                                                sub.score >= reportDiagnostic.targetPg1
                                                     ? "bg-emerald-600"
-                                                    : sub.score >= 520
+                                                    : sub.score >= reportDiagnostic.targetPg2
                                                         ? "bg-amber-500"
                                                         : "bg-blue-700";
 
@@ -1452,11 +1638,10 @@ export default function AdminAnalyticsPage() {
                                                                 className={`h-full rounded-full ${barColor}`}
                                                                 style={{ width: `${barPct}%` }}
                                                             />
-                                                            {/* Garis Marker Target PG 650 */}
                                                             <div
                                                                 className="absolute top-0 bottom-0 w-0.5 bg-rose-600 z-10"
                                                                 style={{ left: `${targetMarkerPct}%` }}
-                                                                title="Target PG: 650"
+                                                                title={`Target PG: ${reportDiagnostic.targetPg1}`}
                                                             />
                                                         </div>
                                                     </td>
@@ -1496,7 +1681,6 @@ export default function AdminAnalyticsPage() {
                                     recentAttempts.reduce((sum, a) => sum + a.unifiedScore, 0) / recentAttempts.length
                                 );
 
-                                // Konfigurasi SVG Line Chart (600 x 165)
                                 const svgW = 600;
                                 const svgH = 165;
                                 const padL = 42;
@@ -1527,7 +1711,7 @@ export default function AdminAnalyticsPage() {
                                         ? `${linePath} L ${points[points.length - 1].x.toFixed(1)} ${(padT + plotH).toFixed(1)} L ${points[0].x.toFixed(1)} ${(padT + plotH).toFixed(1)} Z`
                                         : "";
 
-                                const targetY = padT + plotH - ((650 - 200) / 800) * plotH;
+                                const targetY = padT + plotH - ((reportDiagnostic.targetPg1 - 200) / 800) * plotH;
 
                                 return (
                                     <div className="space-y-3 border border-slate-300 rounded-2xl p-4 bg-slate-50/50">
@@ -1560,7 +1744,6 @@ export default function AdminAnalyticsPage() {
                                             </div>
                                         </div>
 
-                                        {/* SVG Line + Area Chart */}
                                         <div className="bg-white rounded-xl border border-slate-200 p-2.5">
                                             <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full h-auto overflow-visible">
                                                 <defs>
@@ -1570,7 +1753,6 @@ export default function AdminAnalyticsPage() {
                                                     </linearGradient>
                                                 </defs>
 
-                                                {/* Grid Horizontal Skala 200 - 1000 */}
                                                 {[200, 400, 600, 800, 1000].map((val) => {
                                                     const gy = padT + plotH - ((val - 200) / 800) * plotH;
                                                     return (
@@ -1595,7 +1777,6 @@ export default function AdminAnalyticsPage() {
                                                     );
                                                 })}
 
-                                                {/* Garis Ambang Target PG 650 */}
                                                 <line
                                                     x1={padL}
                                                     y1={targetY}
@@ -1611,10 +1792,9 @@ export default function AdminAnalyticsPage() {
                                                     textAnchor="end"
                                                     className="fill-rose-600 font-mono text-[8.5px] font-bold"
                                                 >
-                                                    Target PG (650)
+                                                    Target PG P1 ({reportDiagnostic.targetPg1})
                                                 </text>
 
-                                                {/* Area & Garis Kurva */}
                                                 {areaPath && <path d={areaPath} fill="url(#scoreAreaGrad)" />}
                                                 {points.length > 1 && (
                                                     <path
@@ -1627,7 +1807,6 @@ export default function AdminAnalyticsPage() {
                                                     />
                                                 )}
 
-                                                {/* Titik Simpul & Label Nilai */}
                                                 {points.map((p) => (
                                                     <g key={p.id}>
                                                         <circle
@@ -1670,7 +1849,6 @@ export default function AdminAnalyticsPage() {
                                             </svg>
                                         </div>
 
-                                        {/* Telaah Otomatis Dinamika Progres */}
                                         <div className="p-2.5 rounded-xl bg-white border border-slate-200 text-[11px] text-slate-700 leading-relaxed">
                                             <strong className="font-mono text-slate-900 uppercase text-[10px]">Telaah Progres: </strong>
                                             {recentAttempts.length === 1 ? (
@@ -1679,7 +1857,7 @@ export default function AdminAnalyticsPage() {
                                                 </span>
                                             ) : netChange > 0 ? (
                                                 <span>
-                                                    Terjadi tren <strong>kenaikan positif sebesar +{netChange} poin</strong> dari sesi awal (<strong>{firstScore}</strong>) ke sesi terakhir (<strong>{lastScore}</strong>). Konsistensi latihan pada subtes lemah akan mempercepat pencapaian target PG 650.
+                                                    Terjadi tren <strong>kenaikan positif sebesar +{netChange} poin</strong> dari sesi awal (<strong>{firstScore}</strong>) ke sesi terakhir (<strong>{lastScore}</strong>). Konsistensi latihan pada subtes lemah akan mempercepat pencapaian target PG {reportDiagnostic.targetPg1}.
                                                 </span>
                                             ) : netChange < 0 ? (
                                                 <span>
@@ -1703,7 +1881,7 @@ export default function AdminAnalyticsPage() {
                                 <div className="p-3 border border-slate-900 bg-white text-xs leading-relaxed italic text-slate-800">
                                     “Ananda <strong>{selectedStudentForReport.nama}</strong> memiliki kekuatan paling menonjol pada subtes{" "}
                                     <strong>{reportDiagnostic.strengths[0]?.name}</strong> ({reportDiagnostic.strengths[0]?.score.toFixed(1)}) dan{" "}
-                                    <strong>{reportDiagnostic.strengths[1]?.name}</strong> ({reportDiagnostic.strengths[1]?.score.toFixed(1)}). Untuk mendongkrak skor akhir menuju target PTN pilihan, disarankan mengikuti klinik pendalaman intensif pada subtes{" "}
+                                    <strong>{reportDiagnostic.strengths[1]?.name}</strong> ({reportDiagnostic.strengths[1]?.score.toFixed(1)}). Untuk mendongkrak skor akhir menuju target PTN pilihan ({reportDiagnostic.targetPg1}), disarankan mengikuti klinik pendalaman intensif pada subtes{" "}
                                     <strong>{reportDiagnostic.weaknesses[0]?.name}</strong> serta meningkatkan efektivitas pengerjaan soal (tingkat akurasi saat ini {reportDiagnostic.akurasiJawab}% dari soal yang dijawab).”
                                 </div>
                             </div>
