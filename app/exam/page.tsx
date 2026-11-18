@@ -535,42 +535,35 @@ function OfficialExamChamberContent() {
         return { cleanKampus, cleanProdi, jenjang };
     }, []);
 
-    const findExactBenchmark = useCallback(
-        (selectionStr: string) => {
-            if (!selectionStr || ptnBenchmarks.length === 0) return null;
-            const parsed = parseTargetSelection(selectionStr);
-            if (!parsed) return null;
+    const benchmarkData1 = useMemo(() => {
+        if (!pilihanKampus1 || ptnBenchmarks.length === 0) return null;
+        const parsed = parseTargetSelection(pilihanKampus1);
+        if (!parsed) return null;
 
-            const matchingCampusAndJenjang = ptnBenchmarks.filter((b) => {
-                const bKampus = b.kampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
-                const targetKampus = parsed.cleanKampus.replace(/\s+/g, " ").trim();
-                const isKampusMatch = bKampus === targetKampus;
-                const isJenjangMatch = parsed.jenjang ? (b.jenjang || "S1").toUpperCase() === parsed.jenjang : true;
-                return isKampusMatch && isJenjangMatch;
-            });
+        return ptnBenchmarks.find((b) => {
+            const bKampus = b.kampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
+            const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
+            const isKampusMatch = bKampus === parsed.cleanKampus || bKampus.includes(parsed.cleanKampus) || parsed.cleanKampus.includes(bKampus);
+            const isProdiMatch = bProdi === parsed.cleanProdi || bProdi.includes(parsed.cleanProdi) || parsed.cleanProdi.includes(bProdi);
+            const isJenjangMatch = parsed.jenjang ? (b.jenjang || "S1").toUpperCase() === parsed.jenjang : true;
+            return isKampusMatch && isProdiMatch && isJenjangMatch;
+        }) || null;
+    }, [pilihanKampus1, ptnBenchmarks, parseTargetSelection]);
 
-            const targetProdi = parsed.cleanProdi.replace(/\s+/g, " ").trim();
+    const benchmarkData2 = useMemo(() => {
+        if (!pilihanKampus2 || ptnBenchmarks.length === 0) return null;
+        const parsed = parseTargetSelection(pilihanKampus2);
+        if (!parsed) return null;
 
-            // 1. Prioritas Utama: Nama Prodi harus PERSIS SAMA (Exact Match)
-            const exactMatch = matchingCampusAndJenjang.find((b) => {
-                const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
-                return bProdi === targetProdi;
-            });
-            if (exactMatch) return exactMatch;
-
-            // 2. Fallback hanya jika user mengetik manual sebagian nama prodi
-            return (
-                matchingCampusAndJenjang.find((b) => {
-                    const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
-                    return bProdi.includes(targetProdi);
-                }) || null
-            );
-        },
-        [ptnBenchmarks, parseTargetSelection]
-    );
-
-    const benchmarkData1 = useMemo(() => findExactBenchmark(pilihanKampus1), [pilihanKampus1, findExactBenchmark]);
-    const benchmarkData2 = useMemo(() => findExactBenchmark(pilihanKampus2), [pilihanKampus2, findExactBenchmark]);
+        return ptnBenchmarks.find((b) => {
+            const bKampus = b.kampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
+            const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
+            const isKampusMatch = bKampus === parsed.cleanKampus || bKampus.includes(parsed.cleanKampus) || parsed.cleanKampus.includes(bKampus);
+            const isProdiMatch = bProdi === parsed.cleanProdi || bProdi.includes(parsed.cleanProdi) || parsed.cleanProdi.includes(bProdi);
+            const isJenjangMatch = parsed.jenjang ? (b.jenjang || "S1").toUpperCase() === parsed.jenjang : true;
+            return isKampusMatch && isProdiMatch && isJenjangMatch;
+        }) || null;
+    }, [pilihanKampus2, ptnBenchmarks, parseTargetSelection]);
 
     const filteredModalBenchmarks = useMemo(() => {
         const q = modalSearchQuery.toLowerCase().trim();
@@ -2117,87 +2110,156 @@ function OfficialExamChamberContent() {
                                         })()}
                                     </div>
 
-                                    {/* KANAN: VERTICAL COLUMN CHART DENGAN GARIS TARGET P1 & P2 */}
-                                    <div className="lg:col-span-7 p-4 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-2">
-                                        <div className="flex items-center justify-between text-[9.5px] font-mono font-bold text-slate-500 uppercase">
-                                            <span>GRAFIK BATANG SKOR IRT PER SUBTES</span>
-                                            <span>SKALA 200 – 1000</span>
-                                        </div>
+                                    {/* KANAN: VERTICAL COLUMN CHART DENGAN GARIS TARGET P1 & P2 + TELAAH */}
+                                    {(() => {
+                                        const colPlotHeight = 185;
+                                        const getColBarH = (val: number) =>
+                                            Math.max(4, Math.min(colPlotHeight, ((val - 200) / 800) * colPlotHeight));
+                                        const p1LineBottom = getColBarH(target1);
+                                        const p2LineBottom = getColBarH(target2);
 
-                                        <div className="relative pt-6 pb-1 pl-8 pr-2">
-                                            <div className="absolute left-0 top-6 bottom-7 flex flex-col justify-between text-[9px] font-mono text-slate-400">
-                                                <span>1000</span>
-                                                <span>800</span>
-                                                <span>600</span>
-                                                <span>400</span>
-                                                <span>200</span>
-                                            </div>
+                                        const colShortLabels: Record<string, string> = {
+                                            PU: "PU",
+                                            PPU: "PPU",
+                                            PBM: "PBM",
+                                            PK: "PK",
+                                            LIT_INDO: "Lit. ID",
+                                            LIT_ENG: "Lit. EN",
+                                            PM: "PM"
+                                        };
 
-                                            <div
-                                                className="relative border-l border-b border-slate-300 grid grid-cols-7 gap-2 sm:gap-3 items-end px-2"
-                                                style={{ height: `${plotHeight}px` }}
-                                            >
-                                                {[25, 50, 75, 100].map((pct) => (
-                                                    <div
-                                                        key={pct}
-                                                        className="absolute inset-x-0 border-t border-slate-200/70 pointer-events-none"
-                                                        style={{ bottom: `${pct}%` }}
-                                                    />
-                                                ))}
+                                        const avgGapP1 = Math.round(
+                                            chartData.reduce((acc, item) => acc + (item.score - target1), 0) / chartData.length
+                                        );
+                                        const avgGapP2 = Math.round(
+                                            chartData.reduce((acc, item) => acc + (item.score - target2), 0) / chartData.length
+                                        );
+                                        const topSub = [...chartData].sort((a, b) => b.score - a.score)[0];
+                                        const bottomSub = [...chartData].sort((a, b) => a.score - b.score)[0];
 
-                                                {target2 !== target1 && (
-                                                    <div
-                                                        className="absolute inset-x-0 border-t-2 border-dashed border-amber-500 z-10 pointer-events-none"
-                                                        style={{ bottom: `${target2Bottom}px` }}
-                                                    >
-                                                        <span className="absolute right-1 -top-4 bg-amber-500 text-white font-mono text-[8px] font-black px-1.5 py-0.2 rounded">
-                                                            P2: {target2}
-                                                        </span>
-                                                    </div>
-                                                )}
-
-                                                <div
-                                                    className="absolute inset-x-0 border-t-2 border-dashed border-rose-600 z-10 pointer-events-none"
-                                                    style={{ bottom: `${target1Bottom}px` }}
-                                                >
-                                                    <span className="absolute left-1 -top-4 bg-rose-600 text-white font-mono text-[8px] font-black px-1.5 py-0.2 rounded">
-                                                        P1: {target1}
-                                                    </span>
+                                        return (
+                                            <div className="lg:col-span-7 p-4 rounded-xl bg-slate-50/80 border border-slate-200/80 flex flex-col justify-between space-y-3">
+                                                <div className="flex items-center justify-between text-[9.5px] font-mono font-bold text-slate-600 uppercase">
+                                                    <span>GRAFIK BATANG SKOR IRT PER SUBTES</span>
+                                                    <span>SKALA 200 – 1000</span>
                                                 </div>
 
-                                                {chartData.map((d) => {
-                                                    const barH = getBarHeight(d.score);
-                                                    const barGradient =
-                                                        d.score >= target1
-                                                            ? "from-emerald-600 to-emerald-400"
-                                                            : d.score >= target2
-                                                                ? "from-amber-500 to-amber-300"
-                                                                : "from-blue-800 to-blue-500";
+                                                <div className="relative pt-5 pb-1 pl-9 pr-2">
+                                                    {/* Label Skala Y */}
+                                                    <div
+                                                        className="absolute left-0 top-5 flex flex-col justify-between text-[9px] font-mono text-slate-400 text-right w-7"
+                                                        style={{ height: `${colPlotHeight}px` }}
+                                                    >
+                                                        <span>1000</span>
+                                                        <span>800</span>
+                                                        <span>600</span>
+                                                        <span>400</span>
+                                                        <span>200</span>
+                                                    </div>
 
-                                                    return (
-                                                        <div key={d.code} className="flex flex-col items-center justify-end h-full z-20 group">
-                                                            <span className="text-[9.5px] font-mono font-black text-slate-800 mb-1">
-                                                                {d.score}
-                                                            </span>
+                                                    {/* Area Plot Batang */}
+                                                    <div
+                                                        className="relative border-l border-b border-slate-300 grid grid-cols-7 gap-2 sm:gap-3 items-end px-2 bg-white/60 rounded-tr-lg"
+                                                        style={{ height: `${colPlotHeight}px` }}
+                                                    >
+                                                        {/* Garis Grid Horizontal Latar */}
+                                                        {[25, 50, 75, 100].map((pct) => (
                                                             <div
-                                                                className={`w-full max-w-[34px] rounded-t-lg bg-gradient-to-t ${barGradient} shadow-xs transition-all duration-700`}
-                                                                style={{ height: `${barH}px` }}
-                                                                title={`${d.name}: ${d.score}`}
+                                                                key={pct}
+                                                                className="absolute inset-x-0 border-t border-slate-200/70 pointer-events-none"
+                                                                style={{ bottom: `${pct}%` }}
                                                             />
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
+                                                        ))}
 
-                                            <div className="grid grid-cols-7 gap-2 sm:gap-3 px-2 pt-1.5 text-center">
-                                                {chartData.map((d) => (
-                                                    <span key={d.code} className="text-[9px] sm:text-[9.5px] font-mono font-bold text-slate-700 truncate">
-                                                        {d.short}
-                                                    </span>
-                                                ))}
+                                                        {/* Garis Target Pilihan 2 (Badge di BAWAH garis agar tidak tertabrak P1) */}
+                                                        {target2 !== target1 && (
+                                                            <div
+                                                                className="absolute inset-x-0 border-t-2 border-dashed border-amber-500 z-20 pointer-events-none"
+                                                                style={{ bottom: `${p2LineBottom}px` }}
+                                                            >
+                                                                <span
+                                                                    className={`absolute right-1.5 bg-amber-500 text-white font-mono text-[8px] font-black px-1.5 py-0.5 rounded shadow-2xs ${target2 < target1 ? "top-1" : "-top-4.5"
+                                                                        }`}
+                                                                >
+                                                                    P2: {target2}
+                                                                </span>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Garis Target Pilihan 1 (Badge di ATAS garis) */}
+                                                        <div
+                                                            className="absolute inset-x-0 border-t-2 border-dashed border-rose-600 z-20 pointer-events-none"
+                                                            style={{ bottom: `${p1LineBottom}px` }}
+                                                        >
+                                                            <span
+                                                                className={`absolute left-1.5 bg-rose-600 text-white font-mono text-[8px] font-black px-1.5 py-0.5 rounded shadow-2xs ${target2 > target1 ? "top-1" : "-top-4.5"
+                                                                    }`}
+                                                            >
+                                                                P1: {target1}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Batang Skor Tiap Subtes */}
+                                                        {chartData.map((d) => {
+                                                            const barH = getColBarH(d.score);
+                                                            const barGradient =
+                                                                d.score >= target1
+                                                                    ? "from-emerald-600 to-emerald-400"
+                                                                    : d.score >= target2
+                                                                        ? "from-amber-500 to-amber-300"
+                                                                        : "from-blue-800 to-blue-500";
+
+                                                            return (
+                                                                <div key={d.code} className="flex flex-col items-center justify-end h-full z-10 group">
+                                                                    <span className="text-[9.5px] font-mono font-black text-slate-900 mb-1">
+                                                                        {d.score}
+                                                                    </span>
+                                                                    <div
+                                                                        className={`w-full max-w-[34px] rounded-t-md bg-gradient-to-t ${barGradient} shadow-2xs transition-all duration-700`}
+                                                                        style={{ height: `${barH}px` }}
+                                                                        title={`${d.name}: ${d.score} (Selisih P1: ${d.score - target1})`}
+                                                                    />
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+
+                                                    {/* Label Sumbu X Tanpa Terpotong */}
+                                                    <div className="grid grid-cols-7 gap-2 sm:gap-3 px-2 pt-1.5 text-center">
+                                                        {chartData.map((d) => (
+                                                            <span
+                                                                key={d.code}
+                                                                className="text-[9px] sm:text-[9.5px] font-mono font-bold text-slate-700"
+                                                                title={d.name}
+                                                            >
+                                                                {colShortLabels[d.code] || d.short}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Kotak Telaah Grafik Batang Otomatis */}
+                                                <div className="p-2.5 rounded-lg bg-white border border-slate-200 text-[10px] leading-relaxed text-slate-700 space-y-1">
+                                                    <div className="font-mono font-bold text-slate-900 uppercase text-[9.5px]">
+                                                        Telaah Jarak Skor Terhadap Target PTN:
+                                                    </div>
+                                                    <p>
+                                                        • Rata-rata selisih skor terhadap <strong>Target P1 ({target1})</strong>:{" "}
+                                                        <strong className={avgGapP1 >= 0 ? "text-emerald-700" : "text-rose-700"}>
+                                                            {avgGapP1 >= 0 ? `+${avgGapP1}` : avgGapP1} poin
+                                                        </strong>{" "}
+                                                        | terhadap <strong>Target P2 ({target2})</strong>:{" "}
+                                                        <strong className={avgGapP2 >= 0 ? "text-emerald-700" : "text-amber-700"}>
+                                                            {avgGapP2 >= 0 ? `+${avgGapP2}` : avgGapP2} poin
+                                                        </strong>.
+                                                    </p>
+                                                    <p>
+                                                        • Penopang skor tertinggi saat ini: <strong>{topSub?.name} ({topSub?.score})</strong>, sedangkan potensi kenaikan poin terbesar ada pada penguatan <strong>{bottomSub?.name} ({bottomSub?.score})</strong>.
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         );
