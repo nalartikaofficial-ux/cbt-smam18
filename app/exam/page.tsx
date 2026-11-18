@@ -535,35 +535,42 @@ function OfficialExamChamberContent() {
         return { cleanKampus, cleanProdi, jenjang };
     }, []);
 
-    const benchmarkData1 = useMemo(() => {
-        if (!pilihanKampus1 || ptnBenchmarks.length === 0) return null;
-        const parsed = parseTargetSelection(pilihanKampus1);
-        if (!parsed) return null;
+    const findExactBenchmark = useCallback(
+        (selectionStr: string) => {
+            if (!selectionStr || ptnBenchmarks.length === 0) return null;
+            const parsed = parseTargetSelection(selectionStr);
+            if (!parsed) return null;
 
-        return ptnBenchmarks.find((b) => {
-            const bKampus = b.kampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
-            const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
-            const isKampusMatch = bKampus === parsed.cleanKampus || bKampus.includes(parsed.cleanKampus) || parsed.cleanKampus.includes(bKampus);
-            const isProdiMatch = bProdi === parsed.cleanProdi || bProdi.includes(parsed.cleanProdi) || parsed.cleanProdi.includes(bProdi);
-            const isJenjangMatch = parsed.jenjang ? (b.jenjang || "S1").toUpperCase() === parsed.jenjang : true;
-            return isKampusMatch && isProdiMatch && isJenjangMatch;
-        }) || null;
-    }, [pilihanKampus1, ptnBenchmarks, parseTargetSelection]);
+            const matchingCampusAndJenjang = ptnBenchmarks.filter((b) => {
+                const bKampus = b.kampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+                const targetKampus = parsed.cleanKampus.replace(/\s+/g, " ").trim();
+                const isKampusMatch = bKampus === targetKampus;
+                const isJenjangMatch = parsed.jenjang ? (b.jenjang || "S1").toUpperCase() === parsed.jenjang : true;
+                return isKampusMatch && isJenjangMatch;
+            });
 
-    const benchmarkData2 = useMemo(() => {
-        if (!pilihanKampus2 || ptnBenchmarks.length === 0) return null;
-        const parsed = parseTargetSelection(pilihanKampus2);
-        if (!parsed) return null;
+            const targetProdi = parsed.cleanProdi.replace(/\s+/g, " ").trim();
 
-        return ptnBenchmarks.find((b) => {
-            const bKampus = b.kampus.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
-            const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").trim().toLowerCase();
-            const isKampusMatch = bKampus === parsed.cleanKampus || bKampus.includes(parsed.cleanKampus) || parsed.cleanKampus.includes(bKampus);
-            const isProdiMatch = bProdi === parsed.cleanProdi || bProdi.includes(parsed.cleanProdi) || parsed.cleanProdi.includes(bProdi);
-            const isJenjangMatch = parsed.jenjang ? (b.jenjang || "S1").toUpperCase() === parsed.jenjang : true;
-            return isKampusMatch && isProdiMatch && isJenjangMatch;
-        }) || null;
-    }, [pilihanKampus2, ptnBenchmarks, parseTargetSelection]);
+            // 1. Prioritas Utama: Nama Prodi harus PERSIS SAMA (Exact Match)
+            const exactMatch = matchingCampusAndJenjang.find((b) => {
+                const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+                return bProdi === targetProdi;
+            });
+            if (exactMatch) return exactMatch;
+
+            // 2. Fallback hanya jika user mengetik manual sebagian nama prodi
+            return (
+                matchingCampusAndJenjang.find((b) => {
+                    const bProdi = b.prodi.replace(/\(.*?\)/g, "").replace(/[^a-zA-Z0-9\s]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+                    return bProdi.includes(targetProdi);
+                }) || null
+            );
+        },
+        [ptnBenchmarks, parseTargetSelection]
+    );
+
+    const benchmarkData1 = useMemo(() => findExactBenchmark(pilihanKampus1), [pilihanKampus1, findExactBenchmark]);
+    const benchmarkData2 = useMemo(() => findExactBenchmark(pilihanKampus2), [pilihanKampus2, findExactBenchmark]);
 
     const filteredModalBenchmarks = useMemo(() => {
         const q = modalSearchQuery.toLowerCase().trim();
